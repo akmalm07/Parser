@@ -1,0 +1,7 @@
+.git/
+.vs/
+x64/
+x86/
+*.sln
+*.filters
+*.user
