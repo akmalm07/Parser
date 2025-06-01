@@ -5,3 +5,4 @@ x86/
 *.sln
 *.filters
 *.user
+*.vcxproj
