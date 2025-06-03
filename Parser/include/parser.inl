@@ -8,7 +8,7 @@ namespace parser {
 
 
 	template <ParserRule T>
-	void Parser::rule<ParserRule::CannotInlcudeInFile>(ParserRule rule, std::string_view str)
+	void Parser::rule<ParserRule::CannotIncludeInFile>(ParserRule rule, std::string_view str)
 	{
 	}
 

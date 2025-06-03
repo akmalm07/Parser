@@ -19,11 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\flags.h" />
     <ClInclude Include="include\parser.h" />
     <ClInclude Include="include\config.h" />
+    <ClInclude Include="include\rule_handler.h" />
+    <ClInclude Include="include\tockenization.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\parser.cpp" />
+    <ClCompile Include="src\tockenization.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="include\parser.inl" />

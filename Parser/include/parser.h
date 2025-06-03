@@ -1,37 +1,10 @@
 #pragma once
 
 #include "include/config.h"
-#include <fstream>
-#include <string_view>
-#include <vector>
 
 
-namespace parser {
-
-	enum class ParserReadType
-	{
-		Binary,
-		Text
-	};
-
-	enum class ParserRule
-	{
-		//Global
-		CannotInlcudeInFile,
-		MustIncludeInFile,
-
-		//Local
-		CannotInlcude,
-		MustInclude,
-		MustIncludeBefore,
-		MustIncludeAfter,
-		MustIncludeBetween,
-
-		//Creating Local spaces
-		NewSectionWhenFound,
-		NewSectionWhenBetween,
-	};
-
+namespace parser
+{
 
 	class Parser
 	{
@@ -41,36 +14,6 @@ namespace parser {
 
 		Parser(std::string_view fileLoc, ParserReadType type);
 
-		template<ParserRule R>
-		struct RuleHandler;
-
-		template<>
-		struct RuleHandler<ParserRule::CannotInlcudeInFile> 
-		{
-			static void rule(std::string_view input) 
-			{
-				std::cout << "Include logic\n";
-			}
-		};
-
-		// Specialization for Rule::CannotInclude
-		template<>
-		struct RuleHandler<ParserRule::MustIncludeInFile> 
-		{
-			static bool check_rule(std::vector<std::string_view> const& sections, std::string_view target, std::string_view errMsg)
-			{
-				for (auto const& section : sections)
-				{
-					if (section.find(target) != std::string_view::npos)
-					{
-						return true;
-					}
-				}
-
-				std::cerr << "Error: " << errMsg << std::endl;
-				return false;
-			}
-		};
 
 		bool parse(std::string_view fileLoc, ParserReadType type);
 
@@ -78,11 +21,15 @@ namespace parser {
 
 	private:
 
-		std::string _fileLocation;
+		std::filesystem::path _fileLocation;
 		ParserReadType _readType;
 		std::ifstream _fileStream;
 
-		std::vector<std::string_view> _sections;
+		TockenizedSections _sections;
+
+		std::vector<Rule> _rules;
+
+		TockenizedFile _entireFile;
 
 		void parse_binary(const std::ifstream& file);
 		void parse_text(const std::ifstream& file);
