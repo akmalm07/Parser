@@ -25,7 +25,7 @@ namespace parser {
 	using UntockeizedFile = std::string; // String that contains the entire file that has not been tockenized yet.
 
 
-	enum class ParserReadType
+	enum class ParserReadType : uint32_t
 	{
 		Binary,
 		Text
@@ -52,6 +52,9 @@ namespace parser {
 		//Creating Local spaces
 		NewSectionWhenFound,
 		NewSectionWhenBetween,
+		NewSectionWhenAfter,
+		NewSectionWhenBefore,
+
 	};
 
 

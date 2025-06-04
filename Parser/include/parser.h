@@ -1,7 +1,8 @@
 #pragma once
 
 #include "include/config.h"
-
+#include "include/flags.h"
+#include "include/rule_handler.h"
 
 namespace parser
 {
@@ -12,8 +13,9 @@ namespace parser
 
 		Parser() = default;
 
-		Parser(std::string_view fileLoc, ParserReadType type);
+		Parser(std::filesystem::path const& fileLoc, ParserReadType type);
 
+		void set_rules(std::vector<RuleHandler> const& rules);
 
 		bool parse(std::string_view fileLoc, ParserReadType type);
 
@@ -27,13 +29,13 @@ namespace parser
 
 		TockenizedSections _sections;
 
-		std::vector<Rule> _rules;
+		std::vector<RuleHandler> _rules;
 
 		TockenizedFile _entireFile;
 
 		void parse_binary(const std::ifstream& file);
 		void parse_text(const std::ifstream& file);
-		std::ifstream open_file(std::string_view fileLoc, ParserReadType type);
+		std::ifstream open_file(std::filesystem::path const& fileLoc, ParserReadType type);
 
 	};
 }

@@ -3,10 +3,22 @@
 
 namespace parser {
 	// Constructor
-	Parser::Parser(const std::string& fileLoc, ParserReadType type)
+	Parser::Parser(std::filesystem::path const& fileLoc, ParserReadType type)
 		: _fileLocation(fileLoc), _readType(type) 
 	{
 		_fileStream = open_file(fileLoc, type);
+	}
+
+	void Parser::set_rules(std::vector<RuleHandler> const& rules)
+	{
+		if (_rules.empty()) 
+		{
+			std::cerr << PARSER_LOG_ERR << "No rules set for parser." << std::endl;
+		}
+		else 
+		{
+			std::cout << PARSER_LOG_INFO << "Rules set for parser. Number of rules set: " << _rules.size() << std::endl;
+		}
 	}
 
 	bool Parser::parse(std::string_view fileLoc, ParserReadType type)
@@ -34,16 +46,16 @@ namespace parser {
 			parse_text(file);
 
 	}
-	std::ifstream Parser::open_file(std::string_view fileLoc, ParserReadType type)
+	std::ifstream Parser::open_file(std::filesystem::path const& fileLoc, ParserReadType type)
 	{
 		std::ios_base::openmode mode = (type == ParserReadType::Binary) ? std::ios::binary : std::ios::in;
 		_readType = type;
 
-		std::ifstream file(fileLoc.data(), mode);
+		std::ifstream file(fileLoc, mode);
 
 		if (!file.is_open()) 
 		{
-			std::cerr << PARSER_LOG_ERR << "Failed to open file: " << fileLoc.data() << "\n";
+			std::cerr << PARSER_LOG_ERR << "Failed to open file: " << fileLoc << "\n";
 		}
 
 		return file;

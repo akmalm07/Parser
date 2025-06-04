@@ -34,6 +34,11 @@ namespace parser
 			return (_mask & static_cast<MaskType>(bit)) != 0;
 		}
 
+		constexpr bool has(BitType bit) const
+		{
+			return (_mask & static_cast<MaskType>(bit)) != 0;
+		}
+
 		constexpr MaskType raw() const { return _mask; }
 
 	private:
@@ -41,7 +46,7 @@ namespace parser
 	};
 
 
-
+	// --StringChecksFlags--
 	enum class StringChecksBitFlags : uint32_t
 	{
 		None = 0,
@@ -59,6 +64,88 @@ namespace parser
 	inline StringChecksFlag operator|(StringChecksBitFlags lhs, StringChecksBitFlags rhs)
 	{
 		return StringChecksFlag(lhs | rhs);
+	}
+
+	// --TokenizationSeperationFlags--
+
+	enum class TokenizationSeperationBitFlags : uint32_t
+	{
+		None = 0,
+		TockeizeWhitespace = 1 << 0, 
+		TockeizeNewLine = 1 << 1, 
+		TockeizeTab = 1 << 2, 
+		TockeizeAtoZ = 1 << 3, 
+		TockeizeDigit = 1 << 4, 
+
+		TockeizeExplemation = 1 << 5, 
+		TockeizeQuestion = 1 << 6, 
+		TockeizeColon = 1 << 7, 
+		TockeizeSemicolon = 1 << 8, 
+		TockeizeDot = 1 << 9,
+		TockeizeComma = 1 << 10,
+
+		TockenizePunctuation = (TockeizeExplemation | TockeizeQuestion | TockeizeColon | TockeizeSemicolon| TockeizeDot | TockeizeComma),
+
+
+		TokenizeAt = 1 << 11, 
+		TokenizeHash = 1 << 12, 
+		TokenizeDollar = 1 << 13, 
+		TokenizePercent = 1 << 14, 
+		TokenizeCaret = 1 << 15, 
+		TokenizeAmpersand = 1 << 16, 
+		TokenizeStar = 1 << 17, 
+		TokenizeDash = 1 << 18, 
+		TokenizePlus = 1 << 19, 
+		TokenizeEqual = 1 << 20, 
+		TokenizeSlash = 1 << 21, 
+		TokenizeBackslash = 1 << 22, 
+		TokenizeTilde = 1 << 23, 
+		TokenizePipe = 1 << 24, 
+		TokenizeGrave = 1 << 25, 
+		TokenizeUnderscore = 1 << 26, 
+
+		TokenizeOpenAngleBracket = 1 << 27,   
+		TokenizeClosedAngleBracket = 1 << 28, 
+		TokenizeAngleBrackets = (TokenizeOpenAngleBracket | TokenizeClosedAngleBracket),
+		TokenizeOpenCurlyBracket = 1 << 29,   
+		TokenizeClosedCurlyBracket = 1 << 30, 
+		TokenizeBrackets = (TokenizeOpenCurlyBracket | TokenizeClosedCurlyBracket),
+		TokenizeOpenBracket = 1 << 31,   
+		TokenizeClosedBracket = 1 << 32, 
+		TokenizeCurlyBrackets = (TokenizeOpenBracket | TokenizeClosedBracket), 
+
+		TokenizeOpenSquareBracket = 1 << 33,   
+		TokenizeClosedSquareBracket = 1 << 34,
+		TokenizeSquareBrackets = (TokenizeOpenSquareBracket | TokenizeClosedSquareBracket),
+		
+		TokenizeSpecialChars = (TokenizeAt |TokenizeHash |TokenizeDollar | TokenizePercent |TokenizeCaret |TokenizeAmpersand |TokenizeStar |TokenizeDash |TokenizePlus |TokenizeEqual |TokenizeSlash |TokenizeBackslash |TokenizeTilde |TokenizePipe |TokenizeGrave |TokenizeUnderscore |TokenizeAngleBrackets |TokenizeBrackets),
+		TokenizeCustom = 1 << 31,
+	};
+
+	using TokenizationSeperationFlag = Flags<TokenizationSeperationBitFlags>;
+
+	inline TokenizationSeperationFlag operator|(TokenizationSeperationBitFlags lhs, TokenizationSeperationBitFlags rhs)
+	{
+		return TokenizationSeperationFlag(lhs | rhs);
+	}
+
+
+	// --WhiteSpaceDissolveFlags--
+
+	enum class WhiteSpaceDissolveBitFlags : uint32_t
+	{
+		None = 0,
+		DissolveSpace = 1 << 0, // Dissolve spaces
+		DissolveNewLine = 1 << 1, // Dissolve new lines
+		DissolveTab = 1 << 2, // Dissolve tabs
+		DissolveAll = DissolveSpace | DissolveNewLine | DissolveTab, // Dissolve all whitespace
+	};
+
+	using WhiteSpaceDissolveFlag = Flags<WhiteSpaceDissolveBitFlags>;
+
+	inline WhiteSpaceDissolveFlag operator|(WhiteSpaceDissolveBitFlags lhs, WhiteSpaceDissolveBitFlags rhs)
+	{
+		return WhiteSpaceDissolveFlag(lhs | rhs);
 	}
 
 }
