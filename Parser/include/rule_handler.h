@@ -25,7 +25,7 @@ namespace parser {
 	{
 	public:
 
-		Rule* get_rule()
+		BaseRule* get_rule()
 		{
 			return _rule.get();
 		}
@@ -37,7 +37,7 @@ namespace parser {
 		RuleHandler() = default;
 	
 	protected:
-		std::unique_ptr<Rule> _rule;
+		std::unique_ptr<BaseRule> _rule;
 	};
 
 	class GlobalRuleHandler : public RuleHandler
@@ -94,7 +94,7 @@ namespace parser {
 	template<>
 	struct ConcreteRule<ParserRule::CannotIncludeInFile> : public GlobalRuleHandler
 	{
-		bool check_rule_impl(TockenizedSections const& sections, RuleWithOneTarget const& rule)
+		bool check_rule_impl(TockenizedSections const& sections, RuleOneTarget const& rule)
 		{
 			if (rule.type != ParserRule::CannotIncludeInFile)
 			{
@@ -121,10 +121,10 @@ namespace parser {
 
 		bool check_global_rule(TockenizedSections const& sections) override
 		{
-			const RuleWithOneTarget* rule = dynamic_cast<RuleWithOneTarget*>(_rule.get());
+			const RuleOneTarget* rule = dynamic_cast<RuleOneTarget*>(_rule.get());
 			if (!rule)
 			{
-				std::cerr << PARSER_LOG_ERR << "Rule is not of type RuleWithOneTarget." << std::endl;
+				std::cerr << PARSER_LOG_ERR << "Rule is not of type RuleOneTarget." << std::endl;
 				return false;
 			}
 
@@ -136,7 +136,7 @@ namespace parser {
 	template<>
 	struct ConcreteRule<ParserRule::MustIncludeInFile> : public GlobalRuleHandler
 	{
-		bool check_rule_impl(TockenizedSections const& sections, RuleWithOneTarget const& rule)
+		bool check_rule_impl(TockenizedSections const& sections, RuleOneTarget const& rule)
 		{
 			if (rule.type != ParserRule::MustIncludeInFile)
 			{
@@ -163,10 +163,10 @@ namespace parser {
 
 		bool check_global_rule(TockenizedSections const& sections) override
 		{
-			const RuleWithOneTarget* rule = dynamic_cast<RuleWithOneTarget*>(_rule.get());
+			const RuleOneTarget* rule = dynamic_cast<RuleOneTarget*>(_rule.get());
 			if (!rule)
 			{
-				std::cerr << PARSER_LOG_ERR << "Rule is not of type RuleWithOneTarget." << std::endl;
+				std::cerr << PARSER_LOG_ERR << "Rule is not of type RuleOneTarget." << std::endl;
 				return false;
 			}
 
@@ -177,7 +177,7 @@ namespace parser {
 	template<>
 	struct ConcreteRule<ParserRule::CannotInlcude> : public LocalRuleHandler
 	{
-		bool check_rule_impl(TockenizedSection const& section, RuleWithOneTarget const& rule)
+		bool check_rule_impl(TockenizedSection const& section, RuleOneTarget const& rule)
 		{
 			if (rule.type != ParserRule::CannotInlcude)
 			{
@@ -200,14 +200,16 @@ namespace parser {
 
 		bool check_local_rule(TockenizedSection const& section) override
 		{
-			const RuleWithOneTarget* rule = dynamic_cast<RuleWithOneTarget*>(_rule.get());
-			if (!rule)
+			if (_rule->get_target_count() == 1)
 			{
-				std::cerr << PARSER_LOG_ERR << "Rule is not of type RuleWithOneTarget." << std::endl;
+				return check_rule_impl(section, static_cast<RuleOneTarget&>(*_rule));
+
+			}
+			else
+			{
+				std::cerr << PARSER_LOG_ERR << "Rule is not of type RuleOneTarget." << std::endl;
 				return false;
 			}
-
-			return check_rule_impl(section, *rule);
 		}
 	};
 
@@ -215,7 +217,7 @@ namespace parser {
 	template<>
 	struct ConcreteRule<ParserRule::MustInclude> : public LocalRuleHandler
 	{
-		bool check_rule_impl(TockenizedSection section, RuleWithOneTarget const& rule)
+		bool check_rule_impl(TockenizedSection section, RuleOneTarget const& rule)
 		{
 			if (rule.type != ParserRule::MustInclude)
 			{
@@ -238,21 +240,23 @@ namespace parser {
 
 		bool check_local_rule(TockenizedSection const& section) override
 		{
-			const RuleWithOneTarget* rule = dynamic_cast<RuleWithOneTarget*>(_rule.get());
-			if (!rule)
+			if (_rule->get_target_count() == 1)
 			{
-				std::cerr << PARSER_LOG_ERR << "Rule is not of type RuleWithOneTarget." << std::endl;
+				return check_rule_impl(section, static_cast<RuleOneTarget&>(*_rule));
+
+			}
+			else
+			{
+				std::cerr << PARSER_LOG_ERR << "Rule is not of type RuleOneTarget." << std::endl;
 				return false;
 			}
-
-			return check_rule_impl(section, *rule);
 		}
 	};
 
 	template<>
 	struct ConcreteRule<ParserRule::MustIncludeBefore> : public LocalRuleHandler
 	{
-		bool check_rule_impl(TockenizedSection const& section, RuleWithTwoTarget const& rule)
+		bool check_rule_impl(TockenizedSection const& section, RuleTwoTarget const& rule)
 		{
 			if (rule.type != ParserRule::MustIncludeBefore)
 			{
@@ -261,9 +265,9 @@ namespace parser {
 			}
 			for (size_t i = 1; i < section.size(); i++)
 			{
-				if (section[i] == rule.target1 && section[i - 1] == rule.target2)
+				if (section[i] == rule.targets[0] && section[i - 1] == rule.targets[1])
 				{
-					std::cout << PARSER_LOG_INFO << "Rule: Found Item: " << rule.target1 << " Before Item: " << rule.target2 << std::endl;
+					std::cout << PARSER_LOG_INFO << "Rule: Found Item: " << rule.targets[0] << " Before Item: " << rule.targets[1] << std::endl;
 					return true;
 				}
 			}
@@ -273,21 +277,23 @@ namespace parser {
 
 		bool check_local_rule(TockenizedSection const& section) override
 		{
-			const RuleWithTwoTarget* rule = dynamic_cast<RuleWithTwoTarget*>(_rule.get());
-			if (!rule)
+			if (_rule->get_target_count() == 2)
 			{
-				std::cerr << PARSER_LOG_ERR << "Rule is not of type RuleWithOneTarget." << std::endl;
+				return check_rule_impl(section, static_cast<RuleTwoTarget&>(*_rule));
+
+			}
+			else
+			{
+				std::cerr << PARSER_LOG_ERR << "Rule is not of type RuleTwoTarget." << std::endl;
 				return false;
 			}
-
-			return check_rule_impl(section, *rule);
 		}
 	};
 
 	template<>
 	struct ConcreteRule<ParserRule::MustIncludeAfter> : public LocalRuleHandler
 	{
-		bool check_rule_impl(TockenizedSection const& section, RuleWithTwoTarget const& rule)
+		bool check_rule_impl(TockenizedSection const& section, RuleTwoTarget const& rule)
 		{
 			if (rule.type != ParserRule::MustIncludeAfter)
 			{
@@ -296,9 +302,9 @@ namespace parser {
 			}
 			for (size_t i = 0; i < section.size() - 1; i++)
 			{
-				if (section[i] == rule.target1 && section[i + 1] == rule.target2)
+				if (section[i] == rule.targets[0] && section[i + 1] == rule.targets[1])
 				{
-					std::cout << PARSER_LOG_INFO << "Rule: Found Item: " << rule.target1 << " After Item: " << rule.target2 << std::endl;
+					std::cout << PARSER_LOG_INFO << "Rule: Found Item: " << rule.targets[0] << " After Item: " << rule.targets[1] << std::endl;
 					return true;
 				}
 			}
@@ -308,14 +314,18 @@ namespace parser {
 
 		bool check_local_rule(TockenizedSection const& section) override
 		{
-			const RuleWithTwoTarget* rule = dynamic_cast<RuleWithTwoTarget*>(_rule.get());
-			if (!rule)
 			{
-				std::cerr << PARSER_LOG_ERR << "Rule is not of type RuleWithOneTarget." << std::endl;
-				return false;
-			}
+				if (_rule->get_target_count() == 2)
+				{
+					return check_rule_impl(section, static_cast<RuleTwoTarget&>(*_rule));
 
-			return check_rule_impl(section, *rule);
+				}
+				else
+				{
+					std::cerr << PARSER_LOG_ERR << "Rule is not of type RuleTwoTarget." << std::endl;
+					return false;
+				}
+			}
 		}
 	};
 

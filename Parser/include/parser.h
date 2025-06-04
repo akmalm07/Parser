@@ -21,6 +21,7 @@ namespace parser
 
 		void operator<<(const std::ifstream& file);
 
+
 	private:
 
 		std::filesystem::path _fileLocation;
@@ -32,6 +33,7 @@ namespace parser
 		std::vector<RuleHandler> _rules;
 
 		TockenizedFile _entireFile;
+
 
 		void parse_binary(const std::ifstream& file);
 		void parse_text(const std::ifstream& file);

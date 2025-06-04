@@ -1,4 +1,5 @@
 #pragma once
+
 #include <iostream>
 #include <string>
 
@@ -6,6 +7,7 @@
 #include <fstream>
 #include <string_view>
 #include <vector>
+#include <array>
 #include <sstream>
 #include <filesystem>
 #include <type_traits>
@@ -50,65 +52,87 @@ namespace parser {
 	enum class ParserSectionCreator : uint32_t
 	{
 		//Creating Local spaces
-		NewSectionWhenFound,
-		NewSectionWhenBetween,
-		NewSectionWhenAfter,
-		NewSectionWhenBefore,
+		NewSectionWhenFound, // 1 param
+		NewSectionWhenBetween, // 2 param
+		NewSectionWhenAfter, // 2 param
+		NewSectionWhenBefore, // 2 param
 
 	};
 
 
+	/*
 	struct Rule
 	{
 		ParserRule type;
 		std::string errMsg;
+		virtual Rule* get() = 0;
 		virtual ~Rule() = default;
 	};
 
+	*/
 
-	struct RuleWithOneTarget : Rule
+
+	struct BaseRule
 	{
+		ParserRule type;
+		std::string errMsg;
 
+		virtual size_t get_target_count() const = 0;
+	};
+
+	template<size_t N>
+		requires (N > 0)
+	struct Rule : public BaseRule
+	{
+		std::array<std::string, N> targets; // This is a fixed size array of strings that contains the targets of the rule. The size of the array is determined by the template parameter N.
+		
+		size_t get_target_count() const override { return N; }
+
+		Rule(ParserRule r, std::array<std::string, N> const& t, std::string_view e)
+		{
+			type = r;
+			targets = t;
+			errMsg = e;
+		}
+
+		~Rule() = default;
+
+	};
+
+	template<>
+	struct Rule<1> : BaseRule
+	{
 		std::string target;
-		RuleWithOneTarget(ParserRule r, std::string_view t, std::string_view e)
+
+		size_t get_target_count() const override { return 1; }
+
+		Rule(ParserRule r, std::string_view t, std::string_view e)
 		{
 			type = r;
 			target = t;
 			errMsg = e;
 		}
+		
+		~Rule() = default;
 	};
 
-	struct RuleWithTwoTarget : Rule
-	{
-		std::string target1;
-		std::string target2;
-		RuleWithTwoTarget(ParserRule r, std::string_view t1, std::string_view t2, std::string_view e)
-		{
-			type = r;
-			target1 = t1;
-			target2 = t2;
-			errMsg = e;
-		}
-	};
+	using RuleOneTarget = Rule<1>;
+	using RuleTwoTarget = Rule<2>;
+
+	template<size_t N>
+	using RuleMultiTarget = Rule<N>;
+
+
 
 }
 
-std::string green_text(std::string_view text) 
-{
-	return "\033[32m" + std::string(text) + "\033[0m";
-}
+std::string green_text(std::string_view text);
 
 
-std::string red_text(std::string_view text)
-{
-	return "\033[31m" + std::string(text) + "\033[0m";
-}
+std::string red_text(std::string_view text);
 
 
-std::string yellow_text(std::string_view text)
-{
-	return "\033[33m" + std::string(text) + "\033[0m";
-}
+std::string yellow_text(std::string_view text);
 
 
 #define PARSER_LOG_ERR \

@@ -115,48 +115,48 @@ namespace parser
 	}
 
 
-    bool check_str(std::string_view str, StringChecksFlag flags)
-    {
-        if (str.empty())
-        {
-            return false;
-        }
+	bool check_str(std::string_view str, StringChecksFlag flags)
+	{
+		if (str.empty())
+		{
+			return false;
+		}
 
-        for (char c : str)
-        {
-            if (!flags.has(StringChecksBitFlags::NoDigitCheck) && isdigit(static_cast<unsigned char>(c)))
-            {
-                return false;
-            }
+		for (char c : str)
+		{
+			if (!flags.has(StringChecksBitFlags::NoDigitCheck) && isdigit(static_cast<unsigned char>(c)))
+			{
+				return false;
+			}
 
-            if (!flags.has(StringChecksBitFlags::NoSpecialCharCheck) && !isalnum(static_cast<unsigned char>(c)))
-            {
-                return false;
-            }
+			if (!flags.has(StringChecksBitFlags::NoSpecialCharCheck) && !isalnum(static_cast<unsigned char>(c)))
+			{
+				return false;
+			}
 
-            if (!flags.has(StringChecksBitFlags::NoAtoZCheck) && isalpha(static_cast<unsigned char>(c)))
-            {
-                return false;
-            }
+			if (!flags.has(StringChecksBitFlags::NoAtoZCheck) && isalpha(static_cast<unsigned char>(c)))
+			{
+				return false;
+			}
 
-            if (!flags.has(StringChecksBitFlags::NoSpaceCheck) && isspace(static_cast<unsigned char>(c)))
-            {
-                return false;
-            }
+			if (!flags.has(StringChecksBitFlags::NoSpaceCheck) && isspace(static_cast<unsigned char>(c)))
+			{
+				return false;
+			}
 
-            if (!flags.has(StringChecksBitFlags::NoNewLineCheck) && c == '\n')
-            {
-                return false;
-            }
+			if (!flags.has(StringChecksBitFlags::NoNewLineCheck) && c == '\n')
+			{
+				return false;
+			}
 
-            if (!flags.has(StringChecksBitFlags::NoTabCheck) && c == '\t')
-            {
-                return false;
-            }
-        }
+			if (!flags.has(StringChecksBitFlags::NoTabCheck) && c == '\t')
+			{
+				return false;
+			}
+		}
 
-        return true;
-    }
+		return true;
+	}
 
 
 
