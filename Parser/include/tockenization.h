@@ -12,9 +12,9 @@ namespace parser {
 	
 	std::vector<std::string> dissolve_whitespace(std::vector<std::string> const& text, WhiteSpaceDissolveFlag flags);
 
-	std::string print_tokens(TockenizedSection const& tokens);
+	std::string print_tokens(TockenizedUnsectionedFile const& tokens);
 
-	std::string print_tokens(TockenizedSections const& sections);
+	//std::string print_tokens(TockenizedSections const& sections);
 
 	bool check_str(std::string_view str, StringChecksFlag flags);
 

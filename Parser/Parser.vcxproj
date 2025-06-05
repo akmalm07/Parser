@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="include\parser.inl" />
+    <None Include="include\section_handler.inl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="guidelines.md" />

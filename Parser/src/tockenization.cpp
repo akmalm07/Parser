@@ -161,7 +161,7 @@ namespace parser
 
 
 
-	std::string print_tokens(TockenizedSection const& tokens)
+	std::string print_tokens(TockenizedUnsectionedFile const& tokens)
 	{
 		std::ostringstream oss;
 		for (const auto& token : tokens)
@@ -171,7 +171,7 @@ namespace parser
 		return oss.str();
 	}
 
-
+	/*
 	std::string print_tokens(TockenizedSections const& sections)
 	{
 		std::ostringstream oss;
@@ -186,7 +186,7 @@ namespace parser
 		return oss.str();
 	}
 
-
+	*/
 
 
 }
