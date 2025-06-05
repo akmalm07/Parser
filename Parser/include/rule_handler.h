@@ -1,6 +1,7 @@
 #pragma once
 
 #include "include/config.h"
+#include "include/rules.h"
 #include "include/tockenization.h"
 
 

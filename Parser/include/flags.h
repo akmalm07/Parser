@@ -148,4 +148,23 @@ namespace parser
 		return WhiteSpaceDissolveFlag(lhs | rhs);
 	}
 
+
+	// --SectioningFlags--
+
+	enum class SectioningBitFlags : uint32_t
+	{
+		None = 0,
+		NewSectionWhenFound = 1 << 0, 
+		NewSectionWhenBetween = 1 << 1, 
+		NewSectionWhenAfter = 1 << 2, 
+		NewSectionWhenBefore = 1 << 3,
+		NewSectionWhenAfterAndBefore = NewSectionWhenAfter | NewSectionWhenBefore, // Create a new section when the target is found after and before another target	
+	};
+
+	using SectioningFlag = Flags<SectioningBitFlags>;
+
+	inline SectioningFlag operator|(SectioningBitFlags lhs, SectioningBitFlags rhs)
+	{
+		return SectioningFlag(lhs | rhs);
+	}
 }
