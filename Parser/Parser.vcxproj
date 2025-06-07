@@ -28,8 +28,10 @@
     <ClInclude Include="include\section_handler.h" />
     <ClInclude Include="include\rules.h" />
     <ClInclude Include="include\sections.h" />
+    <ClInclude Include="include\section_operations.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\section_operations.cpp" />
     <ClCompile Include="src\headers.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
     </ClCompile>
@@ -43,7 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="include\parser.inl" />
-    <None Include="include\section_handler.inl" />
+    <None Include="include\section_operations.inl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="guidelines.md" />

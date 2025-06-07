@@ -1,13 +1,13 @@
 #pragma once
 
 #include "include/config.h"
-#include "include/section_handler.h"
+#include "include/section_operations.h"
 
 namespace parser
 {
 
 	template<size_t N>
-	std::shared_ptr<BaseSection> ExecuteFunctor<N, true>::operator()(SectioningInput const& input)
+	std::shared_ptr<BaseSection> ExecuteFunctor<N, true, false>::operator()(SectioningInput const& input)
 	{
 		size_t placementNum = input.endOfSection - input.placement;
 
@@ -23,7 +23,7 @@ namespace parser
 	}
 
 	template<size_t N>
-	std::shared_ptr<BaseSection> ExecuteFunctor<N, false>::operator()(SectioningInput const& input)
+	std::shared_ptr<BaseSection> ExecuteFunctor<N, false, false>::operator()(SectioningInput const& input)
 	{
 
 		size_t placementNum = input.endOfSection - input.placement;
