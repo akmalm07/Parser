@@ -38,17 +38,18 @@ namespace parser {
 
 				add_triggers<1, false>(criteria[i], triggers);
 
-				execute.emplace_back(std::make_unique<ExecuteFunctor<1, false>>(criteria[i], []
-				(size_t placementNum, TockenizedUnsectionedFileIterator placement) -> std::vector<std::string_view>
+				execute.emplace_back(std::make_unique<ExecuteFunc<1>>(criteria[i], []
+				(size_t placementNum, TockenizedUnsectionedFileIteratorConst placement, TockenizedUnsectionedFileIteratorConst endOfSection) -> ExecutionOutput
 					{
 						std::vector<std::string_view> content;
 						content.reserve(placementNum);
+
 						for (size_t i = 0; i < placementNum; i++)
 						{
 							content.push_back(*(placement + i));
 						}
 
-						return content;
+						return { endOfSection, content };
 					})
 				);
 				break;
@@ -64,8 +65,8 @@ namespace parser {
 
 				add_triggers<2, false>(criteria[i], triggers);
 
-				execute.emplace_back(std::make_unique<ExecuteFunctor<2, true>>(criteria[i], []
-					(size_t placementNum, TockenizedUnsectionedFileIterator placement, BaseSectioning* criteria) -> std::vector<std::string_view>
+				execute.emplace_back(std::make_unique<ExecuteFuncTwoIterators<2>>(criteria[i], []
+					(size_t placementNum, TockenizedUnsectionedFileIteratorConst placement, TockenizedUnsectionedFileIterator endOfSection, BaseSectioning* criteria) -> ExecutionOutput
 					{
 						std::vector<std::string_view> content;
 						content.reserve(placementNum);
@@ -113,9 +114,9 @@ namespace parser {
 
 				add_triggers<2, true>(criteria[i], triggers);
 
-				execute.emplace_back(std::make_unique<ExecuteFunctor<2, true>>(criteria[i],
+				execute.emplace_back(std::make_unique<ExecuteFuncOneIterator<2>>(criteria[i],
 					[]
-					(size_t placementNum, TockenizedUnsectionedFileIterator placement, BaseSectioning* criteria) ->std::vector<std::string_view>
+					(size_t placementNum, TockenizedUnsectionedFileIteratorConst placement, BaseSectioning* criteria) -> ExecutionOutput
 					{
 						std::vector<std::string_view> content;
 						content.reserve(placementNum);
@@ -155,16 +156,28 @@ namespace parser {
 		return CriteriaProcesserOutput{ sectioningType, triggers, execute };
 	}
 
+
+
 	void SectionHandler::process_sectioning(TockenizedUnsectionedFile const& file, std::vector<std::unique_ptr<BaseSectioning>> const& criteria)
 	{
 		CriteriaProcesserOutput output = user_criteria_processer(file, criteria);
 
 		std::shared_ptr<BaseSection> sectionAbove = std::make_shared<BaseSection>(nullptr, 0);
 
+		TockenizedUnsectionedFileIteratorConst endOfSection = file.end();
+
+
+		auto update = [&](TockenizedUnsectionedFileIteratorConst iterator, size_t iteration)
+			{
+				auto result = output.execute[iteration]->execute(SectioningInput(iterator, endOfSection, sectionAbove));
+				_sectionValues.emplace_back(result.section);
+				endOfSection = result.endOfSection;
+				sectionAbove = _sectionValues.back();
+			};
 
 		for (size_t i = 0; i < file.size(); i++)
 		{
-			auto const it = file.begin() + i;
+			TockenizedUnsectionedFileIteratorConst it = file.begin() + i;
 
 			for (size_t j = 0; j < output.triggers.size(); j++)
 			{
@@ -174,32 +187,31 @@ namespace parser {
 					
 					if (output.triggers[j][0] == file[i])
 					{
-						_sectionValues.emplace_back(output.execute[j](SectioningInput(it, sectionAbove)));
-						sectionAbove = _sectionValues.back();
+						update(it, j);
 					}
 					break;
 				case ParserSectioning::NewSectionWhenAfter: 
 
 					if (output.triggers[j][0] == file[i] && output.triggers[j][0] == file[i - 1])
 					{
-						_sectionValues.emplace_back(output.execute[j](SectioningInput(it, sectionAbove)));
-						sectionAbove = _sectionValues.back();
+						update(it, j);
+
 					}
 					break;
 				case ParserSectioning::NewSectionWhenBefore:
 
 					if (it != file.end() && output.triggers[j][0] == file[i] && output.triggers[j][0] == file[i + 1])
 					{
-						_sectionValues.emplace_back(output.execute[j](SectioningInput(it, sectionAbove)));
-						sectionAbove = _sectionValues.back();
+						update(it, j);
+
 					}
 					break;
 				case ParserSectioning::NewSectionWhenBetween:
 
 					if (output.triggers[j][0] == file[i])
 					{
-						_sectionValues.emplace_back(output.execute[j](SectioningInput(it, sectionAbove)));
-						sectionAbove = _sectionValues.back();
+						update(it, j);
+
 					}
 					break;
 				}

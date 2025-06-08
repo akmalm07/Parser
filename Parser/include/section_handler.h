@@ -23,10 +23,14 @@ namespace parser {
 	{
 	public:
 
-		Section(std::shared_ptr<Section> sectionAbove = nullptr, size_t sectionIdentifier = -1)
-			: BaseSection(0, sectionAbove, sectionIdentifier)
+		Section(std::vector<std::string_view> const& content, std::shared_ptr<Section> sectionAbove = nullptr, size_t sectionIdentifier = -1)
+			: BaseSection(content, sectionAbove, sectionIdentifier)
 		{
-			BaseSection::determine_section_level();
+		}
+
+		Section(size_t sectionLvl, std::vector<std::string_view> const& content, std::shared_ptr<Section> sectionAbove = nullptr, size_t sectionIdentifier = -1)
+			: BaseSection(sectionLvl, content, sectionAbove, sectionIdentifier)
+		{
 		}
 
 		void add_subsection(std::unique_ptr<BaseSection> subSection)
@@ -45,13 +49,13 @@ namespace parser {
 	{
 		std::vector<ParserSectioning> sectioningType;
 		std::vector<std::array<std::string_view, 2>> triggers;
-		std::vector< std::function<std::shared_ptr<BaseSection>(SectioningInput)> > execute;
+		std::vector<std::unique_ptr<ExecuteFunctorBase>> execute;
 
 		CriteriaProcesserOutput() = default;
 
 		CriteriaProcesserOutput(std::vector<ParserSectioning>& s,
 			std::vector<std::array<std::string_view, 2>>& t,
-			std::vector<std::function<std::shared_ptr<BaseSection>(SectioningInput)>>& e)
+			std::vector<std::unique_ptr<ExecuteFunctorBase>>& e)
 		{
 			sectioningType = std::move(s);
 			triggers = std::move(t);

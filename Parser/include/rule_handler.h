@@ -12,7 +12,7 @@ namespace parser {
 	/*
 	* The RuleHandler system is designed to handle various rules that can be applied to sections of a file.
 	* The system uses polymorphism to allow different types of rules to be checked against the data.
-	* The RuleInput is a type alias that can hold either a single TockenizedSection or multiple TockenizedSections.
+	* The RuleInput is a type alias that can hold either a single TokenizedSection or multiple TokenizedSections.
 	* This is to ensure that the RuleHandler can handle both global rules that apply to multiple sections and local rules that apply to a single section.
 	* The check_rule method in the RuleHandler class is a virtual method that takes a RuleInput and checks if the rule applies to the data.
 	* The method is expectantly useful for global rules that need to check multiple sections at once, and allows Local rules to check single sections.
@@ -20,7 +20,7 @@ namespace parser {
 	
 
 	//TESTING STATUS: Incomplete
-	using RuleInput = std::variant<TockenizedSection, TockenizedSections>;
+	using RuleInput = std::variant<TokenizedSection, TokenizedSections>;
 
 	class RuleHandler
 	{
@@ -48,9 +48,9 @@ namespace parser {
 		
 		bool check_rule(RuleInput const& data) override
 		{
-			if (std::holds_alternative<TockenizedSections>(data))
+			if (std::holds_alternative<TokenizedSections>(data))
 			{
-				auto section = std::get<TockenizedSections>(data);
+				auto section = std::get<TokenizedSections>(data);
 				return check_global_rule(section);
 			}
 			else
@@ -60,7 +60,7 @@ namespace parser {
 			}
 		}
 
-		virtual bool check_global_rule(TockenizedSections const& sections) = 0;
+		virtual bool check_global_rule(TokenizedSections const& sections) = 0;
 
 	};
 
@@ -71,9 +71,9 @@ namespace parser {
 		
 		bool check_rule(RuleInput const& data) override
 		{
-			if (std::holds_alternative<TockenizedSection>(data))
+			if (std::holds_alternative<TokenizedSection>(data))
 			{
-				auto section = std::get<TockenizedSection>(data);
+				auto section = std::get<TokenizedSection>(data);
 				return check_local_rule(section);
 			}
 			else
@@ -83,7 +83,7 @@ namespace parser {
 			}
 		}
 
-		virtual bool check_local_rule(TockenizedSection const& section) = 0;
+		virtual bool check_local_rule(TokenizedSection const& section) = 0;
 
 
 	};
@@ -95,7 +95,7 @@ namespace parser {
 	template<>
 	struct ConcreteRule<ParserRule::CannotIncludeInFile> : public GlobalRuleHandler
 	{
-		bool check_rule_impl(TockenizedSections const& sections, RuleOneTarget const& rule)
+		bool check_rule_impl(TokenizedSections const& sections, RuleOneTarget const& rule)
 		{
 			if (rule.type != ParserRule::CannotIncludeInFile)
 			{
@@ -120,7 +120,7 @@ namespace parser {
 			return true;
 		}
 
-		bool check_global_rule(TockenizedSections const& sections) override
+		bool check_global_rule(TokenizedSections const& sections) override
 		{
 			const RuleOneTarget* rule = dynamic_cast<RuleOneTarget*>(_rule.get());
 			if (!rule)
@@ -137,7 +137,7 @@ namespace parser {
 	template<>
 	struct ConcreteRule<ParserRule::MustIncludeInFile> : public GlobalRuleHandler
 	{
-		bool check_rule_impl(TockenizedSections const& sections, RuleOneTarget const& rule)
+		bool check_rule_impl(TokenizedSections const& sections, RuleOneTarget const& rule)
 		{
 			if (rule.type != ParserRule::MustIncludeInFile)
 			{
@@ -162,7 +162,7 @@ namespace parser {
 			return false;
 		}
 
-		bool check_global_rule(TockenizedSections const& sections) override
+		bool check_global_rule(TokenizedSections const& sections) override
 		{
 			const RuleOneTarget* rule = dynamic_cast<RuleOneTarget*>(_rule.get());
 			if (!rule)
@@ -178,7 +178,7 @@ namespace parser {
 	template<>
 	struct ConcreteRule<ParserRule::CannotInlcude> : public LocalRuleHandler
 	{
-		bool check_rule_impl(TockenizedSection const& section, RuleOneTarget const& rule)
+		bool check_rule_impl(TokenizedSection const& section, RuleOneTarget const& rule)
 		{
 			if (rule.type != ParserRule::CannotInlcude)
 			{
@@ -199,7 +199,7 @@ namespace parser {
 			return true;
 		}
 
-		bool check_local_rule(TockenizedSection const& section) override
+		bool check_local_rule(TokenizedSection const& section) override
 		{
 			if (_rule->get_target_count() == 1)
 			{
@@ -218,7 +218,7 @@ namespace parser {
 	template<>
 	struct ConcreteRule<ParserRule::MustInclude> : public LocalRuleHandler
 	{
-		bool check_rule_impl(TockenizedSection section, RuleOneTarget const& rule)
+		bool check_rule_impl(TokenizedSection section, RuleOneTarget const& rule)
 		{
 			if (rule.type != ParserRule::MustInclude)
 			{
@@ -239,7 +239,7 @@ namespace parser {
 			return false;
 		}
 
-		bool check_local_rule(TockenizedSection const& section) override
+		bool check_local_rule(TokenizedSection const& section) override
 		{
 			if (_rule->get_target_count() == 1)
 			{
@@ -257,7 +257,7 @@ namespace parser {
 	template<>
 	struct ConcreteRule<ParserRule::MustIncludeBefore> : public LocalRuleHandler
 	{
-		bool check_rule_impl(TockenizedSection const& section, RuleTwoTarget const& rule)
+		bool check_rule_impl(TokenizedSection const& section, RuleTwoTarget const& rule)
 		{
 			if (rule.type != ParserRule::MustIncludeBefore)
 			{
@@ -276,7 +276,7 @@ namespace parser {
 			return false;
 		}
 
-		bool check_local_rule(TockenizedSection const& section) override
+		bool check_local_rule(TokenizedSection const& section) override
 		{
 			if (_rule->get_target_count() == 2)
 			{
@@ -294,7 +294,7 @@ namespace parser {
 	template<>
 	struct ConcreteRule<ParserRule::MustIncludeAfter> : public LocalRuleHandler
 	{
-		bool check_rule_impl(TockenizedSection const& section, RuleTwoTarget const& rule)
+		bool check_rule_impl(TokenizedSection const& section, RuleTwoTarget const& rule)
 		{
 			if (rule.type != ParserRule::MustIncludeAfter)
 			{
@@ -313,7 +313,7 @@ namespace parser {
 			return false;
 		}
 
-		bool check_local_rule(TockenizedSection const& section) override
+		bool check_local_rule(TokenizedSection const& section) override
 		{
 			{
 				if (_rule->get_target_count() == 2)

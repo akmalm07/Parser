@@ -5,13 +5,55 @@
 
 namespace parser
 {
+	/*
+	template<size_t N>
+		requires (N > 0)
+	SectioningOutput ExecuteFunctor<N, CriteriaNeeded::No, EndOfIteratorNeeded::No>::execute(SectioningInputBase const& input)
+	{
+		return operator()(input);
+	}
+	*/
 
 	template<size_t N>
-	std::shared_ptr<BaseSection> ExecuteFunctor<N, true, false>::operator()(SectioningInput const& input)
+		requires (N > 0)
+	SectioningOutput ExecuteFunctor<N, CriteriaNeeded::Yes, EndOfIteratorNeeded::No>::execute(SectioningInputBase const& input)
 	{
-		size_t placementNum = input.endOfSection - input.placement;
+		return operator()(input);
+	}
+	
 
-		std::vector<std::string_view> content = _execute(placementNum, input.placement, _criteria.get());
+	template<size_t N>
+		requires (N > 0)
+	SectioningOutput ExecuteFunctor<N, CriteriaNeeded::Yes, EndOfIteratorNeeded::Yes>::execute(SectioningInputBase const& input)
+	{
+		return operator()(input);
+	}
+	
+
+	template<size_t N>
+		requires (N > 0)
+	SectioningOutput ExecuteFunctor<N, CriteriaNeeded::No, EndOfIteratorNeeded::Yes>::execute(SectioningInputBase const& input)
+	{
+		return operator()(input);
+	}
+
+	/*
+	template<size_t N>
+		requires (N > 0)
+	SectioningOutput ExecuteFunctor<N, CriteriaNeeded::No, EndOfIteratorNeeded::No>::operator()(SectioningInputBase const& input)
+	{
+		SectioningInput<true>* realInput = input.get_two_iter();
+
+		if (!realInput)
+		{
+			std::cerr << PARSER_LOG_ERR << "Invalid SectioningInputBase provided to ExecuteFunctor." << std::endl;
+			return nullptr;
+		}
+
+		size_t placementNum = realInput->endOfSection - realInput->placement;
+
+
+		ExecutionOutput output = _execute(placementNum, realInput->placement);
 
 		size_t identifier = std::numeric_limits<size_t>::max();
 		if (_criteria->is_identifible())
@@ -19,36 +61,26 @@ namespace parser
 			identifier = static_cast<SectioningIdentifier<N>*>(_criteria.get())->integerIdentifier;
 		}
 
-		return std::make_shared<BaseSection>(input.sectionAbove, identifier);
+		return { output.endOfSection, std::make_shared<BaseSection>(output.content, realInput->sectionAbove, identifier) };
 	}
 
+	*/
+
 	template<size_t N>
-	std::shared_ptr<BaseSection> ExecuteFunctor<N, false, false>::operator()(SectioningInput const& input)
+		requires (N > 0)
+	SectioningOutput ExecuteFunctor<N, CriteriaNeeded::Yes, EndOfIteratorNeeded::No>::operator()(SectioningInputBase const& input)
 	{
+		SectioningInput<true>* realInput = input.get_two_iter();
 
-		size_t placementNum = input.endOfSection - input.placement;
-
-
-		std::vector<std::string_view> content = _execute(placementNum, input.placement);
-
-		/*
-		std::vector<std::string_view> content;
-		std::string_view stopTrigger;
-		if (_criteria->is_identifible())
+		if (!realInput)
 		{
-			stopTrigger = static_cast<SectioningIdentifier<N>*>(_criteria.get())->targets[1];
-		}
-		else
-		{
-			stopTrigger = static_cast<SectioningUnidentifier<N>*>(_criteria.get())->targets[1];
+			std::cerr << PARSER_LOG_ERR << "Invalid SectioningInputBase provided to ExecuteFunctor." << std::endl;
+			return nullptr;
 		}
 
-		content.reserve(placementNum);
-		for (size_t i = 0; i < placementNum; i++)
-		{
-			content.push_back(*(input.placement + i));
-		}
-		///*/
+		size_t placementNum = realInput->endOfSection - realInput->placement;
+
+		ExecutionOutput output = _execute(placementNum, realInput->placement, _criteria.get());
 
 		size_t identifier = std::numeric_limits<size_t>::max();
 		if (_criteria->is_identifible())
@@ -56,7 +88,59 @@ namespace parser
 			identifier = static_cast<SectioningIdentifier<N>*>(_criteria.get())->integerIdentifier;
 		}
 
-		return std::make_shared<BaseSection>(input.sectionAbove, identifier);
+		return { output.endOfSection, std::make_shared<BaseSection>(output.content, realInput->sectionAbove, identifier) };
 	}
 
+
+
+	template<size_t N>
+		requires (N > 0)
+	SectioningOutput ExecuteFunctor<N, CriteriaNeeded::Yes, EndOfIteratorNeeded::Yes>::operator()(SectioningInputBase const& input)
+	{
+		SectioningInput<true>* realInput = input.get_two_iter();
+		
+		if (!realInput)
+		{
+			std::cerr << PARSER_LOG_ERR << "Invalid SectioningInputBase provided to ExecuteFunctor." << std::endl;
+			return nullptr;
+		}
+
+		size_t placementNum = realInput->endOfSection - realInput->placement;
+
+		ExecutionOutput output = _execute(placementNum, realInput->placement, realInput->endOfSection, _criteria.get());
+
+		size_t identifier = std::numeric_limits<size_t>::max();
+		if (_criteria->is_identifible())
+		{
+			identifier = static_cast<SectioningIdentifier<N>*>(_criteria.get())->integerIdentifier;
+		}
+
+		return { output.endOfSection, std::make_shared<BaseSection>(output.content, realInput->sectionAbove, identifier) };
+	}
+
+
+	template<size_t N>
+		requires (N > 0)
+	SectioningOutput ExecuteFunctor<N, CriteriaNeeded::No, EndOfIteratorNeeded::Yes>::operator()(SectioningInputBase const& input)
+	{
+		SectioningInput<true>* realInput = input.get_two_iter();
+		
+		if (!realInput)
+		{
+			std::cerr << PARSER_LOG_ERR << "Invalid SectioningInputBase provided to ExecuteFunctor." << std::endl;
+			return nullptr;
+		}
+
+		size_t placementNum = realInput->endOfSection - realInput->placement;
+
+		ExecutionOutput output = _execute(placementNum, realInput->endOfSection, _criteria.get());
+
+		size_t identifier = std::numeric_limits<size_t>::max();
+		if (_criteria->is_identifible())
+		{
+			identifier = static_cast<SectioningIdentifier<N>*>(_criteria.get())->integerIdentifier;
+		}
+
+		return { output.endOfSection, std::make_shared<BaseSection>(output.content, realInput->sectionAbove, identifier) };
+	}
 }
