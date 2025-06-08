@@ -78,6 +78,14 @@ namespace parser
 			: targets(targets), BaseSectioning(type, N)
 		{
 		}
+		Sectioning(std::array<std::string_view, N> const& targets, ParserSectioning type = ParserSectioning::NewSectionWhenBetween)
+			: BaseSectioning(type, N)
+		{
+			for (size_t i = 0; i < N; ++i)
+			{
+				this->targets[i] = std::string(targets[i]);
+			}
+		}
 
 		std::array<std::string, N> targets;
 
@@ -115,7 +123,13 @@ namespace parser
 			: targets(targets), integerIdentifier(identifier), BaseSectioning(type, N)
 		{
 		}
-
+		Sectioning(std::array<std::string_view, N> const& targets, size_t identifier = 0, ParserSectioning type = ParserSectioning::NewSectionWhenBetween)
+			: integerIdentifier(identifier), BaseSectioning(type, N) {
+			for (size_t i = 0; i < N; ++i)
+			{
+				this->targets[i] = std::string(targets[i]);
+			}
+		} 
 		std::array<std::string, N> targets;
 		
 		size_t integerIdentifier;
@@ -219,123 +233,109 @@ namespace parser
 
 	//Definitions
 
-	template<HasIdentifier N>
-	Sectioning<1, N> NewSectionWhenFoundSectioning(std::string_view target, std::optional<size_t> identifier)
+	template<int Dim, HasIdentifier N, template<typename> class Ptr, typename Targets>
+	Ptr<Sectioning<Dim, N>> make_sectioning_ptr(std::array<Targets, 2> const& targets, std::optional<size_t> identifier, ParserSectioning type)
 	{
-		if constexpr (N == HasIdentifier::No)
+		if (!identifier.has_value() && N == HasIdentifier::Yes)
 		{
-			return Sectioning<1, HasIdentifier::No>(target, ParserSectioning::NewSectionWhenFound);
+			std::cerr << PARSER_LOG_ERR << "Identifier is required for Sectioning with identifier." << std::endl;
+			return nullptr;
 		}
-		else
+
+		if constexpr (Dim == 1)
 		{
-			return Sectioning<1, HasIdentifier::Yes>(target, identifier.value(0), ParserSectioning::NewSectionWhenFound);
+			if constexpr (N == HasIdentifier::Yes)
+			{
+				return Ptr<Sectioning<Dim, N>>(new Sectioning<Dim, N>(targets[0], identifier, type));
+			}
+			
+			return Ptr<Sectioning<Dim, N>>(new Sectioning<Dim, N>(targets[0], type));
+		}
+		else if constexpr (Dim == 2)
+		{
+			if constexpr (N == HasIdentifier::Yes)
+			{
+				return Ptr<Sectioning<Dim, N>>(new Sectioning<Dim, N>(targets, identifier, type));
+			}
+
+			return Ptr<Sectioning<Dim, N>>(new Sectioning<Dim, N>(targets, type));
 		}
 	}
 
-	template<HasIdentifier N>
-	std::shared_ptr<Sectioning<1, N>> NewSectionWhenFoundSectioningShared(std::string_view target, std::optional<size_t> identifier = std::nullopt)
+	// Helper for raw (non-smart) Sectioning creation
+	template<size_t Dim, HasIdentifier N, typename Targets>
+	Sectioning<Dim, N> make_sectioning(std::array<Targets, 2> const& targets, std::optional<size_t> identifier, ParserSectioning type)
 	{
-		if constexpr (N == HasIdentifier::No)
+
+		if constexpr (Dim == 1)
 		{
-			return std::make_shared<Sectioning<1, HasIdentifier::No>>(target, ParserSectioning::NewSectionWhenFound);
+			if constexpr (N == HasIdentifier::Yes)
+			{
+				return Sectioning<Dim, N>(targets[0], identifier, type);
+			}
+			return Sectioning<Dim, N>(targets[0], type);
 		}
-		else
+		else if constexpr (Dim == 2)
 		{
-			return std::make_shared<Sectioning<1, HasIdentifier::Yes>>(target, identifier.value_or(0), ParserSectioning::NewSectionWhenFound);
+			if constexpr (N == HasIdentifier::Yes)
+			{
+				return Sectioning<Dim, N>(targets, identifier, type);
+			}
+			return Sectioning<Dim, N>(targets, type);
 		}
 	}
 
-	template<HasIdentifier N>
-	std::shared_ptr<Sectioning<1, HasIdentifier::No>> NewSectionWhenFoundSectioningShared(std::string_view target, std::optional<size_t> identifier)
-	{
 
-		if constexpr (N == HasIdentifier::No)
-		{
-			return std::make_shared<Sectioning<1, HasIdentifier::No>>(target, ParserSectioning::NewSectionWhenFound);
-		}
-		else
-		{
-			return std::make_shared<Sectioning<1, HasIdentifier::Yes>>(target, identifier.value(), ParserSectioning::NewSectionWhenFound);
-		}
+
+	template<HasIdentifier N>
+	auto new_section_when_found(std::string const& target, std::optional<size_t> id = std::nullopt)
+	{
+		return make_sectioning<1, N>({target, ""}, id, ParserSectioning::NewSectionWhenFound);
 	}
 
 	template<HasIdentifier N>
-	Sectioning<2, N> NewSectionWhenBetweenSectioning(std::string_view target1, std::string_view target2, std::optional<size_t> identifier)
+	auto new_section_when_found_shared(std::string const& target, std::optional<size_t> id = std::nullopt)
 	{
-		if constexpr (N == HasIdentifier::No)
-		{
-			return Sectioning<2, HasIdentifier::No>({ target1, target2 }, ParserSectioning::NewSectionWhenBetween);
-		}
-		else
-		{
-			return Sectioning<2, HasIdentifier::Yes>({ target1, target2 }, identifier.value(0), ParserSectioning::NewSectionWhenBetween);
-		}
+		return make_sectioning_ptr<1, N, std::shared_ptr, std::string>({target, ""}, id, ParserSectioning::NewSectionWhenFound);
+	}
+
+
+	template<HasIdentifier N>
+	auto new_section_when_between(std::string const& t1, std::string const& t2, std::optional<size_t> id = std::nullopt)
+	{
+		return make_sectioning<2, N, std::string>({t1, t2}, id, ParserSectioning::NewSectionWhenBetween);
 	}
 
 	template<HasIdentifier N>
-	std::shared_ptr<Sectioning<2, N>> NewSectionWhenBetweenSectioningShared(std::string_view target1, std::string_view target2, std::optional<size_t> identifier)
+	auto new_section_when_between_shared(std::string const& t1, std::string const& t2, std::optional<size_t> id = std::nullopt)
 	{
-		if constexpr (N == HasIdentifier::No)
-		{
-			return std::make_shared<Sectioning<2, HasIdentifier::No>>({ target1, target2 }, ParserSectioning::NewSectionWhenBetween);
-		}
-		else
-		{
-			return std::make_shared<Sectioning<2, HasIdentifier::Yes>>({ target1, target2 }, identifier.value(), ParserSectioning::NewSectionWhenBetween);
-		}
+		return make_sectioning_ptr<2, N, std::shared_ptr, std::string>({t1, t2}, id, ParserSectioning::NewSectionWhenBetween);
 	}
 
 	template<HasIdentifier N>
-	Sectioning<2, N> NewSectionWhenFoundAfterSectioning(std::string_view target1, std::string_view target2, std::optional<size_t> identifier)
+	auto new_section_when_after(std::string const& t1, std::string const& t2, std::optional<size_t> id = std::nullopt)
 	{
-		if constexpr (N == HasIdentifier::No)
-		{
-			return Sectioning<2, HasIdentifier::No>({ target1, target2 }, ParserSectioning::NewSectionWhenAfter);
-		}
-		else
-		{
-			return Sectioning<2, HasIdentifier::Yes>({ target1, target2 }, identifier.value(0), ParserSectioning::NewSectionWhenAfter);
-		}
+		return make_sectioning<2, N, std::string>({t1, t2}, id, ParserSectioning::NewSectionWhenAfter);
 	}
 
 	template<HasIdentifier N>
-	std::shared_ptr<Sectioning<2, N>> NewSectionWhenFoundAfterSectioningShared(std::string_view target1, std::string_view target2, std::optional<size_t> identifier)
+	auto new_section_when_after_shared(std::string const& t1, std::string const& t2, std::optional<size_t> id = std::nullopt)
 	{
-		if constexpr (N == HasIdentifier::No)
-		{
-			return std::make_shared<Sectioning<2, HasIdentifier::No>>({ target1, target2 }, ParserSectioning::NewSectionWhenAfter);
-		}
-		else
-		{
-			return std::make_shared<Sectioning<2, HasIdentifier::Yes>>({ target1, target2 }, identifier.value(), ParserSectioning::NewSectionWhenAfter);
-		}
+		return make_sectioning_ptr<2, N, std::shared_ptr, std::string>({t1, t2}, id, ParserSectioning::NewSectionWhenAfter);
 	}
 
 	template<HasIdentifier N>
-	Sectioning<2, N> NewSectionWhenFoundBeforeSectioning(std::string_view target1, std::string_view target2, std::optional<size_t> identifier)
+	auto new_section_when_before(std::string const& t1, std::string const& t2, std::optional<size_t> id = std::nullopt)
 	{
-		if constexpr (N == HasIdentifier::No)
-		{
-			return Sectioning<2, HasIdentifier::No>({ target1, target2 }, ParserSectioning::NewSectionWhenBefore);
-		}
-		else
-		{
-			return Sectioning<2, HasIdentifier::Yes>({ target1, target2 }, identifier.value(0), ParserSectioning::NewSectionWhenBefore);
-		}
+		return make_sectioning<2, N, std::string>({t1, t2}, id, ParserSectioning::NewSectionWhenBefore);
 	}
 
 	template<HasIdentifier N>
-	std::shared_ptr<Sectioning<2, N>> NewSectionWhenFoundBeforeSectioningShared(std::string_view target1, std::string_view target2, std::optional<size_t> identifier)
+	auto new_section_when_before_shared(std::string const& t1, std::string const& t2, std::optional<size_t> id = std::nullopt)
 	{
-		if constexpr (N == HasIdentifier::No)
-		{
-			return std::make_shared<Sectioning<2, HasIdentifier::No>>({ target1, target2 }, ParserSectioning::NewSectionWhenBefore);
-		}
-		else
-		{
-			return std::make_shared<Sectioning<2, HasIdentifier::Yes>>({ target1, target2 }, identifier.value(), ParserSectioning::NewSectionWhenBefore);
-		}
+		return make_sectioning_ptr<2, N, std::shared_ptr, std::string>({t1, t2}, id, ParserSectioning::NewSectionWhenBefore);
 	}
+
 
 
 

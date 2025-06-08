@@ -16,12 +16,15 @@ namespace parser {
 
 		BaseSection() = default;
 		BaseSection(size_t sectionLevel, std::vector<std::string_view> const& content, std::shared_ptr<BaseSection> sectionAbove, size_t sectionIdentifier = 0)
-			: _sectionLevel(sectionLevel), _content(content), _sectionAbove(std::move(sectionAbove)), _sectionIdentifier(sectionIdentifier) {
+			: _sectionLevel(sectionLevel), _content(content), _sectionAbove(std::move(sectionAbove)), _sectionIdentifier(sectionIdentifier) 
+		{
 		}
 
 		BaseSection(std::vector<std::string_view> const& content, std::shared_ptr<BaseSection> sectionAbove, size_t sectionIdentifier = 0)
 			: _sectionAbove(sectionAbove), _content(content), _sectionIdentifier(sectionIdentifier)
-		{}
+		{
+			determine_section_level();
+		}
 
 
 		//Without Content Ctors

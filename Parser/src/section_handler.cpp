@@ -166,6 +166,8 @@ namespace parser {
 
 		std::shared_ptr<BaseSection> sectionAbove = std::make_shared<BaseSection>(1, file, nullptr);
 
+		_sectionValues.push_back(sectionAbove);
+
 		TockenizedUnsectionedFileIteratorConst endOfSection = file.end();
 
 
@@ -194,7 +196,7 @@ namespace parser {
 					break;
 				case ParserSectioning::NewSectionWhenAfter: 
 
-					if (userCriteria.triggers[j][0] == file[i] && userCriteria.triggers[j][0] == file[i - 1])
+					if (userCriteria.triggers[j][0] == file[i] && userCriteria.triggers[j][1] == file[i - 1])
 					{
 						update(it, j);
 
@@ -202,7 +204,7 @@ namespace parser {
 					break;
 				case ParserSectioning::NewSectionWhenBefore:
 
-					if (it != file.end() && userCriteria.triggers[j][0] == file[i] && userCriteria.triggers[j][0] == file[i + 1])
+					if (it != file.end() && userCriteria.triggers[j][0] == file[i] && userCriteria.triggers[j][1] == file[i + 1])
 					{
 						update(it, j);
 

@@ -9,9 +9,9 @@ int main()
 	TockenizedUnsectionedFile file = { "This", "is", "a", "test", "file", "for", "the", "parser", "section", "handler" };
 
 	std::vector<std::shared_ptr<BaseSectioning>> criteria = {
-		NewSectionWhenFoundSectioningShared<HasIdentifier::No>("a"),
-		NewSectionWhenFoundSectioningShared<HasIdentifier::No>("the"),
-		NewSectionWhenFoundSectioningShared<HasIdentifier::No>("parser")
+		new_section_when_between_shared<HasIdentifier::No>("a", "file"),
+		new_section_when_found_shared<HasIdentifier::No>("the"),
+		new_section_when_found_shared<HasIdentifier::No>("parser")
 	};
 
 	SectionHandler handler(file, criteria);
