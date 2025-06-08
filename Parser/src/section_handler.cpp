@@ -5,10 +5,10 @@
 namespace parser {
 	
 	template <size_t T, bool Both>
-	void add_triggers(std::unique_ptr<BaseSectioning> const& criteria, std::vector<std::array<std::string_view, 2>>& triggers);
+	void add_triggers(std::shared_ptr<BaseSectioning> const& criteria, std::vector<std::array<std::string_view, 2>>& triggers);
 
 
-	CriteriaProcesserOutput SectionHandler::user_criteria_processer(TockenizedUnsectionedFile const& file, std::vector<std::unique_ptr<BaseSectioning>> const& criteria)
+	CriteriaProcesserOutput SectionHandler::user_criteria_processer(TockenizedUnsectionedFile const& file, std::vector<std::shared_ptr<BaseSectioning>> const& criteria)
 	{
 		// This function is responsible for processing the tokenized sections and applying the sectioning criteria.
 		// It will create sections based on the criteria provided and organize the tokens accordingly.
@@ -65,8 +65,8 @@ namespace parser {
 
 				add_triggers<2, false>(criteria[i], triggers);
 
-				execute.emplace_back(std::make_unique<ExecuteFuncTwoIterators<2>>(criteria[i], []
-					(size_t placementNum, TockenizedUnsectionedFileIteratorConst placement, TockenizedUnsectionedFileIterator endOfSection, BaseSectioning* criteria) -> ExecutionOutput
+				execute.emplace_back(std::make_unique<ExecuteFuncWithCriteria<2>>(criteria[i], []
+					(size_t placementNum, TockenizedUnsectionedFileIteratorConst placement, TockenizedUnsectionedFileIteratorConst endOfSection, BaseSectioning* criteria) -> ExecutionOutput
 					{
 						std::vector<std::string_view> content;
 						content.reserve(placementNum);
@@ -82,14 +82,15 @@ namespace parser {
 
 						for (size_t i = 0; i < placementNum; i++)
 						{
-							if (stopTrigger == *(placement + i) || placement == endOfSection)
+							if (stopTrigger == *(placement + i) || (placement + i) == endOfSection)
 							{
+								endOfSection = placement + i;
 								break;
 							}
 							content.push_back(*(placement + i));
 						}
 
-						return content;
+						return { endOfSection, content };
 					})
 				);
 				break;
@@ -114,9 +115,9 @@ namespace parser {
 
 				add_triggers<2, true>(criteria[i], triggers);
 
-				execute.emplace_back(std::make_unique<ExecuteFuncOneIterator<2>>(criteria[i],
+				execute.emplace_back(std::make_unique<ExecuteFuncWithCriteria<2>>(criteria[i],
 					[]
-					(size_t placementNum, TockenizedUnsectionedFileIteratorConst placement, BaseSectioning* criteria) -> ExecutionOutput
+					(size_t placementNum, TockenizedUnsectionedFileIteratorConst placement, TockenizedUnsectionedFileIteratorConst endOfSection, BaseSectioning* criteria) -> ExecutionOutput
 					{
 						std::vector<std::string_view> content;
 						content.reserve(placementNum);
@@ -137,8 +138,9 @@ namespace parser {
 							}
 							content.push_back(*(placement + i));
 						}
-					}
-					));
+						return { endOfSection, content };
+					}) 
+				);
 			
 				break;
 			default:
@@ -147,7 +149,7 @@ namespace parser {
 			}
 		}
 
-		if (triggers.empty() || (execute.size() != triggers.size() != sectioningType.size()))
+		if (triggers.empty() || ( execute.size() != triggers.size() && triggers.size() != sectioningType.size() ) )
 		{
 			std::cerr << PARSER_LOG_ERR << "No valid sectioning criteria provided." << std::endl;
 			return CriteriaProcesserOutput();
@@ -158,18 +160,18 @@ namespace parser {
 
 
 
-	void SectionHandler::process_sectioning(TockenizedUnsectionedFile const& file, std::vector<std::unique_ptr<BaseSectioning>> const& criteria)
+	void SectionHandler::process_sectioning(TockenizedUnsectionedFile const& file, std::vector<std::shared_ptr<BaseSectioning>> const& criteria)
 	{
-		CriteriaProcesserOutput output = user_criteria_processer(file, criteria);
+		CriteriaProcesserOutput userCriteria = user_criteria_processer(file, criteria);
 
-		std::shared_ptr<BaseSection> sectionAbove = std::make_shared<BaseSection>(nullptr, 0);
+		std::shared_ptr<BaseSection> sectionAbove = std::make_shared<BaseSection>(1, file, nullptr);
 
 		TockenizedUnsectionedFileIteratorConst endOfSection = file.end();
 
 
 		auto update = [&](TockenizedUnsectionedFileIteratorConst iterator, size_t iteration)
 			{
-				auto result = output.execute[iteration]->execute(SectioningInput(iterator, endOfSection, sectionAbove));
+				auto result = userCriteria.execute[iteration]->execute(SectioningInput(iterator, endOfSection, sectionAbove));
 				_sectionValues.emplace_back(result.section);
 				endOfSection = result.endOfSection;
 				sectionAbove = _sectionValues.back();
@@ -179,20 +181,20 @@ namespace parser {
 		{
 			TockenizedUnsectionedFileIteratorConst it = file.begin() + i;
 
-			for (size_t j = 0; j < output.triggers.size(); j++)
+			for (size_t j = 0; j < userCriteria.triggers.size(); j++)
 			{
-				switch (output.sectioningType[j])
+				switch (userCriteria.sectioningType[j])
 				{
 				case ParserSectioning::NewSectionWhenFound:
 					
-					if (output.triggers[j][0] == file[i])
+					if (userCriteria.triggers[j][0] == file[i])
 					{
 						update(it, j);
 					}
 					break;
 				case ParserSectioning::NewSectionWhenAfter: 
 
-					if (output.triggers[j][0] == file[i] && output.triggers[j][0] == file[i - 1])
+					if (userCriteria.triggers[j][0] == file[i] && userCriteria.triggers[j][0] == file[i - 1])
 					{
 						update(it, j);
 
@@ -200,7 +202,7 @@ namespace parser {
 					break;
 				case ParserSectioning::NewSectionWhenBefore:
 
-					if (it != file.end() && output.triggers[j][0] == file[i] && output.triggers[j][0] == file[i + 1])
+					if (it != file.end() && userCriteria.triggers[j][0] == file[i] && userCriteria.triggers[j][0] == file[i + 1])
 					{
 						update(it, j);
 
@@ -208,15 +210,13 @@ namespace parser {
 					break;
 				case ParserSectioning::NewSectionWhenBetween:
 
-					if (output.triggers[j][0] == file[i])
+					if (userCriteria.triggers[j][0] == file[i])
 					{
 						update(it, j);
 
 					}
 					break;
 				}
-					
-
 	
 			}
 		}
@@ -228,7 +228,7 @@ namespace parser {
 
 
 	template<size_t T, bool Both>
-	void add_triggers(std::unique_ptr<BaseSectioning> const& criteria, std::vector<std::array<std::string_view, 2>>& triggers)
+	void add_triggers(std::shared_ptr<BaseSectioning> const& criteria, std::vector<std::array<std::string_view, 2>>& triggers)
 	{
 		if (criteria->is_identifible())
 		{

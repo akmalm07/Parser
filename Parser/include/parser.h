@@ -28,7 +28,7 @@ namespace parser
 		ParserReadType _readType;
 		std::ifstream _fileStream;
 
-		TockenizedSections _sections;
+		TokenizedSections _sections;
 
 		std::vector<RuleHandler> _rules;
 

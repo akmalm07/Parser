@@ -31,6 +31,7 @@
     <ClInclude Include="include\section_operations.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="sections.cpp" />
     <ClCompile Include="src\section_operations.cpp" />
     <ClCompile Include="src\headers.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

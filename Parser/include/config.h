@@ -15,8 +15,8 @@ namespace parser {
 
 	using TockenizedUnsectionedFile = std::vector<std::string_view>; // A vector of string_views, each string_view is a token in the file that has been tockenized. Each token is a view into the original file, so it can be used to access the original file without copying it. This is useful for large files where copying the entire file would be expensive in terms of memory and performance.
 	
-	using TockenizedUnsectionedFileIterator = std::vector<std::string_view>::iterator; // A vector of string_views, each string_view is a token in the file that has been tockenized. Each token is a view into the original file, so it can be used to access the original file without copying it. This is useful for large files where copying the entire file would be expensive in terms of memory and performance.
-	using TockenizedUnsectionedFileIteratorConst = std::vector<std::string_view>::const_iterator; // A vector of string_views, each string_view is a token in the file that has been tockenized. Each token is a view into the original file, so it can be used to access the original file without copying it. This is useful for large files where copying the entire file would be expensive in terms of memory and performance.
+	using TockenizedUnsectionedFileIterator = TockenizedUnsectionedFile::iterator; // A vector of string_views, each string_view is a token in the file that has been tockenized. Each token is a view into the original file, so it can be used to access the original file without copying it. This is useful for large files where copying the entire file would be expensive in terms of memory and performance.
+	using TockenizedUnsectionedFileIteratorConst = TockenizedUnsectionedFile::const_iterator; // A vector of string_views, each string_view is a token in the file that has been tockenized. Each token is a view into the original file, so it can be used to access the original file without copying it. This is useful for large files where copying the entire file would be expensive in terms of memory and performance.
 
 	using TokenizedSection = std::vector<std::string_view>; // A section of the file that has been tokenized, each token is a string_view to the tokenized version of the entire file. This is useful for sections of the file that have been tokenized, where each token is a view into the original file, so it can be used to access the original file without copying it. This is useful for large files where copying the entire file would be expensive in terms of memory and performance.
 	using TokenizedSections = std::vector <std::vector<std::string_view>>; // A section of the file that has been tokenized, each token is a string_view to the tokenized version of the entire file. This is useful for sections of the file that have been tokenized, where each token is a view into the original file, so it can be used to access the original file without copying it. This is useful for large files where copying the entire file would be expensive in terms of memory and performance.
@@ -40,7 +40,13 @@ namespace parser {
 		Text
 	};
 
-
+	enum class SmartPtrType : uint32_t
+	{
+		None = 0,
+		Shared,
+		Unique,
+		Weak
+	};
 
 }
 

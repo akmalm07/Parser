@@ -4,23 +4,12 @@
 namespace parser 
 {
 
-	SectioningInput<false> const* parser::SectioningInputBase::get_one_iter() const
+	SectioningInput<true> const* parser::SectioningInputBase::get_specialized() const
 	{
 		return nullptr;
 	}
 
-	SectioningInput<true> const* SectioningInputBase::get_two_iter() const
-	{
-		return nullptr;
-	}
-
-
-	SectioningInput<false> const* SectioningInput<false>::get_one_iter() const
-	{
-		return this;
-	}
-
-	SectioningInput<true> const* SectioningInput<true>::get_two_iter() const
+	SectioningInput<true> const* SectioningInput<true>::get_specialized() const
 	{
 		return this;
 	}
@@ -38,10 +27,6 @@ namespace parser
 	std::vector<std::string_view> BaseSection::get_content() const
 	{
 		return _content;
-	}
-
-	void BaseSection::add_token(std::string_view token)
-	{
 	}
 
 	void BaseSection::add_token(std::string_view token)
