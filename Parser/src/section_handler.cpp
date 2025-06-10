@@ -173,6 +173,12 @@ namespace parser {
 
 		auto update = [&](TockenizedUnsectionedFileIteratorConst iterator, size_t iteration)
 			{
+
+				if (endOfSection - iterator > 10 || endOfSection - iterator < -10)
+				{
+					std::cerr << PARSER_LOG_ERR << "There is an error caught here, where the current placement is " << *iterator << " and the end is " << *endOfSection << "\n";
+				}
+
 				auto result = userCriteria.execute[iteration]->execute(SectioningInput(iterator, endOfSection, sectionAbove));
 				_sectionValues.emplace_back(result.section);
 				endOfSection = result.endOfSection;
@@ -183,20 +189,20 @@ namespace parser {
 		{
 			TockenizedUnsectionedFileIteratorConst it = file.begin() + i;
 
-			for (size_t j = 0; j < userCriteria.triggers.size(); j++)
+			for (auto const& [j, trigger] : userCriteria.triggers | std::views::enumerate)
 			{
 				switch (userCriteria.sectioningType[j])
 				{
 				case ParserSectioning::NewSectionWhenFound:
 					
-					if (userCriteria.triggers[j][0] == file[i])
+					if (trigger[0] == file[i])
 					{
 						update(it, j);
 					}
 					break;
 				case ParserSectioning::NewSectionWhenAfter: 
 
-					if (userCriteria.triggers[j][0] == file[i] && userCriteria.triggers[j][1] == file[i - 1])
+					if (trigger[0] == file[i] && trigger[1] == file[i - 1])
 					{
 						update(it, j);
 
@@ -204,7 +210,7 @@ namespace parser {
 					break;
 				case ParserSectioning::NewSectionWhenBefore:
 
-					if (it != file.end() && userCriteria.triggers[j][0] == file[i] && userCriteria.triggers[j][1] == file[i + 1])
+					if (it != file.end() && trigger[0] == file[i] && trigger[1] == file[i + 1])
 					{
 						update(it, j);
 
@@ -212,7 +218,7 @@ namespace parser {
 					break;
 				case ParserSectioning::NewSectionWhenBetween:
 
-					if (userCriteria.triggers[j][0] == file[i])
+					if (trigger[0] == file[i])
 					{
 						update(it, j);
 
