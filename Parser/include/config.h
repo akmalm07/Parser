@@ -21,6 +21,7 @@ namespace parser {
 	using TokenizedSection = std::vector<std::string_view>; // A section of the file that has been tokenized, each token is a string_view to the tokenized version of the entire file. This is useful for sections of the file that have been tokenized, where each token is a view into the original file, so it can be used to access the original file without copying it. This is useful for large files where copying the entire file would be expensive in terms of memory and performance.
 	using TokenizedSections = std::vector <std::vector<std::string_view>>; // A section of the file that has been tokenized, each token is a string_view to the tokenized version of the entire file. This is useful for sections of the file that have been tokenized, where each token is a view into the original file, so it can be used to access the original file without copying it. This is useful for large files where copying the entire file would be expensive in terms of memory and performance.
 
+
 	/*
 	using TockenizedSection = std::vector<std::string_view>; // A section of the file that has been tokenized, each token is a string_view to the tokenized version of the entire file.
 
@@ -29,9 +30,9 @@ namespace parser {
 	using TockenizedSectionsIterator = TockenizedSections::iterator; // Iterator value for the TockenizedSections, used to iterate over the sections of the file that have been tokenized.
 	*/
 
-	using TockenizedFile = std::vector<std::string>; // A vector of strings, each string is a section of the file that has been tokenized. Each string is a tockenized version of the entire file, where each token is separated by whitespace or newlines.
+	using EntireTockenizedFile = std::vector<std::string_view>; // A vector of strings, each string is a section of the file that has been tokenized. Each string is a tockenized version of the entire file, where each token is separated by whitespace or newlines.
 
-	using UntockeizedFile = std::string; // String that contains the entire file that has not been tockenized yet.
+	using EntireUntockeizedFile = std::string; // String that contains the entire file that has not been tockenized yet.
 
 
 	enum class ParserReadType : uint32_t

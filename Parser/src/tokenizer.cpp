@@ -1,32 +1,42 @@
 #include "headers.h"
-#include "include/tockenization.h"
+#include "include/tokenizer.h"
 
 
 namespace parser
 {
-	std::vector<std::string> tokenize(std::string_view text, TokenizationSeperationFlag flags)
+	EntireTockenizedFile tokenize(EntireUntockeizedFile const& text, TokenizationSeperationFlag flags, bool isolate)
 	{
-		std::vector<std::string> tokens;
+		std::vector<std::string_view> tokens;
 		std::string current;
 
-		for (char c : text)
-		{
-			bool should_split = false;
 
-			if (flags.has(TokenizationSeperationBitFlags::TockeizeWhitespace) && std::isspace(static_cast<unsigned char>(c)) && c != '\n' && c != '\t')
-				should_split = true;
+
+		for (auto const& c : text)
+		{	
+			current += c;
+			if (c == '\0') 
+				continue;
+
+			bool addSpace = false;
+			bool shouldSplit = false;
+
+			if (flags.has(TokenizationSeperationBitFlags::TockeizeWhitespace) && (std::isspace(static_cast<unsigned char>(c)) || c == '\n' || c == '\t'))
+				shouldSplit = true;
+			
+			if (flags.has(TokenizationSeperationBitFlags::TockeizeSpace) && std::isspace(static_cast<unsigned char>(c)))
+				shouldSplit = true;
 
 			if (flags.has(TokenizationSeperationBitFlags::TockeizeNewLine) && c == '\n')
-				should_split = true;
+				shouldSplit = true;
 
 			if (flags.has(TokenizationSeperationBitFlags::TockeizeTab) && c == '\t')
-				should_split = true;
+				shouldSplit = true;
 
 			if (flags.has(TokenizationSeperationBitFlags::TockeizeAtoZ) && std::isalpha(static_cast<unsigned char>(c)))
-				should_split = true;
+				shouldSplit = true;
 
 			if (flags.has(TokenizationSeperationBitFlags::TockeizeDigit) && std::isdigit(static_cast<unsigned char>(c)))
-				should_split = true;
+				shouldSplit = true;
 
 			// Punctuation checks
 			if ((flags.has(TokenizationSeperationBitFlags::TockeizeExplemation) && c == '!') ||
@@ -62,30 +72,78 @@ namespace parser
 				(flags.has(TokenizationSeperationBitFlags::TokenizeOpenSquareBracket) && c == '[') ||
 				(flags.has(TokenizationSeperationBitFlags::TokenizeClosedSquareBracket) && c == ']'))
 			{
-				should_split = true;
+				shouldSplit = true;
 			}
 
-			if (should_split)
+			if (shouldSplit)
 			{
-				tokens.push_back(std::move(current));
+				if (isolate)
+				{
+					tokens.emplace_back(current.substr(0, current.size() - 1));
+					tokens.emplace_back(&current.back(), 1);
+				}
+				else
+				{
+					tokens.emplace_back(current);
+				}
 				current.clear();
 			}
-			else
-			{
-				current += c;
-			}
+
 		}
 
-		tokens.push_back(std::move(current));
+		if (!current.empty())
+			tokens.emplace_back(current);
 		current.clear();
 
 		return tokens;
 	}
 
-	std::string dissolve_whitespace(std::string_view text, WhiteSpaceDissolveFlag flags)
+	EntireTockenizedFile tokenize(EntireUntockeizedFile const& file, std::vector<std::string> const& items, bool isolate)
+	{
+		EntireTockenizedFile tokens;
+		tokens.reserve(file.size() / 2);
+		std::string current;
+
+		for (char c : file)
+		{
+			current += c;
+
+			bool matched = false;
+			for (const auto& item : items)
+			{
+				if (isolate && current.size() >= item.size() &&
+					current.substr(current.size() - item.size()) == item)
+				{
+					tokens.emplace_back(current.substr(0, current.size() - item.size()));
+					tokens.emplace_back(item);
+					current.clear();
+					matched = true;
+					break;
+				}
+				else if (!isolate && current == item)
+				{
+					tokens.emplace_back(current);
+					current.clear();
+					matched = true;
+					break;
+				}
+			}
+
+			if (matched)
+				continue;
+		}
+
+		if (!current.empty())
+			tokens.emplace_back(current);
+
+		return tokens;
+	}
+
+
+	std::string dissolve_whitespace(EntireUntockeizedFile const& text, WhiteSpaceDissolveFlag flags)
 	{
 		std::string result;
-		for (char c : text)
+		for (char const c : text)
 		{
 			if (flags.has(WhiteSpaceDissolveBitFlags::DissolveSpace) && std::isspace(static_cast<unsigned char>(c)) && c != '\n' && c != '\t')
 			{
@@ -103,6 +161,7 @@ namespace parser
 		}
 		return result;
 	}
+
 
 	std::vector<std::string> dissolve_whitespace(std::vector<std::string> const& text, WhiteSpaceDissolveFlag flags)
 	{
@@ -161,15 +220,25 @@ namespace parser
 
 
 
-	std::string print_tokens(TockenizedUnsectionedFile const& tokens)
+	void print_tokens(EntireUntockeizedFile const& tokens)
 	{
-		std::ostringstream oss;
 		for (const auto& token : tokens)
 		{
-			oss << token << " ";
+			std::cout << token << " ";
 		}
-		return oss.str();
+		std::cout << std::endl;
 	}
+
+
+	void print_tokens(TokenizedSection const& tokens)
+	{
+		for (const auto& token : tokens)
+		{
+			std::cout << token << " ";
+		}
+		std::cout << std::endl;
+	}
+
 
 	/*
 	std::string print_tokens(TockenizedSections const& sections)

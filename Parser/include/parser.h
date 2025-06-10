@@ -32,7 +32,7 @@ namespace parser
 
 		std::vector<RuleHandler> _rules;
 
-		TockenizedFile _entireFile;
+		EntireUntockeizedFile _entireFile;
 
 
 		void parse_binary(const std::ifstream& file);

@@ -24,7 +24,7 @@
     <ClInclude Include="include\parser.h" />
     <ClInclude Include="include\config.h" />
     <ClInclude Include="include\rule_handler.h" />
-    <ClInclude Include="include\tockenization.h" />
+    <ClInclude Include="include\tokenizer.h" />
     <ClInclude Include="include\section_handler.h" />
     <ClInclude Include="include\rules.h" />
     <ClInclude Include="include\sections.h" />
@@ -42,7 +42,7 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\section_handler.cpp" />
     <ClCompile Include="src\parser.cpp" />
-    <ClCompile Include="src\tockenization.cpp" />
+    <ClCompile Include="src\tokenizer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="include\parser.inl" />

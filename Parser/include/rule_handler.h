@@ -2,7 +2,7 @@
 
 #include "include/config.h"
 #include "include/rules.h"
-#include "include/tockenization.h"
+#include "include/tokenizer.h"
 
 
 namespace parser {
@@ -230,7 +230,9 @@ namespace parser {
 			{
 				if (tocken == rule.target)
 				{
-					std::cout << PARSER_LOG_INFO << "Rule: Found Item: " << rule.target << " In Section: " << print_tokens(section) << std::endl;
+					std::cout << PARSER_LOG_INFO << "Rule: Found Item: " << rule.target << " In Section: ";
+					print_tokens(section);
+
 					return true;
 				}
 			}

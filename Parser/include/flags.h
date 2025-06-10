@@ -68,7 +68,7 @@ namespace parser
 
 	// --TokenizationSeperationFlags--
 
-	enum class TokenizationSeperationBitFlags : uint32_t
+	enum class TokenizationSeperationBitFlags : uint64_t
 	{
 		None = 0,
 		TockeizeWhitespace = 1 << 0, 
@@ -119,7 +119,8 @@ namespace parser
 		TokenizeSquareBrackets = (TokenizeOpenSquareBracket | TokenizeClosedSquareBracket),
 		
 		TokenizeSpecialChars = (TokenizeAt |TokenizeHash |TokenizeDollar | TokenizePercent |TokenizeCaret |TokenizeAmpersand |TokenizeStar |TokenizeDash |TokenizePlus |TokenizeEqual |TokenizeSlash |TokenizeBackslash |TokenizeTilde |TokenizePipe |TokenizeGrave |TokenizeUnderscore |TokenizeAngleBrackets |TokenizeBrackets),
-		TokenizeCustom = 1 << 31,
+		
+		TockeizeSpace = 1 << 35,
 	};
 
 	using TokenizationSeperationFlag = Flags<TokenizationSeperationBitFlags>;
