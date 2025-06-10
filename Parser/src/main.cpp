@@ -13,11 +13,14 @@ int main()
 	EntireTokenizedFile file = tokenize(fileStr, TokenizationSeperationBitFlags::TockeizeWhitespace);
 
 
+	print_tokens(file);
+
 
 	std::vector<std::shared_ptr<BaseSectioning>> criteria = {
 		new_section_when_between_shared<HasIdentifier::No>("a", "file"),
+		new_section_when_between_shared<HasIdentifier::No>("parser", "handler"),
 		new_section_when_found_shared<HasIdentifier::No>("the"),
-		new_section_when_found_shared<HasIdentifier::No>("parser")
+		//new_section_when_found_shared<HasIdentifier::No>("parser")
 	};
 
 	SectionHandler handler(file, criteria);

@@ -39,7 +39,7 @@ namespace parser {
 				add_triggers<1, false>(criteria[i], triggers);
 
 				execute.emplace_back(std::make_unique<ExecuteFunc<1>>(criteria[i], []
-				(size_t placementNum, TockenizedUnsectionedFileIteratorConst placement, TockenizedUnsectionedFileIteratorConst endOfSection) -> ExecutionOutput
+				(size_t placementNum, TockenizedUnsectionedFileIteratorConst placement, TockenizedUnsectionedFileIteratorConst currentEndOfSection) -> ExecutionOutput
 					{
 						std::vector<std::string_view> content;
 						content.reserve(placementNum);
@@ -49,7 +49,7 @@ namespace parser {
 							content.push_back(*(placement + i));
 						}
 
-						return { endOfSection, content };
+						return { currentEndOfSection, content };
 					})
 				);
 				break;
@@ -66,7 +66,7 @@ namespace parser {
 				add_triggers<2, false>(criteria[i], triggers);
 
 				execute.emplace_back(std::make_unique<ExecuteFuncWithCriteria<2>>(criteria[i], []
-					(size_t placementNum, TockenizedUnsectionedFileIteratorConst placement, TockenizedUnsectionedFileIteratorConst endOfSection, BaseSectioning* criteria) -> ExecutionOutput
+					(size_t placementNum, TockenizedUnsectionedFileIteratorConst placement, TockenizedUnsectionedFileIteratorConst currentEndOfSection, BaseSectioning* criteria) -> ExecutionOutput
 					{
 						std::vector<std::string_view> content;
 						content.reserve(placementNum);
@@ -80,17 +80,21 @@ namespace parser {
 							stopTrigger = static_cast<SectioningUnidentifier<2>*>(criteria)->targets[1];
 						}
 
-						for (size_t i = 0; i < placementNum; i++)
+						if (stopTrigger == *placement)
 						{
-							if (stopTrigger == *(placement + i) || (placement + i) == endOfSection)
+							return { currentEndOfSection, content};
+						}
+						for (size_t i = 1; i < placementNum; i++)
+						{
+							if (stopTrigger == *(placement + i) || (placement + i) == currentEndOfSection)
 							{
-								endOfSection = placement + i;
+								currentEndOfSection = placement + i;
 								break;
 							}
 							content.push_back(*(placement + i));
 						}
 
-						return { endOfSection, content };
+						return { currentEndOfSection, content };
 					})
 				);
 				break;
@@ -117,7 +121,7 @@ namespace parser {
 
 				execute.emplace_back(std::make_unique<ExecuteFuncWithCriteria<2>>(criteria[i],
 					[]
-					(size_t placementNum, TockenizedUnsectionedFileIteratorConst placement, TockenizedUnsectionedFileIteratorConst endOfSection, BaseSectioning* criteria) -> ExecutionOutput
+					(size_t placementNum, TockenizedUnsectionedFileIteratorConst placement, TockenizedUnsectionedFileIteratorConst currentEndOfSection, BaseSectioning* criteria) -> ExecutionOutput
 					{
 						std::vector<std::string_view> content;
 						content.reserve(placementNum);
@@ -138,7 +142,7 @@ namespace parser {
 							}
 							content.push_back(*(placement + i));
 						}
-						return { endOfSection, content };
+						return { currentEndOfSection, content };
 					}) 
 				);
 			
@@ -168,20 +172,18 @@ namespace parser {
 
 		_sectionValues.push_back(sectionAbove);
 
-		TockenizedUnsectionedFileIteratorConst endOfSection = file.end();
-
+		TockenizedUnsectionedFileIteratorConst currentEndOfSection = file.end();
+		std::vector<TockenizedUnsectionedFileIteratorConst> prevEndOfSections;
 
 		auto update = [&](TockenizedUnsectionedFileIteratorConst iterator, size_t iteration)
 			{
 
-				if (endOfSection - iterator > 10 || endOfSection - iterator < -10)
-				{
-					std::cerr << PARSER_LOG_ERR << "There is an error caught here, where the current placement is " << *iterator << " and the end is " << *endOfSection << "\n";
-				}
+				std::cout << "Value for the currentEndOfSection:   " << (currentEndOfSection == file.end() ? "NULL" : *currentEndOfSection) << "   :and: " << *iterator << std::endl; // ERR, cannot dereference (*) the end of the file! its null
 
-				auto result = userCriteria.execute[iteration]->execute(SectioningInput(iterator, endOfSection, sectionAbove));
+				auto result = userCriteria.execute[iteration]->execute(SectioningInput(iterator, currentEndOfSection, sectionAbove));
 				_sectionValues.emplace_back(result.section);
-				endOfSection = result.endOfSection;
+				prevEndOfSections.push_back(currentEndOfSection);
+				currentEndOfSection = result.endOfSection;
 				sectionAbove = _sectionValues.back();
 			};
 
@@ -191,10 +193,16 @@ namespace parser {
 
 			for (auto const& [j, trigger] : userCriteria.triggers | std::views::enumerate)
 			{
+				if (currentEndOfSection != file.end() && file[i] == *currentEndOfSection)
+				{
+					currentEndOfSection = prevEndOfSections.empty() ? file.end() : prevEndOfSections.back();
+					prevEndOfSections.pop_back();
+				}
 				switch (userCriteria.sectioningType[j])
 				{
 				case ParserSectioning::NewSectionWhenFound:
 					
+					std::cout << "NewSectionWhenFound Trigger: " << trigger[0] << " and " << file[i] <<  std::endl;
 					if (trigger[0] == file[i])
 					{
 						update(it, j);

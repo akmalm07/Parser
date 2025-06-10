@@ -127,7 +127,6 @@ namespace parser
 
 		size_t placementNum = realInput->endOfSection - realInput->placement;
 
-		std::cerr << PARSER_LOG_ERR << "There is an error caught here, where the current placement is " << *realInput->placement << " and the end is " << *realInput->endOfSection << "\n";
 
 
 		if (auto criteria = _criteria.lock())
@@ -166,7 +165,7 @@ namespace parser
 		size_t placementNum = realInput->endOfSection - realInput->placement;
 
 
-		ExecutionOutput output = _execute(placementNum, realInput->placement, realInput->endOfSection);
+		ExecutionOutput output = _execute(placementNum, realInput->placement, realInput->endOfSection); // in instances that WhenFound is inside Between, a crash occurs
 
 		if (auto criteria = _criteria.lock()) 
 		{

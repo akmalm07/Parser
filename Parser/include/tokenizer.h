@@ -8,7 +8,6 @@ namespace parser {
 
 	EntireTokenizedFile tokenize(EntireUntokenizedFile& file, TokenizationSeperationFlag flags, WhiteSpaceDissolveFlag deleteWhiteSpace = WhiteSpaceDissolveBitFlags::DissolveAll, bool isolate = false);
 	
-	EntireTokenizedFile tokenize(EntireUntokenizedFile const& file, std::vector<std::string> const& items, WhiteSpaceDissolveFlag deleteWhiteSpace = WhiteSpaceDissolveBitFlags::DissolveAll, bool isolate = false);
 
 	EntireUntokenizedFile dissolve_whitespace(EntireUntokenizedFile const& file, WhiteSpaceDissolveFlag flags = WhiteSpaceDissolveBitFlags::DissolveAll);
 			

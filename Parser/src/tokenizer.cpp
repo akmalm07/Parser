@@ -188,39 +188,84 @@ namespace parser
 		return tokens;
 	}
 
-	EntireTokenizedFile tokenize(std::string const& file, std::vector<std::string> const& items, WhiteSpaceDissolveFlag deleteWhiteSpace, bool isolate)
+	//** IN PROGRESS **//
+
+	EntireTokenizedFile tokenize(EntireUntokenizedFile& file, std::vector<std::string> const& items, WhiteSpaceDissolveFlag deleteWhiteSpace = WhiteSpaceDissolveBitFlags::DissolveAll, bool isolate = false);
+
+	EntireTokenizedFile tokenize(EntireUntokenizedFile& file, std::vector<std::string> const& items, WhiteSpaceDissolveFlag deleteWhiteSpace, bool isolate)
 	{
 		std::vector<std::string_view> tokens;
 		tokens.reserve(file.size() / 2);
 
-		size_t start = 0;  
-		size_t i = 0;      
+		size_t start = 0;
+		size_t i = 0;
+
+		auto isCharDissolvable = [&](char c) -> bool
+			{
+				if (c == ' ' && deleteWhiteSpace.has(WhiteSpaceDissolveBitFlags::DissolveSpace))
+					return true;
+				if (c == '\n' && deleteWhiteSpace.has(WhiteSpaceDissolveBitFlags::DissolveNewLine))
+					return true;
+				if (c == '\t' && deleteWhiteSpace.has(WhiteSpaceDissolveBitFlags::DissolveTab))
+					return true;
+				return false;
+			};
+
+		auto isStringViewDissolvable = [&](std::string_view sv) -> bool
+			{
+				for (char c : sv)
+				{
+					if (!isCharDissolvable(c))
+					{
+						return false;
+					}
+				}
+				return true;
+			};
+
 		while (i < file.size())
 		{
 			bool matched = false;
 
+			if (isCharDissolvable(file[i]))
+			{
+				if (start < i)
+				{
+					std::string_view current_token(file.data() + start, i - start);
+					if (!isStringViewDissolvable(current_token))
+					{
+						tokens.emplace_back(current_token);
+					}
+				}
+				start = i + 1;
+				i++;
+				continue;
+			}
+
 			for (const auto& item : items)
 			{
-				if (isolate)
+				if (i + item.size() <= file.size() && file.compare(i, item.size(), item) == 0)
 				{
-					if (i + 1 >= item.size() && file.compare(i + 1 - item.size(), item.size(), item) == 0)
+					if (!isStringViewDissolvable(item))
 					{
-						if (start < i + 1 - item.size())
-							tokens.emplace_back(file.data() + start, i + 1 - item.size() - start);
+						if (start < i)
+						{
+							std::string_view precedingToken(file.data() + start, i - start);
+							if (!isStringViewDissolvable(precedingToken))
+							{
+								tokens.emplace_back(precedingToken);
+							}
+						}
 
 						tokens.emplace_back(item);
 
-						start = i + 1;
+						start = i + item.size();
 						matched = true;
 						break;
 					}
-				}
-				else
-				{
-					if (i - start + 1 == item.size() && file.compare(start, item.size(), item) == 0)
+					else
 					{
-						tokens.emplace_back(item);
-						start = i + 1;
+						start = i + item.size();
 						matched = true;
 						break;
 					}
@@ -238,7 +283,13 @@ namespace parser
 		}
 
 		if (start < file.size())
-			tokens.emplace_back(file.data() + start, file.size() - start);
+		{
+			std::string_view remainingToken(file.data() + start, file.size() - start);
+			if (!isStringViewDissolvable(remainingToken))
+			{
+				tokens.emplace_back(remainingToken);
+			}
+		}
 
 		return tokens;
 	}
