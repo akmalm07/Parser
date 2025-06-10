@@ -202,7 +202,7 @@ namespace parser {
 					break;
 				case ParserSectioning::NewSectionWhenAfter: 
 
-					if (trigger[0] == file[i] && trigger[1] == file[i - 1])
+					if (i > 0 && trigger[0] == file[i] && trigger[1] == file[i - 1])
 					{
 						update(it, j);
 
@@ -210,13 +210,15 @@ namespace parser {
 					break;
 				case ParserSectioning::NewSectionWhenBefore:
 
-					if (it != file.end() && trigger[0] == file[i] && trigger[1] == file[i + 1])
+					if (i + 1 < file.size() && trigger[0] == file[i] && trigger[1] == file[i + 1])
 					{
 						update(it, j);
 
 					}
 					break;
 				case ParserSectioning::NewSectionWhenBetween:
+
+					std::cout << "NewSectionWhenBetween Trigger: " << trigger[0] << " and " << file[i] << std::endl;
 
 					if (trigger[0] == file[i])
 					{

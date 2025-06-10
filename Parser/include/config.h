@@ -30,9 +30,9 @@ namespace parser {
 	using TockenizedSectionsIterator = TockenizedSections::iterator; // Iterator value for the TockenizedSections, used to iterate over the sections of the file that have been tokenized.
 	*/
 
-	using EntireTockenizedFile = std::vector<std::string_view>; // A vector of strings, each string is a section of the file that has been tokenized. Each string is a tockenized version of the entire file, where each token is separated by whitespace or newlines.
+	using EntireTokenizedFile = std::vector<std::string_view>; // A vector of strings, each string is a section of the file that has been tokenized. Each string is a tockenized version of the entire file, where each token is separated by whitespace or newlines.
 
-	using EntireUntockeizedFile = std::string; // String that contains the entire file that has not been tockenized yet.
+	using EntireUntokenizedFile = std::string; // String that contains the entire file that has not been tockenized yet.
 
 
 	enum class ParserReadType : uint32_t

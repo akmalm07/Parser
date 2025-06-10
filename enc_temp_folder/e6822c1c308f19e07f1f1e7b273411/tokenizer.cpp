@@ -90,64 +90,69 @@ namespace parser
 
 			if (shouldSplit)
 			{
+				// If we were in a token, end it and add it if it's not entirely dissolvable whitespace
 				if (inToken)
 				{
 					size_t len = i - tokenStart;
 					if (len > 0)
 					{
 						std::string_view currentToken(text.data() + tokenStart, len);
-
+						// Check if *any* character in the currentToken is NOT dissolvable whitespace.
+						// If all characters are dissolvable, then dissolve the whole token.
 						bool allDissolvable = true;
-						for (char tok_c : currentToken)
-						{
-							if (!isCharDissolvable(tok_c)) 
-							{
+						for (char tok_c : currentToken) {
+							if (!isCharDissolvable(tok_c)) {
 								allDissolvable = false;
 								break;
 							}
 						}
-						if (!allDissolvable)
-						{
+						if (!allDissolvable) {
 							tokens.emplace_back(currentToken);
 						}
 					}
 					inToken = false;
 				}
 
+				// Handle the current character `c` itself, especially if `isolate` is true
 				if (isolate)
 				{
+					// Only add the isolated character if it's not a dissolvable whitespace character
 					if (!isCharDissolvable(c))
 					{
 						tokens.emplace_back(text.data() + i, 1);
 					}
 				}
-				else if (!isCharDissolvable(c)) 
+				else
 				{
-					tokenStart = i;
-					inToken = true;
+					// If not isolating, this character becomes the start of a potential new token,
+					// but only if it's not a dissolvable whitespace character.
+					if (!isCharDissolvable(c)) {
+						tokenStart = i;
+						inToken = true;
+					}
+					else {
+						// If it's a dissolvable whitespace char and not isolated, it just gets skipped.
+						// `inToken` remains false, `tokenStart` doesn't advance.
+					}
 				}
 			}
-			else 
+			else // Current character `c` does NOT cause a split
 			{
-				if (isCharDissolvable(c)) 
-				{
-					if (inToken) 
-					{
+				// If it's a dissolvable whitespace character, we skip it
+				if (isCharDissolvable(c)) {
+					// If we were in a token, finalize it first, then skip this whitespace
+					if (inToken) {
 						size_t len = i - tokenStart;
-						if (len > 0)
-						{
+						if (len > 0) {
 							std::string_view currentToken(text.data() + tokenStart, len);
 							bool allDissolvable = true;
-							for (char tok_c : currentToken) 
-							{
-								if (!isCharDissolvable(tok_c))
-								{
+							for (char tok_c : currentToken) {
+								if (!isCharDissolvable(tok_c)) {
 									allDissolvable = false;
 									break;
 								}
 							}
-							if (!allDissolvable)
-							{
+							if (!allDissolvable) {
 								tokens.emplace_back(currentToken);
 							}
 						}

@@ -6,13 +6,13 @@
 namespace parser {
 
 
-	EntireTockenizedFile tokenize(EntireUntockeizedFile const& file, TokenizationSeperationFlag flags, bool isolate = false);
+	EntireTokenizedFile tokenize(EntireUntokenizedFile& file, TokenizationSeperationFlag flags, WhiteSpaceDissolveFlag deleteWhiteSpace = WhiteSpaceDissolveBitFlags::DissolveAll, bool isolate = false);
 	
-	EntireTockenizedFile tokenize(EntireUntockeizedFile const& file, std::vector<std::string> const& items, bool isolate = false);
+	EntireTokenizedFile tokenize(EntireUntokenizedFile const& file, std::vector<std::string> const& items, WhiteSpaceDissolveFlag deleteWhiteSpace = WhiteSpaceDissolveBitFlags::DissolveAll, bool isolate = false);
 
-	EntireUntockeizedFile dissolve_whitespace(EntireUntockeizedFile const& file, WhiteSpaceDissolveFlag flags);
-	
-	void print_tokens(EntireUntockeizedFile const& tokens);
+	EntireUntokenizedFile dissolve_whitespace(EntireUntokenizedFile const& file, WhiteSpaceDissolveFlag flags = WhiteSpaceDissolveBitFlags::DissolveAll);
+			
+	void print_tokens(EntireUntokenizedFile const& tokens);
 		
 	void print_tokens(TokenizedSection const& tokens);
 

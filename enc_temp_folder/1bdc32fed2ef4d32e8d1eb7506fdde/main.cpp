@@ -12,6 +12,12 @@ int main()
 
 	EntireTokenizedFile file = tokenize(fileStr, TokenizationSeperationBitFlags::TockeizeWhitespace);
 
+	auto it = file.begin();
+
+	for (int i = 0; i < file.size(); i++)
+	{
+		std::cout << *(it + i) << "^";
+	}
 
 
 	std::vector<std::shared_ptr<BaseSectioning>> criteria = {

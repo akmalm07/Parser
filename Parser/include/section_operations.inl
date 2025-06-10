@@ -165,10 +165,6 @@ namespace parser
 
 		size_t placementNum = realInput->endOfSection - realInput->placement;
 
-		if (placementNum > 10 || realInput->endOfSection - realInput->placement < -10)
-		{
-			std::cerr << PARSER_LOG_ERR << "There is an error caught here, where the current placement is " << *realInput->placement << " and the end is " << *realInput->endOfSection << "\n";
-		}
 
 		ExecutionOutput output = _execute(placementNum, realInput->placement, realInput->endOfSection);
 
