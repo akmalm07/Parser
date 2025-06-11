@@ -178,7 +178,9 @@ namespace parser {
 		auto update = [&](TockenizedUnsectionedFileIteratorConst iterator, size_t iteration)
 			{
 
-				std::cout << "Value for the currentEndOfSection:   " << (currentEndOfSection == file.end() ? "NULL" : *currentEndOfSection) << "   :and: " << *iterator << std::endl; // ERR, cannot dereference (*) the end of the file! its null
+				DEBUG(
+					std::cout << "Value for the currentEndOfSection:   " << (currentEndOfSection == file.end() ? "NULL" : *currentEndOfSection) << "   :and: " << *iterator << std::endl; // ERR, cannot dereference (*) the end of the file! its null
+					)
 
 				auto result = userCriteria.execute[iteration]->execute(SectioningInput(iterator, currentEndOfSection, sectionAbove));
 				_sectionValues.emplace_back(result.section);
@@ -201,14 +203,16 @@ namespace parser {
 				switch (userCriteria.sectioningType[j])
 				{
 				case ParserSectioning::NewSectionWhenFound:
-					
-					std::cout << "NewSectionWhenFound Trigger: " << trigger[0] << " and " << file[i] <<  std::endl;
+
+					DEBUG(
+						std::cout << "NewSectionWhenFound Trigger: " << trigger[0] << " and " << file[i] << std::endl;
+					)
 					if (trigger[0] == file[i])
 					{
 						update(it, j);
 					}
 					break;
-				case ParserSectioning::NewSectionWhenAfter: 
+				case ParserSectioning::NewSectionWhenAfter:
 
 					if (i > 0 && trigger[0] == file[i] && trigger[1] == file[i - 1])
 					{
@@ -226,7 +230,7 @@ namespace parser {
 					break;
 				case ParserSectioning::NewSectionWhenBetween:
 
-					std::cout << "NewSectionWhenBetween Trigger: " << trigger[0] << " and " << file[i] << std::endl;
+					DEBUG(std::cout << "NewSectionWhenBetween Trigger: " << trigger[0] << " and " << file[i] << std::endl;)
 
 					if (trigger[0] == file[i])
 					{

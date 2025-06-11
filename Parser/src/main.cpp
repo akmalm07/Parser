@@ -6,6 +6,7 @@ int main()
 {
 	using namespace parser;
 
+	
 
 	EntireUntokenizedFile fileStr = "This is a test file for the parser section handler";
 
@@ -18,8 +19,8 @@ int main()
 
 	std::vector<std::shared_ptr<BaseSectioning>> criteria = {
 		new_section_when_between_shared<HasIdentifier::No>("a", "file"),
-		new_section_when_between_shared<HasIdentifier::No>("parser", "handler"),
-		new_section_when_found_shared<HasIdentifier::No>("the"),
+		new_section_when_after_shared<HasIdentifier::No>("test", "a"),
+		new_section_when_found_shared<HasIdentifier::No>("section"),
 		//new_section_when_found_shared<HasIdentifier::No>("parser")
 	};
 

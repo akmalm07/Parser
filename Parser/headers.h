@@ -10,4 +10,12 @@
 #include <variant>
 #include <functional>
 #include <ranges> 
+#include <algorithm> 
 
+
+
+#define DEBUG(stuff) \
+	if(false)\
+	{\
+		stuff \
+	}

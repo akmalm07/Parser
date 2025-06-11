@@ -36,54 +36,7 @@ namespace parser
 
 			bool shouldSplit = false;
 
-			if (flags.has(TokenizationSeperationBitFlags::TockeizeSpace) && std::isspace(static_cast<unsigned char>(c)))
-				shouldSplit = true;
-
-			if (flags.has(TokenizationSeperationBitFlags::TockeizeNewLine) && c == '\n')
-				shouldSplit = true;
-
-			if (flags.has(TokenizationSeperationBitFlags::TockeizeTab) && c == '\t')
-				shouldSplit = true;
-
-			if (flags.has(TokenizationSeperationBitFlags::TockeizeAtoZ) && std::isalpha(static_cast<unsigned char>(c)))
-				shouldSplit = true;
-
-			if (flags.has(TokenizationSeperationBitFlags::TockeizeDigit) && std::isdigit(static_cast<unsigned char>(c)))
-				shouldSplit = true;
-
-			// Punctuation checks
-			if ((flags.has(TokenizationSeperationBitFlags::TockeizeExplemation) && c == '!') ||
-				(flags.has(TokenizationSeperationBitFlags::TockeizeQuestion) && c == '?') ||
-				(flags.has(TokenizationSeperationBitFlags::TockeizeColon) && c == ':') ||
-				(flags.has(TokenizationSeperationBitFlags::TockeizeSemicolon) && c == ';') ||
-				(flags.has(TokenizationSeperationBitFlags::TockeizeDot) && c == '.') ||
-				(flags.has(TokenizationSeperationBitFlags::TockeizeComma) && c == ',') ||
-
-				// Special symbols
-				(flags.has(TokenizationSeperationBitFlags::TokenizeAt) && c == '@') ||
-				(flags.has(TokenizationSeperationBitFlags::TokenizeHash) && c == '#') ||
-				(flags.has(TokenizationSeperationBitFlags::TokenizeDollar) && c == '$') ||
-				(flags.has(TokenizationSeperationBitFlags::TokenizePercent) && c == '%') ||
-				(flags.has(TokenizationSeperationBitFlags::TokenizeCaret) && c == '^') ||
-				(flags.has(TokenizationSeperationBitFlags::TokenizeAmpersand) && c == '&') ||
-				(flags.has(TokenizationSeperationBitFlags::TokenizeStar) && c == '*') ||
-				(flags.has(TokenizationSeperationBitFlags::TokenizeDash) && c == '-') ||
-				(flags.has(TokenizationSeperationBitFlags::TokenizePlus) && c == '+') ||
-				(flags.has(TokenizationSeperationBitFlags::TokenizeEqual) && c == '=') ||
-				(flags.has(TokenizationSeperationBitFlags::TokenizeSlash) && c == '/') ||
-				(flags.has(TokenizationSeperationBitFlags::TokenizeBackslash) && c == '\\') ||
-				(flags.has(TokenizationSeperationBitFlags::TokenizeTilde) && c == '~') ||
-				(flags.has(TokenizationSeperationBitFlags::TokenizePipe) && c == '|') ||
-				(flags.has(TokenizationSeperationBitFlags::TokenizeGrave) && c == '`') ||
-				(flags.has(TokenizationSeperationBitFlags::TokenizeUnderscore) && c == '_') ||
-				(flags.has(TokenizationSeperationBitFlags::TokenizeOpenAngleBracket) && c == '<') ||
-				(flags.has(TokenizationSeperationBitFlags::TokenizeClosedAngleBracket) && c == '>') ||
-				(flags.has(TokenizationSeperationBitFlags::TokenizeOpenBracket) && c == '(' ) ||
-				(flags.has(TokenizationSeperationBitFlags::TokenizeClosedBracket) && c == ')') ||
-				(flags.has(TokenizationSeperationBitFlags::TokenizeOpenCurlyBracket) && c == '{') ||
-				(flags.has(TokenizationSeperationBitFlags::TokenizeClosedCurlyBracket) && c == '}') ||
-				(flags.has(TokenizationSeperationBitFlags::TokenizeOpenSquareBracket) && c == '[') ||
-				(flags.has(TokenizationSeperationBitFlags::TokenizeClosedSquareBracket) && c == ']'))
+			if (includes_token_seperator_char(c, flags))
 			{
 				shouldSplit = true;
 			}
@@ -151,11 +104,10 @@ namespace parser
 								tokens.emplace_back(currentToken);
 							}
 						}
-						inToken = false; // End the current token
+						inToken = false;
 					}
-					// Then continue to the next character, effectively dissolving `c`
 				}
-				else // Current character `c` is not a split character AND not dissolvable whitespace
+				else 
 				{
 					if (!inToken)
 					{
@@ -188,17 +140,95 @@ namespace parser
 		return tokens;
 	}
 
+	bool includes_token_seperator_char(char c, TokenizationSeperationFlag flags)
+	{
+		if (
+			(flags.has(TokenizationSeperationBitFlags::TockeizeSpace) && std::isspace(static_cast<unsigned char>(c))) ||
+			(flags.has(TokenizationSeperationBitFlags::TockeizeNewLine) && c == '\n') ||
+			(flags.has(TokenizationSeperationBitFlags::TockeizeTab) && c == '\t') ||
+			(flags.has(TokenizationSeperationBitFlags::TockeizeAtoZ) && std::isalpha(static_cast<unsigned char>(c))) ||
+			(flags.has(TokenizationSeperationBitFlags::TockeizeDigit) && std::isdigit(static_cast<unsigned char>(c))) ||
+			(flags.has(TokenizationSeperationBitFlags::TockeizeExplemation) && c == '!') ||
+			(flags.has(TokenizationSeperationBitFlags::TockeizeQuestion) && c == '?') ||
+			(flags.has(TokenizationSeperationBitFlags::TockeizeColon) && c == ':') ||
+			(flags.has(TokenizationSeperationBitFlags::TockeizeSemicolon) && c == ';') ||
+			(flags.has(TokenizationSeperationBitFlags::TockeizeDot) && c == '.') ||
+			(flags.has(TokenizationSeperationBitFlags::TockeizeComma) && c == ',') ||
+
+			(flags.has(TokenizationSeperationBitFlags::TokenizeAt) && c == '@') ||
+			(flags.has(TokenizationSeperationBitFlags::TokenizeHash) && c == '#') ||
+			(flags.has(TokenizationSeperationBitFlags::TokenizeDollar) && c == '$') ||
+			(flags.has(TokenizationSeperationBitFlags::TokenizePercent) && c == '%') ||
+			(flags.has(TokenizationSeperationBitFlags::TokenizeCaret) && c == '^') ||
+			(flags.has(TokenizationSeperationBitFlags::TokenizeAmpersand) && c == '&') ||
+			(flags.has(TokenizationSeperationBitFlags::TokenizeStar) && c == '*') ||
+			(flags.has(TokenizationSeperationBitFlags::TokenizeDash) && c == '-') ||
+			(flags.has(TokenizationSeperationBitFlags::TokenizePlus) && c == '+') ||
+			(flags.has(TokenizationSeperationBitFlags::TokenizeEqual) && c == '=') ||
+			(flags.has(TokenizationSeperationBitFlags::TokenizeSlash) && c == '/') ||
+			(flags.has(TokenizationSeperationBitFlags::TokenizeBackslash) && c == '\\') ||
+			(flags.has(TokenizationSeperationBitFlags::TokenizeTilde) && c == '~') ||
+			(flags.has(TokenizationSeperationBitFlags::TokenizePipe) && c == '|') ||
+			(flags.has(TokenizationSeperationBitFlags::TokenizeGrave) && c == '`') ||
+			(flags.has(TokenizationSeperationBitFlags::TokenizeUnderscore) && c == '_') ||
+			(flags.has(TokenizationSeperationBitFlags::TokenizeOpenAngleBracket) && c == '<') ||
+			(flags.has(TokenizationSeperationBitFlags::TokenizeClosedAngleBracket) && c == '>') ||
+			(flags.has(TokenizationSeperationBitFlags::TokenizeOpenBracket) && c == '(') ||
+			(flags.has(TokenizationSeperationBitFlags::TokenizeClosedBracket) && c == ')') ||
+			(flags.has(TokenizationSeperationBitFlags::TokenizeOpenCurlyBracket) && c == '{') ||
+			(flags.has(TokenizationSeperationBitFlags::TokenizeClosedCurlyBracket) && c == '}') ||
+			(flags.has(TokenizationSeperationBitFlags::TokenizeOpenSquareBracket) && c == '[') ||
+			(flags.has(TokenizationSeperationBitFlags::TokenizeClosedSquareBracket) && c == ']')
+			)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	bool includes_token_seperator_str(std::string_view str, std::string_view target)
+	{
+		if (str.size() < target.size() && str.find(target) != std::string::npos)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
 	//** IN PROGRESS **//
 
-	EntireTokenizedFile tokenize(EntireUntokenizedFile& file, std::vector<std::string> const& items, WhiteSpaceDissolveFlag deleteWhiteSpace = WhiteSpaceDissolveBitFlags::DissolveAll, bool isolate = false);
 
-	EntireTokenizedFile tokenize(EntireUntokenizedFile& file, std::vector<std::string> const& items, WhiteSpaceDissolveFlag deleteWhiteSpace, bool isolate)
+
+	std::vector<TargetMatch> find_all_matching_indices_str(const std::string& mainStr, const std::string& target)
 	{
-		std::vector<std::string_view> tokens;
+		std::vector<TargetMatch> matches;
+		size_t currentPos = 0; 
+
+		while (size_t foundPos = mainStr.find(target, currentPos) != std::string::npos)
+		{
+			size_t endPos = foundPos + target.length();
+
+			matches.push_back({ foundPos, endPos });
+
+			currentPos = foundPos + target.length();
+
+			if (target.empty())
+			{
+				currentPos++;
+			}
+		}
+		return matches;
+	}
+
+
+	EntireTokenizedFile tokenize(EntireUntokenizedFile& file, std::vector<std::string> const& targets, WhiteSpaceDissolveFlag deleteWhiteSpace)
+	{
+		std::vector<std::pair<std::string_view, size_t>> tokens;
 		tokens.reserve(file.size() / 2);
 
-		size_t start = 0;
-		size_t i = 0;
+		size_t currentFilePos = 0; 
+		size_t tokenStart = 0;
 
 		auto isCharDissolvable = [&](char c) -> bool
 			{
@@ -211,87 +241,94 @@ namespace parser
 				return false;
 			};
 
-		auto isStringViewDissolvable = [&](std::string_view sv) -> bool
+		auto addTokenIfValid = [&](size_t startIndex, size_t endIndex)
 			{
-				for (char c : sv)
+				if (startIndex < endIndex)
 				{
-					if (!isCharDissolvable(c))
+					std::string_view currentSegment(file.data() + startIndex, endIndex - startIndex);
+					bool allDissolvable = true;
+					for (char c : currentSegment)
 					{
-						return false;
+						if (!isCharDissolvable(c))
+						{
+							allDissolvable = false;
+							break;
+						}
+					}
+					if (!allDissolvable) 
+					{
+						tokens.emplace_back(currentSegment, startIndex);
 					}
 				}
-				return true;
 			};
 
-		while (i < file.size())
+		while (currentFilePos < file.size())
 		{
-			bool matched = false;
+			bool targetMatched = false;
+			size_t matchedTargetLength = 0;
 
-			if (isCharDissolvable(file[i]))
+			if (isCharDissolvable(file[currentFilePos]))
 			{
-				if (start < i)
-				{
-					std::string_view current_token(file.data() + start, i - start);
-					if (!isStringViewDissolvable(current_token))
-					{
-						tokens.emplace_back(current_token);
-					}
-				}
-				start = i + 1;
-				i++;
-				continue;
+				addTokenIfValid(tokenStart, currentFilePos); 
+				tokenStart = currentFilePos + 1;             
+				currentFilePos++;
+				continue; 
 			}
 
-			for (const auto& item : items)
+			for (const auto& target : targets)
 			{
-				if (i + item.size() <= file.size() && file.compare(i, item.size(), item) == 0)
+				if (currentFilePos + target.size() <= file.size() && file.compare(currentFilePos, target.size(), target) == 0)
 				{
-					if (!isStringViewDissolvable(item))
+					addTokenIfValid(tokenStart, currentFilePos);
+
+					bool targetIsEntirelyDissolvable = true;
+					for (char c : target)
 					{
-						if (start < i)
+						if (!isCharDissolvable(c))
 						{
-							std::string_view precedingToken(file.data() + start, i - start);
-							if (!isStringViewDissolvable(precedingToken))
-							{
-								tokens.emplace_back(precedingToken);
-							}
+							targetIsEntirelyDissolvable = false;
+							break;
 						}
-
-						tokens.emplace_back(item);
-
-						start = i + item.size();
-						matched = true;
-						break;
 					}
-					else
+
+					if (!targetIsEntirelyDissolvable) 
 					{
-						start = i + item.size();
-						matched = true;
-						break;
+						tokens.emplace_back(std::string_view(file.data() + currentFilePos, target.size()), currentFilePos);
 					}
+
+					tokenStart = currentFilePos + target.size(); 
+					currentFilePos += target.size();             
+					targetMatched = true;
+					break; 
 				}
 			}
 
-			if (matched)
+			if (!targetMatched)
 			{
-				i = start;
-			}
-			else
-			{
-				i++;
+				currentFilePos++; 
 			}
 		}
 
-		if (start < file.size())
+		addTokenIfValid(tokenStart, file.size());
+
+
+		std::sort(tokens.begin(), tokens.end(),
+			[](const std::pair<std::string_view, size_t>& a,
+				const std::pair<std::string_view, size_t>& b)
+			{
+				return a.second < b.second;
+			});
+
+		std::vector <std::string_view> resultTokens;
+		for (auto& token : tokens)
 		{
-			std::string_view remainingToken(file.data() + start, file.size() - start);
-			if (!isStringViewDissolvable(remainingToken))
+			if (!token.first.empty())
 			{
-				tokens.emplace_back(remainingToken);
-			}
+				resultTokens.emplace_back(token.first);
+			}	
 		}
 
-		return tokens;
+		return resultTokens;
 	}
 
 

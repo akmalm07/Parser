@@ -122,7 +122,6 @@ namespace parser
 		TokenizeSquareBrackets = (TokenizeOpenSquareBracket | TokenizeClosedSquareBracket),
 		
 		TokenizeSpecialChars = (TokenizeAt |TokenizeHash |TokenizeDollar | TokenizePercent |TokenizeCaret |TokenizeAmpersand |TokenizeStar |TokenizeDash |TokenizePlus |TokenizeEqual |TokenizeSlash |TokenizeBackslash |TokenizeTilde |TokenizePipe |TokenizeGrave |TokenizeUnderscore |TokenizeAngleBrackets |TokenizeBrackets),
-		
 	};
 
 	using TokenizationSeperationFlag = Flags<TokenizationSeperationBitFlags>;
