@@ -24,7 +24,7 @@ namespace parser
 	};
 
 
-	struct BaseRule
+	struct BaseRuling
 	{
 	public:
 		ParserRule type;
@@ -35,7 +35,7 @@ namespace parser
 
 	template<size_t N>
 		requires (N > 0)
-	struct Rule : public BaseRule
+	struct Ruling : public BaseRuling
 	{
 	public:
 
@@ -43,39 +43,39 @@ namespace parser
 
 		size_t get_target_count() const override { return N; }
 
-		Rule(ParserRule r, std::array<std::string, N> const& t, std::string_view e)
+		Ruling(ParserRule r, std::array<std::string, N> const& t, std::string_view e)
 		{
 			type = r;
 			targets = t;
 			errMsg = e;
 		}
 
-		~Rule() = default;
+		~Ruling() = default;
 
 	};
 
 	template<>
-	struct Rule<1> : BaseRule
+	struct Ruling<1> : BaseRuling
 	{
 	public:
 		std::string target;
 
 		size_t get_target_count() const override { return 1; }
 
-		Rule(ParserRule r, std::string_view t, std::string_view e)
+		Ruling(ParserRule r, std::string_view t, std::string_view e)
 		{
 			type = r;
 			target = t;
 			errMsg = e;
 		}
 
-		~Rule() = default;
+		~Ruling() = default;
 	};
 
-	using RuleOneTarget = Rule<1>;
-	using RuleTwoTarget = Rule<2>;
+	using RulingOneTarget = Ruling<1>;
+	using RulingTwoTarget = Ruling<2>;
 
 	template<size_t N>
-	using RuleMultiTarget = Rule<N>;
+	using RulingMultiTarget = Ruling<N>;
 
 }

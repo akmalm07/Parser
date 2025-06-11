@@ -5,7 +5,7 @@
 namespace parser
 {
 
-	bool GlobalRuleHandler::check_rule(RuleInputBase const& data)
+	bool GlobalRule::check_rule(RuleInputBase const& data)
 	{
 		if (TokenizedSections const* sections = data.get_sections())
 		{
@@ -13,12 +13,12 @@ namespace parser
 		}
 		else
 		{
-			std::cerr << PARSER_LOG_ERR << "Invalid data type for GlobalRuleHandler." << std::endl;
+			std::cerr << PARSER_LOG_ERR << "Invalid data type for GlobalRule." << std::endl;
 			return false;
 		}
 	}
 
-	bool LocalRuleHandler::check_rule(RuleInputBase const& data)
+	bool LocalRule::check_rule(RuleInputBase const& data)
 	{
 		if (TokenizedSection const* section = data.get_section())
 		{
@@ -26,12 +26,17 @@ namespace parser
 		}
 		else
 		{
-			std::cerr << PARSER_LOG_ERR << "Invalid data type for LocalRuleHandler." << std::endl;
+			std::cerr << PARSER_LOG_ERR << "Invalid data type for LocalRule." << std::endl;
 			return false;
 		}
 	}
 
 
 
+
+	BaseRuling* Rule::get_rule()
+	{
+		return _rule.get();
+	}
 
 }

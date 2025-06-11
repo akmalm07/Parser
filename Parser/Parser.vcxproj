@@ -32,6 +32,7 @@
     <ClInclude Include="include\section_operations.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\rule_handler.cpp" />
     <ClCompile Include="src\sections.cpp" />
     <ClCompile Include="src\rule_operations.cpp" />
     <ClCompile Include="src\section_operations.cpp" />

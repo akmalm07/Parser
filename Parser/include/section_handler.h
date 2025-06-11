@@ -15,7 +15,11 @@ namespace parser {
 	public:
 		size_t id;
 		size_t depth;
-		size_t index;
+		size_t index; 
+		SectionCoords coords;
+		SectionKey(size_t sectionLevel, size_t sectionIndex, SectionCoords coords, size_t identifier = std::numeric_limits<size_t>::max())
+			: id(identifier), depth(sectionLevel), coords(coords), index(sectionIndex) {
+		}
 	};
 
 
@@ -83,33 +87,23 @@ namespace parser {
 			_sectionValues.push_back(section);
 		}
 
-		void debug_print_sections() const
-		{
-			for (const auto& section : _sectionValues)
-			{
-				std::cout << "Section Level: " << section->get_section_level() << ", Content: ";
-				for (const auto& token : section->get_content())
-				{
-					std::cout << token << " ";
-				}
-				std::cout << std::endl;
-			}
-		}
+		void debug_print_sections() const;
 
-		void remove_section(std::shared_ptr<BaseSection>& section)
-		{
+		TokenizedSectionizedCompact get_compressed_sections() const;
 
-		}
-
+		void remove_section(SectionKey section);
 	private:
 
 		CriteriaProcesserOutput user_criteria_processer(TockenizedUnsectionedFile const& file, std::vector<std::shared_ptr<BaseSectioning>> const& criteria);
 
 		void process_sectioning(TockenizedUnsectionedFile const& file, std::vector<std::shared_ptr<BaseSectioning>> const& criteria);
 
+
 	private:
 		std::vector<SectionKey> _sectionKeys;
 		std::vector<std::shared_ptr<BaseSection>> _sectionValues;
+	
+		TokenizedSectionizedCompact _compressedSections; // A compact representation of the sections, which includes the tokens and their coordinates in the original file.
 	};
 }
 

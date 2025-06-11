@@ -8,6 +8,19 @@ namespace parser {
 	void add_triggers(std::shared_ptr<BaseSectioning> const& criteria, std::vector<std::array<std::string_view, 2>>& triggers);
 
 
+	void SectionHandler::debug_print_sections() const
+	{
+		for (const auto& section : _sectionValues)
+		{
+			std::cout << "Section Level: " << section->get_section_level() << ", Content: ";
+			for (const auto& token : section->get_content())
+			{
+				std::cout << token << " ";
+			}
+			std::cout << std::endl;
+		}
+	}
+
 	CriteriaProcesserOutput SectionHandler::user_criteria_processer(TockenizedUnsectionedFile const& file, std::vector<std::shared_ptr<BaseSectioning>> const& criteria)
 	{
 		// This function is responsible for processing the tokenized sections and applying the sectioning criteria.
@@ -170,6 +183,15 @@ namespace parser {
 
 		std::shared_ptr<BaseSection> sectionAbove = std::make_shared<BaseSection>(1, file, nullptr);
 
+		_compressedSections.coords.reserve(file.size() / 4);
+		_compressedSections.tokens = file;
+
+		_sectionKeys.reserve(file.size() / 6);
+
+		_sectionValues.reserve(file.size() / 6);
+
+
+
 		_sectionValues.push_back(sectionAbove);
 
 		TockenizedUnsectionedFileIteratorConst currentEndOfSection = file.end();
@@ -184,6 +206,11 @@ namespace parser {
 
 				auto result = userCriteria.execute[iteration]->execute(SectioningInput(iterator, currentEndOfSection, sectionAbove));
 				_sectionValues.emplace_back(result.section);
+
+				_sectionKeys.emplace_back(result.section->get_section_level(), _sectionValues.size(), 
+					SectionCoords(iterator - file.begin(), result.endOfSection - file.begin()), result.section->get_section_identifier());
+
+				_compressedSections.coords.emplace_back(iterator - file.begin(), result.endOfSection - file.begin());
 
 				prevEndOfSections.push_back(currentEndOfSection);
 				currentEndOfSection = result.endOfSection;

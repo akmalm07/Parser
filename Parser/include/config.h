@@ -8,7 +8,10 @@
 #include <string_view>
 #include <string>
 #include <memory>
+#include <limits>
 
+
+#define ANONYMUS_SECTIONS_NOT_DEFUALT_CHECKED_BY_RULE 0; // 1 for yes, 0 for no. This is used to determine if the sections that are created by the section handler will be checked by the rules by default. If this is set to 1, then the sections will be checked by the rules by default. If this is set to 0, then the sections will not be checked by the rules by default. This can be changed later on in the code if needed.
 
 namespace parser {
 
@@ -19,7 +22,22 @@ namespace parser {
 	using TockenizedUnsectionedFileIteratorConst = TockenizedUnsectionedFile::const_iterator; // A vector of string_views, each string_view is a token in the file that has been tockenized. Each token is a view into the original file, so it can be used to access the original file without copying it. This is useful for large files where copying the entire file would be expensive in terms of memory and performance.
 
 	using TokenizedSection = std::vector<std::string_view>; // A section of the file that has been tokenized, each token is a string_view to the tokenized version of the entire file. This is useful for sections of the file that have been tokenized, where each token is a view into the original file, so it can be used to access the original file without copying it. This is useful for large files where copying the entire file would be expensive in terms of memory and performance.
-	using TokenizedSections = std::vector <std::vector<std::string_view>>; // A section of the file that has been tokenized, each token is a string_view to the tokenized version of the entire file. This is useful for sections of the file that have been tokenized, where each token is a view into the original file, so it can be used to access the original file without copying it. This is useful for large files where copying the entire file would be expensive in terms of memory and performance.
+	using TokenizedSections = std::vector<std::vector<std::string_view>>; // A section of the file that has been tokenized, each token is a string_view to the tokenized version of the entire file. This is useful for sections of the file that have been tokenized, where each token is a view into the original file, so it can be used to access the original file without copying it. This is useful for large files where copying the entire file would be expensive in terms of memory and performance.
+	
+	struct SectionCoords
+	{
+		size_t start;
+		size_t end;
+
+		SectionCoords(size_t start = 0, size_t end = 0) : start(start), end(end) {}
+	};
+
+	struct TokenizedSectionizedCompact // A compact representation of a tokenized section, which includes the tokens and their coordinates in the original file.
+	{
+		TockenizedUnsectionedFile tokens;
+		std::vector<SectionCoords> coords;
+	};
+
 
 
 	/*
