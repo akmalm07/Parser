@@ -24,6 +24,7 @@
     <ClInclude Include="include\parser.h" />
     <ClInclude Include="include\config.h" />
     <ClInclude Include="include\rule_handler.h" />
+    <ClInclude Include="include\rule_operations.h" />
     <ClInclude Include="include\tokenizer.h" />
     <ClInclude Include="include\section_handler.h" />
     <ClInclude Include="include\rules.h" />
@@ -31,7 +32,8 @@
     <ClInclude Include="include\section_operations.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="sections.cpp" />
+    <ClCompile Include="src\sections.cpp" />
+    <ClCompile Include="src\rule_operations.cpp" />
     <ClCompile Include="src\section_operations.cpp" />
     <ClCompile Include="src\headers.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
