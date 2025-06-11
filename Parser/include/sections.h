@@ -70,7 +70,7 @@ namespace parser
 
 	template<size_t N>
 		requires (N > 0)
-	struct Sectioning<N, HasIdentifier::No> : public BaseSectioning
+	struct Sectioning<N, HasIdentifier::No> : public BaseSectioning // TODO: add more target detectors!
 	{
 	public:
 

@@ -63,7 +63,7 @@ namespace parser
 
 	inline StringChecksFlag operator|(StringChecksBitFlags lhs, StringChecksBitFlags rhs)
 	{
-		return StringChecksFlag(lhs | rhs);
+		return StringChecksFlag(static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs));
 	}
 
 	// --TokenizationSeperationFlags--
@@ -71,54 +71,54 @@ namespace parser
 	enum class TokenizationSeperationBitFlags : uint64_t
 	{
 		None = 0,
-		TockeizeSpace = 1 << 0, 
-		TockeizeNewLine = 1 << 1, 
-		TockeizeTab = 1 << 2, 
+		TockeizeSpace = 1ULL << 0, 
+		TockeizeNewLine = 1ULL << 1, 
+		TockeizeTab = 1ULL << 2, 
 
 		TockeizeWhitespace = (TockeizeSpace | TockeizeNewLine | TockeizeTab), 
 
-		TockeizeAtoZ = 1 << 3, 
-		TockeizeDigit = 1 << 4, 
+		TockeizeAtoZ = 1ULL << 3, 
+		TockeizeDigit = 1ULL << 4, 
 
-		TockeizeExplemation = 1 << 5, 
-		TockeizeQuestion = 1 << 6, 
-		TockeizeColon = 1 << 7, 
-		TockeizeSemicolon = 1 << 8, 
-		TockeizeDot = 1 << 9,
-		TockeizeComma = 1 << 10,
+		TockeizeExplemation = 1ULL << 5, 
+		TockeizeQuestion = 1ULL << 6, 
+		TockeizeColon = 1ULL << 7, 
+		TockeizeSemicolon = 1ULL << 8, 
+		TockeizeDot = 1ULL << 9,
+		TockeizeComma = 1ULL << 10,
 
 		TockenizePunctuation = (TockeizeExplemation | TockeizeQuestion | TockeizeColon | TockeizeSemicolon| TockeizeDot | TockeizeComma),
 
 
-		TokenizeAt = 1 << 11, 
-		TokenizeHash = 1 << 12, 
-		TokenizeDollar = 1 << 13, 
-		TokenizePercent = 1 << 14, 
-		TokenizeCaret = 1 << 15, 
-		TokenizeAmpersand = 1 << 16, 
-		TokenizeStar = 1 << 17, 
-		TokenizeDash = 1 << 18, 
-		TokenizePlus = 1 << 19, 
-		TokenizeEqual = 1 << 20, 
-		TokenizeSlash = 1 << 21, 
-		TokenizeBackslash = 1 << 22, 
-		TokenizeTilde = 1 << 23, 
-		TokenizePipe = 1 << 24, 
-		TokenizeGrave = 1 << 25, 
-		TokenizeUnderscore = 1 << 26, 
+		TokenizeAt = 1ULL << 11, 
+		TokenizeHash = 1ULL << 12, 
+		TokenizeDollar = 1ULL << 13, 
+		TokenizePercent = 1ULL << 14, 
+		TokenizeCaret = 1ULL << 15, 
+		TokenizeAmpersand = 1ULL << 16, 
+		TokenizeStar = 1ULL << 17, 
+		TokenizeDash = 1ULL << 18, 
+		TokenizePlus = 1ULL << 19, 
+		TokenizeEqual = 1ULL << 20, 
+		TokenizeSlash = 1ULL << 21, 
+		TokenizeBackslash = 1ULL << 22, 
+		TokenizeTilde = 1ULL << 23, 
+		TokenizePipe = 1ULL << 24, 
+		TokenizeGrave = 1ULL << 25, 
+		TokenizeUnderscore = 1ULL << 26, 
 
-		TokenizeOpenAngleBracket = 1 << 27,   
-		TokenizeClosedAngleBracket = 1 << 28, 
+		TokenizeOpenAngleBracket = 1ULL << 27,   
+		TokenizeClosedAngleBracket = 1ULL << 28, 
 		TokenizeAngleBrackets = (TokenizeOpenAngleBracket | TokenizeClosedAngleBracket),
-		TokenizeOpenCurlyBracket = 1 << 29,   
-		TokenizeClosedCurlyBracket = 1 << 30, 
-		TokenizeBrackets = (TokenizeOpenCurlyBracket | TokenizeClosedCurlyBracket),
-		TokenizeOpenBracket = 1 << 31,   
-		TokenizeClosedBracket = 1 << 32, 
-		TokenizeCurlyBrackets = (TokenizeOpenBracket | TokenizeClosedBracket), 
+		TokenizeOpenCurlyBracket = 1ULL << 29,   
+		TokenizeClosedCurlyBracket = 1ULL << 30, 
+		TokenizeCurlyBrackets = (TokenizeOpenCurlyBracket | TokenizeClosedCurlyBracket),
+		TokenizeOpenBracket = 1ULL << 31,   
+		TokenizeClosedBracket = 1ULL << 32, 
+		TokenizeBrackets = (TokenizeOpenBracket | TokenizeClosedBracket),
 
-		TokenizeOpenSquareBracket = 1 << 33,   
-		TokenizeClosedSquareBracket = 1 << 34,
+		TokenizeOpenSquareBracket = 1ULL << 33,   
+		TokenizeClosedSquareBracket = 1ULL << 34,
 		TokenizeSquareBrackets = (TokenizeOpenSquareBracket | TokenizeClosedSquareBracket),
 		
 		TokenizeSpecialChars = (TokenizeAt |TokenizeHash |TokenizeDollar | TokenizePercent |TokenizeCaret |TokenizeAmpersand |TokenizeStar |TokenizeDash |TokenizePlus |TokenizeEqual |TokenizeSlash |TokenizeBackslash |TokenizeTilde |TokenizePipe |TokenizeGrave |TokenizeUnderscore |TokenizeAngleBrackets |TokenizeBrackets),
@@ -128,7 +128,7 @@ namespace parser
 
 	inline TokenizationSeperationFlag operator|(TokenizationSeperationBitFlags lhs, TokenizationSeperationBitFlags rhs)
 	{
-		return TokenizationSeperationFlag(lhs | rhs);
+		return TokenizationSeperationFlag(static_cast<uint64_t>(lhs) | static_cast<uint64_t>(rhs));
 	}
 
 
@@ -147,7 +147,7 @@ namespace parser
 
 	inline WhiteSpaceDissolveFlag operator|(WhiteSpaceDissolveBitFlags lhs, WhiteSpaceDissolveBitFlags rhs)
 	{
-		return WhiteSpaceDissolveFlag(lhs | rhs);
+		return WhiteSpaceDissolveFlag(static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs));
 	}
 
 
@@ -167,6 +167,6 @@ namespace parser
 
 	inline SectioningFlag operator|(SectioningBitFlags lhs, SectioningBitFlags rhs)
 	{
-		return SectioningFlag(lhs | rhs);
+		return SectioningFlag(static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs));
 	}
 }

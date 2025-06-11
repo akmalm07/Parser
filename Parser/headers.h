@@ -19,3 +19,5 @@
 	{\
 		stuff \
 	}
+
+#define NDEBUG(stuff) stuff

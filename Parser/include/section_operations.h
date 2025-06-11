@@ -88,7 +88,7 @@ namespace parser {
 		virtual SectioningInput<true> const* get_specialized() const;
 	};
 
-	template<bool IsSpecialized>
+	template<bool IsSpecialized> // TODO: make it so that hte template is size_t N, so the number of targets could be infinite!
 	struct SectioningInput : public SectioningInputBase
 	{
 		SectioningInput(TockenizedUnsectionedFileIterator const& placement, std::shared_ptr<BaseSection> above)

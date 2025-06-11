@@ -177,16 +177,19 @@ namespace parser {
 
 		auto update = [&](TockenizedUnsectionedFileIteratorConst iterator, size_t iteration)
 			{
-
+				
 				DEBUG(
 					std::cout << "Value for the currentEndOfSection:   " << (currentEndOfSection == file.end() ? "NULL" : *currentEndOfSection) << "   :and: " << *iterator << std::endl; // ERR, cannot dereference (*) the end of the file! its null
 					)
 
 				auto result = userCriteria.execute[iteration]->execute(SectioningInput(iterator, currentEndOfSection, sectionAbove));
 				_sectionValues.emplace_back(result.section);
+
 				prevEndOfSections.push_back(currentEndOfSection);
 				currentEndOfSection = result.endOfSection;
+
 				sectionAbove = _sectionValues.back();
+				DEBUG(std::cout << "Section above updated to: " << sectionAbove->get_section_level() << std::endl;);
 			};
 
 		for (size_t i = 0; i < file.size(); i++)
@@ -195,11 +198,18 @@ namespace parser {
 
 			for (auto const& [j, trigger] : userCriteria.triggers | std::views::enumerate)
 			{
+
 				if (currentEndOfSection != file.end() && file[i] == *currentEndOfSection)
 				{
 					currentEndOfSection = prevEndOfSections.empty() ? file.end() : prevEndOfSections.back();
 					prevEndOfSections.pop_back();
+					
+					DEBUG(std::cout << "CurrentEndOfSection updated to: " << (currentEndOfSection == file.end() ? "NULL" : *currentEndOfSection) << std::endl;);
+					DEBUG(std::cout << "Section above updated to: " << sectionAbove->get_section_level() << std::endl;);
+					
+					sectionAbove = sectionAbove->get_section_above();
 				}
+
 				switch (userCriteria.sectioningType[j])
 				{
 				case ParserSectioning::NewSectionWhenFound:

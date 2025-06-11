@@ -8,19 +8,39 @@ int main()
 
 	
 
-	EntireUntokenizedFile fileStr = "This is a test file for the parser section handler";
+	EntireUntokenizedFile fileStr = R"(
+	IF (BOOL1)
+	{
+		// Do something
+		IF (BOOL2)
+		{
+			// Do something else
 
+		}
 
-	EntireTokenizedFile file = tokenize(fileStr, TokenizationSeperationBitFlags::TockeizeWhitespace);
+	WHILE(BOOL3)
+	{
+	}
+
+	}
+)";
+		
+	enum STUFF
+	{
+		BOOL,
+		IF,
+	};
+
+	EntireTokenizedFile file = tokenize(fileStr, TokenizationSeperationBitFlags::TokenizeBrackets, WhiteSpaceDissolveBitFlags::DissolveAll, true);
 
 
 	print_tokens(file);
-
+	
 
 	std::vector<std::shared_ptr<BaseSectioning>> criteria = {
-		new_section_when_between_shared<HasIdentifier::No>("a", "file"),
-		new_section_when_after_shared<HasIdentifier::No>("test", "a"),
-		new_section_when_found_shared<HasIdentifier::No>("section"),
+		new_section_when_between_shared<HasIdentifier::Yes>("(", ")", BOOL),
+		new_section_when_between_shared<HasIdentifier::Yes>("IF (BOOL1) {", "}", IF),
+
 		//new_section_when_found_shared<HasIdentifier::No>("parser")
 	};
 

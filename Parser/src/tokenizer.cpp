@@ -31,6 +31,7 @@ namespace parser
 		{
 			char c = text[i];
 
+
 			if (c == '\0') 
 				continue;
 
@@ -67,12 +68,9 @@ namespace parser
 					inToken = false;
 				}
 
-				if (isolate)
-				{
-					if (!isCharDissolvable(c))
-					{
-						tokens.emplace_back(text.data() + i, 1);
-					}
+				if (isolate && !isCharDissolvable(c))
+				{		
+					tokens.emplace_back(text.data() + i, 1);
 				}
 				else if (!isCharDissolvable(c)) 
 				{
@@ -154,7 +152,6 @@ namespace parser
 			(flags.has(TokenizationSeperationBitFlags::TockeizeSemicolon) && c == ';') ||
 			(flags.has(TokenizationSeperationBitFlags::TockeizeDot) && c == '.') ||
 			(flags.has(TokenizationSeperationBitFlags::TockeizeComma) && c == ',') ||
-
 			(flags.has(TokenizationSeperationBitFlags::TokenizeAt) && c == '@') ||
 			(flags.has(TokenizationSeperationBitFlags::TokenizeHash) && c == '#') ||
 			(flags.has(TokenizationSeperationBitFlags::TokenizeDollar) && c == '$') ||
