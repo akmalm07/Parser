@@ -64,7 +64,9 @@ namespace parser
 			: _rule(std::move(rule)), _identifier(identifier)
 		{}
 
-		BaseRuling* get_rule();
+		view_ptr<BaseRuling> get_rule();
+
+		size_t get_identifier() const;
 
 		virtual bool check_rule(RuleInputBase const& data) = 0;
 

@@ -34,9 +34,15 @@ namespace parser
 
 
 
-	BaseRuling* Rule::get_rule()
+	view_ptr<BaseRuling> Rule::get_rule()
 	{
 		return _rule.get();
 	}
+
+	size_t Rule::get_identifier() const
+	{
+		return _identifier;
+	}
+
 
 }
