@@ -55,12 +55,12 @@ namespace parser
 
 		ExecutionOutput output = _execute(placementNum, realInput->placement);
 
-		if (auto criteria = _criteria.lock())
+		if (auto _criteria = __criteria.lock())
 		{
 			size_t identifier = std::numeric_limits<size_t>::max();
-			if (criteria->is_identifible())
+			if (_criteria->is_identifible())
 			{
-				identifier = static_cast<SectioningIdentifier<N>*>(criteria.get())->integerIdentifier;
+				identifier = static_cast<SectioningIdentifier<N> const*>(_criteria)->integerIdentifier;
 			}
 
 			return { output.endOfSection, std::make_shared<BaseSection>(output.content, realInput->sectionAbove, identifier) };
@@ -90,25 +90,17 @@ namespace parser
 		size_t placementNum = realInput->endOfSection - realInput->placement;
 
 
-
-		if (auto criteria = _criteria.lock())
-		{
-			ExecutionOutput output = _execute(placementNum, realInput->placement, criteria.get());
+		ExecutionOutput output = _execute(placementNum, realInput->placement, const_cast<BaseSectioning*>(_criteria));
 			
-			size_t identifier = std::numeric_limits<size_t>::max();
-			if (criteria->is_identifible())
-			{
-				identifier = static_cast<SectioningIdentifier<N>*>(criteria.get())->integerIdentifier;
-			}
-
-			return { output.endOfSection, std::make_shared<BaseSection>(output.content, realInput->sectionAbove, identifier) };
-
-		}
-		else
+		size_t identifier = std::numeric_limits<size_t>::max();
+		if (_criteria->is_identifible())
 		{
-			std::cerr << PARSER_LOG_ERR << "Invalid or Expired Pointer for Executing the Sectioning Output!\n";
-			return { realInput->placement, nullptr };
+			identifier = static_cast<SectioningIdentifier<N> const*>(_criteria)->integerIdentifier;
 		}
+
+		return { output.endOfSection, std::make_shared<BaseSection>(output.content, realInput->sectionAbove, identifier) };
+
+		
 	}
 
 
@@ -129,24 +121,16 @@ namespace parser
 
 
 
-		if (auto criteria = _criteria.lock())
-		{
-			ExecutionOutput output = _execute(placementNum, realInput->placement, realInput->endOfSection, criteria.get());
+		ExecutionOutput output = _execute(placementNum, realInput->placement, realInput->endOfSection, const_cast<BaseSectioning*>(_criteria));
 			
-			size_t identifier = std::numeric_limits<size_t>::max();
-			if (criteria->is_identifible())
-			{
-				identifier = static_cast<SectioningIdentifier<N>*>(criteria.get())->integerIdentifier;
-			}
-
-			return { output.endOfSection, std::make_shared<BaseSection>(output.content, realInput->sectionAbove, identifier) };
-		}
-		else
+		size_t identifier = std::numeric_limits<size_t>::max();
+		if (_criteria->is_identifible())
 		{
-			std::cerr << PARSER_LOG_ERR << "Invalid or Expired Pointer for Executing the Sectioning Output!\n";
-			return { realInput->placement, nullptr };
-
+			identifier = static_cast<SectioningIdentifier<N> const*>(_criteria)->integerIdentifier;
 		}
+
+		return { output.endOfSection, std::make_shared<BaseSection>(output.content, realInput->sectionAbove, identifier) };
+
 	}
 
 
@@ -164,24 +148,15 @@ namespace parser
 
 		size_t placementNum = realInput->endOfSection - realInput->placement;
 
-
 		ExecutionOutput output = _execute(placementNum, realInput->placement, realInput->endOfSection); // in instances that WhenFound is inside Between, a crash occurs
 
-		if (auto criteria = _criteria.lock()) 
+		size_t identifier = std::numeric_limits<size_t>::max();
+		if (_criteria->is_identifible())
 		{
-			size_t identifier = std::numeric_limits<size_t>::max();
-			if (criteria->is_identifible())
-			{
-				identifier = static_cast<SectioningIdentifier<N>*>(criteria.get())->integerIdentifier;
-			}
-
-			return { output.endOfSection, std::make_shared<BaseSection>(output.content, realInput->sectionAbove, identifier) };
+			identifier = static_cast<SectioningIdentifier<N> const*>(_criteria)->integerIdentifier;
 		}
-		else 
-		{
-			std::cerr << PARSER_LOG_ERR << "Invalid or Expired Pointer for Executing the Sectioning Output!\n";
-			return { realInput->placement, nullptr };
 
-		}
+		return { output.endOfSection, std::make_shared<BaseSection>(output.content, realInput->sectionAbove, identifier) };
+
 	}
 }

@@ -13,9 +13,9 @@ namespace parser
 	public:
 		RuleHandler() = default; 
 
-		RuleHandler(std::vector<std::unique_ptr<Rule>> const& rules) : _rules(rules) {}
+		RuleHandler(std::vector<std::unique_ptr<Rule>>& rules) : _rules(std::move(rules)) {}
 
-		std::vector<std::unique_ptr<Rule>> get_rules() const;
+		std::vector<std::unique_ptr<Rule>> const& get_rules() const;
 
 		bool check_rules(TokenizedSections files);
 		

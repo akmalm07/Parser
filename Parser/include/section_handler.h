@@ -77,7 +77,7 @@ namespace parser {
 	public:
 		SectionHandler() = default;
 
-		SectionHandler(TockenizedUnsectionedFile const& tokenizedSections, std::vector<std::shared_ptr<BaseSectioning>> const& criteria)
+		SectionHandler(TockenizedUnsectionedFile const& tokenizedSections, std::vector<std::unique_ptr<BaseSectioning>> const& criteria)
 		{
 			process_sectioning(tokenizedSections, criteria);
 		}
@@ -94,9 +94,9 @@ namespace parser {
 		void remove_section(SectionKey section);
 	private:
 
-		CriteriaProcesserOutput user_criteria_processer(TockenizedUnsectionedFile const& file, std::vector<std::shared_ptr<BaseSectioning>> const& criteria);
+		CriteriaProcesserOutput user_criteria_processer(TockenizedUnsectionedFile const& file, std::vector<std::unique_ptr<BaseSectioning>> const& criteria);
 
-		void process_sectioning(TockenizedUnsectionedFile const& file, std::vector<std::shared_ptr<BaseSectioning>> const& criteria);
+		void process_sectioning(TockenizedUnsectionedFile const& file, std::vector<std::unique_ptr<BaseSectioning>> const& criteria);
 
 
 	private:

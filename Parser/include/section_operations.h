@@ -219,9 +219,9 @@ namespace parser {
 	public:
 
 		ExecuteFunctor() = default;
-		ExecuteFunctor(std::shared_ptr<BaseSectioning> const& criteria,
+		ExecuteFunctor(BaseSectioning const* criteria,
 			std::function<ExecutionOutput(size_t, TockenizedUnsectionedFileIteratorConst)>&& execute)
-			: _criteria(std::move(criteria)), _execute(std::move(execute))
+			: _criteria(criteria), _execute(std::move(execute))
 		{
 		}
 
@@ -230,7 +230,7 @@ namespace parser {
 		SectioningOutput operator() (SectioningInputBase const& input) override final;
 
 	protected:
-		std::weak_ptr<BaseSectioning> _criteria;;
+		BaseSectioning const* _criteria;;
 
 		std::function<ExecutionOutput(size_t placementNum, 
 			TockenizedUnsectionedFileIteratorConst placement)> _execute;
@@ -243,7 +243,7 @@ namespace parser {
 	public:
 
 		ExecuteFunctor() = default;
-		ExecuteFunctor(std::shared_ptr<BaseSectioning> const& criteria,
+		ExecuteFunctor(BaseSectioning const* criteria,
 			std::function<ExecutionOutput(size_t, TockenizedUnsectionedFileIteratorConst, BaseSectioning*)>&& execute)
 			: _criteria(criteria), _execute(std::move(execute))
 		{
@@ -254,7 +254,7 @@ namespace parser {
 		SectioningOutput operator() (SectioningInputBase const& input) override final;
 
 	protected:
-		std::weak_ptr<BaseSectioning> _criteria;
+		BaseSectioning const* _criteria;
 
 		std::function<ExecutionOutput(size_t placementNum, 
 			TockenizedUnsectionedFileIteratorConst placement, BaseSectioning* criteria)> _execute;
@@ -267,9 +267,9 @@ namespace parser {
 	public:
 
 		ExecuteFunctor() = default;
-		ExecuteFunctor(std::shared_ptr<BaseSectioning> const& criteria,
+		ExecuteFunctor(BaseSectioning const* criteria,
 			std::function<ExecutionOutput(size_t, TockenizedUnsectionedFileIteratorConst, TockenizedUnsectionedFileIteratorConst, BaseSectioning*)>&& execute)
-			: _criteria(std::move(criteria)), _execute(std::move(execute))
+			: _criteria(criteria), _execute(std::move(execute))
 		{
 		}
 
@@ -278,7 +278,7 @@ namespace parser {
 		SectioningOutput operator() (SectioningInputBase const& input) override final;
 
 	private:
-		std::weak_ptr<BaseSectioning> _criteria;;
+		BaseSectioning const* _criteria;;
 
 		std::function<ExecutionOutput(size_t placementNum, 
 			TockenizedUnsectionedFileIteratorConst placement, 
@@ -292,9 +292,9 @@ namespace parser {
 	{ 
 	public:
 		ExecuteFunctor() = default;
-		ExecuteFunctor(std::shared_ptr<BaseSectioning> const& criteria,
+		ExecuteFunctor(BaseSectioning const* criteria,
 			std::function<ExecutionOutput(size_t, TockenizedUnsectionedFileIteratorConst, TockenizedUnsectionedFileIteratorConst)>&& execute)
-			: _criteria(std::move(criteria)), _execute(std::move(execute))
+			: _criteria(criteria), _execute(std::move(execute))
 		{
 		}
 
@@ -303,7 +303,7 @@ namespace parser {
 		SectioningOutput operator() (SectioningInputBase const& input) override final;
 
 	private:
-		std::weak_ptr<BaseSectioning> _criteria;;
+		BaseSectioning const* _criteria;;
 
 		std::function<ExecutionOutput(size_t placementNum,
 			TockenizedUnsectionedFileIteratorConst placement,

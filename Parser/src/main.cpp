@@ -37,12 +37,11 @@ int main()
 	print_tokens(file);
 	
 
-	std::vector<std::shared_ptr<BaseSectioning>> criteria = {
-		new_section_when_between_shared<HasIdentifier::Yes>("(", ")", BOOL),
-		new_section_when_between_shared<HasIdentifier::Yes>("IF (BOOL1) {", "}", IF),
+	std::vector<std::unique_ptr<BaseSectioning>> criteria;
 
-		//new_section_when_found_shared<HasIdentifier::No>("parser")
-	};
+	criteria.push_back(new_section_when_between_unique<HasIdentifier::Yes>("(", ")", BOOL));
+	criteria.push_back(new_section_when_between_unique<HasIdentifier::Yes>("IF (BOOL1) {", "}", IF));
+
 
 	SectionHandler handler(file, criteria);
 

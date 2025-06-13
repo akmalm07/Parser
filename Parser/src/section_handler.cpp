@@ -5,7 +5,7 @@
 namespace parser {
 	
 	template <size_t T, bool Both>
-	void add_triggers(std::shared_ptr<BaseSectioning> const& criteria, std::vector<std::array<std::string_view, 2>>& triggers);
+	void add_triggers(std::unique_ptr<BaseSectioning> const& criteria, std::vector<std::array<std::string_view, 2>>& triggers);
 
 
 	void SectionHandler::debug_print_sections() const
@@ -21,7 +21,7 @@ namespace parser {
 		}
 	}
 
-	CriteriaProcesserOutput SectionHandler::user_criteria_processer(TockenizedUnsectionedFile const& file, std::vector<std::shared_ptr<BaseSectioning>> const& criteria)
+	CriteriaProcesserOutput SectionHandler::user_criteria_processer(TockenizedUnsectionedFile const& file, std::vector<std::unique_ptr<BaseSectioning>> const& criteria)
 	{
 		// This function is responsible for processing the tokenized sections and applying the sectioning criteria.
 		// It will create sections based on the criteria provided and organize the tokens accordingly.
@@ -51,7 +51,7 @@ namespace parser {
 
 				add_triggers<1, false>(criteria[i], triggers);
 
-				execute.emplace_back(std::make_unique<ExecuteFunc<1>>(criteria[i], []
+				execute.emplace_back(std::make_unique<ExecuteFunc<1>>(criteria[i].get(), []
 				(size_t placementNum, TockenizedUnsectionedFileIteratorConst placement, TockenizedUnsectionedFileIteratorConst currentEndOfSection) -> ExecutionOutput
 					{
 						std::vector<std::string_view> content;
@@ -78,7 +78,7 @@ namespace parser {
 
 				add_triggers<2, false>(criteria[i], triggers);
 
-				execute.emplace_back(std::make_unique<ExecuteFuncWithCriteria<2>>(criteria[i], []
+				execute.emplace_back(std::make_unique<ExecuteFuncWithCriteria<2>>(criteria[i].get(), []
 					(size_t placementNum, TockenizedUnsectionedFileIteratorConst placement, TockenizedUnsectionedFileIteratorConst currentEndOfSection, BaseSectioning* criteria) -> ExecutionOutput
 					{
 						std::vector<std::string_view> content;
@@ -132,8 +132,7 @@ namespace parser {
 
 				add_triggers<2, true>(criteria[i], triggers);
 
-				execute.emplace_back(std::make_unique<ExecuteFuncWithCriteria<2>>(criteria[i],
-					[]
+				execute.emplace_back(std::make_unique<ExecuteFuncWithCriteria<2>>(criteria[i].get(), []
 					(size_t placementNum, TockenizedUnsectionedFileIteratorConst placement, TockenizedUnsectionedFileIteratorConst currentEndOfSection, BaseSectioning* criteria) -> ExecutionOutput
 					{
 						std::vector<std::string_view> content;
@@ -177,7 +176,7 @@ namespace parser {
 
 
 
-	void SectionHandler::process_sectioning(TockenizedUnsectionedFile const& file, std::vector<std::shared_ptr<BaseSectioning>> const& criteria)
+	void SectionHandler::process_sectioning(TockenizedUnsectionedFile const& file, std::vector<std::unique_ptr<BaseSectioning>> const& criteria)
 	{
 		CriteriaProcesserOutput userCriteria = user_criteria_processer(file, criteria);
 
@@ -287,7 +286,7 @@ namespace parser {
 
 
 	template<size_t T, bool Both>
-	void add_triggers(std::shared_ptr<BaseSectioning> const& criteria, std::vector<std::array<std::string_view, 2>>& triggers)
+	void add_triggers(std::unique_ptr<BaseSectioning> const& criteria, std::vector<std::array<std::string_view, 2>>& triggers)
 	{
 		if (criteria->is_identifible())
 		{
@@ -296,14 +295,14 @@ namespace parser {
 				if constexpr (Both)
 					triggers.push_back({ static_cast<SectioningIdentifier<T>*>(criteria.get())->target, static_cast<SectioningIdentifier<T>*>(criteria.get())->target });
 				else
-					triggers.push_back({ static_cast<SectioningIdentifier<T>*>(criteria.get())->target });
+					triggers.push_back({ static_cast<SectioningIdentifier<T>*>(criteria.get())->target, "" });
 			}
 			else
 			{
 				if constexpr (Both)
 					triggers.push_back({ static_cast<SectioningIdentifier<T>*>(criteria.get())->targets[0], static_cast<SectioningIdentifier<T>*>(criteria.get())->targets[1] });
 				else
-					triggers.push_back({ static_cast<SectioningIdentifier<T>*>(criteria.get())->targets[0] });
+					triggers.push_back({ static_cast<SectioningIdentifier<T>*>(criteria.get())->targets[0], "" });
 			}
 		}
 		else
@@ -313,14 +312,14 @@ namespace parser {
 				if constexpr (Both)
 					triggers.push_back({ static_cast<SectioningUnidentifier<T>*>(criteria.get())->target, static_cast<SectioningIdentifier<T>*>(criteria.get())->target });
 				else
-					triggers.push_back({ static_cast<SectioningUnidentifier<T>*>(criteria.get())->target });
+					triggers.push_back({ static_cast<SectioningUnidentifier<T>*>(criteria.get())->target, ""});
 			}
 			else
 			{
 				if constexpr (Both)
 					triggers.push_back({ static_cast<SectioningUnidentifier<T>*>(criteria.get())->targets[0], static_cast<SectioningIdentifier<T>*>(criteria.get())->targets[1] });
 				else
-					triggers.push_back({ static_cast<SectioningUnidentifier<T>*>(criteria.get())->targets[0] });
+					triggers.push_back({ static_cast<SectioningUnidentifier<T>*>(criteria.get())->targets[0], "" });
 			}
 		}
 	}

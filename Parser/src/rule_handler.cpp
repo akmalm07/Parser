@@ -6,7 +6,7 @@
 namespace parser
 {
 
-	std::vector<std::unique_ptr<Rule>> RuleHandler::get_rules() const
+	std::vector<std::unique_ptr<Rule>> const& RuleHandler::get_rules() const
 	{
 		return _rules;
 	}
