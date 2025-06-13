@@ -11,4 +11,9 @@ namespace parser
 		return _rules;
 	}
 
+	bool RuleHandler::check_rules(TokenizedSections files)
+	{
+		return false;
+	}
+
 }

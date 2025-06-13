@@ -17,8 +17,13 @@ namespace parser {
 		size_t depth;
 		size_t index; 
 		SectionCoords coords;
-		SectionKey(size_t sectionLevel, size_t sectionIndex, SectionCoords coords, size_t identifier = std::numeric_limits<size_t>::max())
+		SectionKey(size_t sectionLevel, size_t identifier = std::numeric_limits<size_t>::max(), size_t sectionIndex = 0, SectionCoords coords = { 0, 0 })
 			: id(identifier), depth(sectionLevel), coords(coords), index(sectionIndex) {
+		}
+
+		bool operator==(const SectionKey& other) const
+		{
+			return id == other.id && depth == other.depth;
 		}
 	};
 
@@ -27,12 +32,12 @@ namespace parser {
 	{
 	public:
 
-		Section(std::vector<std::string_view> const& content, std::shared_ptr<Section> sectionAbove = nullptr, size_t sectionIdentifier = -1)
+		Section(std::vector<std::string_view> const& content, view_ptr<Section> sectionAbove = nullptr, size_t sectionIdentifier = -1)
 			: BaseSection(content, sectionAbove, sectionIdentifier)
 		{
 		}
 
-		Section(size_t sectionLvl, std::vector<std::string_view> const& content, std::shared_ptr<Section> sectionAbove = nullptr, size_t sectionIdentifier = -1)
+		Section(size_t sectionLvl, std::vector<std::string_view> const& content, view_ptr<Section> sectionAbove = nullptr, size_t sectionIdentifier = -1)
 			: BaseSection(sectionLvl, content, sectionAbove, sectionIdentifier)
 		{
 		}
@@ -82,16 +87,13 @@ namespace parser {
 			process_sectioning(tokenizedSections, criteria);
 		}
 
-		void add_section(std::shared_ptr<BaseSection>& section)
-		{
-			_sectionValues.push_back(section);
-		}
+		void add_section(SectionKey const& key, std::unique_ptr<BaseSection>&& section);
 
 		void debug_print_sections() const;
 
 		TokenizedSectionizedCompact get_compressed_sections() const;
 
-		void remove_section(SectionKey section);
+		void remove_section(SectionKey const& key);
 	private:
 
 		CriteriaProcesserOutput user_criteria_processer(TockenizedUnsectionedFile const& file, std::vector<std::unique_ptr<BaseSectioning>> const& criteria);
@@ -101,7 +103,7 @@ namespace parser {
 
 	private:
 		std::vector<SectionKey> _sectionKeys;
-		std::vector<std::shared_ptr<BaseSection>> _sectionValues;
+		std::vector<std::unique_ptr<BaseSection>> _sectionValues;
 	
 		TokenizedSectionizedCompact _compressedSections; // A compact representation of the sections, which includes the tokens and their coordinates in the original file.
 	};

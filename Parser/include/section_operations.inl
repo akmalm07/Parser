@@ -42,12 +42,12 @@ namespace parser
 		requires (N > 0)
 	SectioningOutput ExecuteFunctor<N, CriteriaNeeded::No, EndOfIteratorNeeded::No>::operator()(SectioningInputBase const& input)
 	{
-		SectioningInput<true> const* realInput = input.get_specialized();
+		view_ptr<SectioningInput<true>> realInput = input.get_specialized();
 
 		if (!realInput)
 		{
 			std::cerr << PARSER_LOG_ERR << "Invalid SectioningInputBase provided to ExecuteFunctor." << std::endl;
-			return { realInput->placement, nullptr };
+			return { input.placement, nullptr };
 		}
 
 		size_t placementNum = realInput->endOfSection - realInput->placement;
@@ -79,12 +79,12 @@ namespace parser
 		requires (N > 0)
 	SectioningOutput ExecuteFunctor<N, CriteriaNeeded::Yes, EndOfIteratorNeeded::No>::operator()(SectioningInputBase const& input)
 	{
-		SectioningInput<true> const* realInput = input.get_specialized();
+		view_ptr<SectioningInput<true>> realInput = input.get_specialized();
 
 		if (!realInput)
 		{
 			std::cerr << PARSER_LOG_ERR << "Invalid SectioningInputBase provided to ExecuteFunctor." << std::endl;
-			return { realInput->placement, nullptr };
+			return { input.placement, nullptr };
 		}
 
 		size_t placementNum = realInput->endOfSection - realInput->placement;
@@ -98,7 +98,7 @@ namespace parser
 			identifier = static_cast<SectioningIdentifier<N> const*>(_criteria)->integerIdentifier;
 		}
 
-		return { output.endOfSection, std::make_shared<BaseSection>(output.content, realInput->sectionAbove, identifier) };
+		return { output.endOfSection, std::make_unique<BaseSection>(output.content, realInput->sectionAbove, identifier) };
 
 		
 	}
@@ -109,12 +109,12 @@ namespace parser
 		requires (N > 0)
 	SectioningOutput ExecuteFunctor<N, CriteriaNeeded::Yes, EndOfIteratorNeeded::Yes>::operator()(SectioningInputBase const& input)
 	{
-		SectioningInput<true> const* realInput = input.get_specialized();
+		view_ptr<SectioningInput<true>> realInput = input.get_specialized();
 		
 		if (!realInput)
 		{
 			std::cerr << PARSER_LOG_ERR << "Invalid SectioningInputBase provided to ExecuteFunctor." << std::endl;
-			return { realInput->placement, nullptr };
+			return { input.placement, nullptr };
 		}
 
 		size_t placementNum = realInput->endOfSection - realInput->placement;
@@ -129,7 +129,7 @@ namespace parser
 			identifier = static_cast<SectioningIdentifier<N> const*>(_criteria)->integerIdentifier;
 		}
 
-		return { output.endOfSection, std::make_shared<BaseSection>(output.content, realInput->sectionAbove, identifier) };
+		return { output.endOfSection, std::make_unique<BaseSection>(output.content, realInput->sectionAbove, identifier) };
 
 	}
 
@@ -138,12 +138,12 @@ namespace parser
 		requires (N > 0)
 	SectioningOutput ExecuteFunctor<N, CriteriaNeeded::No, EndOfIteratorNeeded::Yes>::operator()(SectioningInputBase const& input)
 	{
-		SectioningInput<true> const* realInput = input.get_specialized();
+		view_ptr<SectioningInput<true>> realInput = input.get_specialized();
 		
 		if (!realInput)
 		{
 			std::cerr << PARSER_LOG_ERR << "Invalid SectioningInputBase provided to ExecuteFunctor." << std::endl;
-			return { realInput->placement, nullptr };
+			return { input.placement, nullptr };
 		}
 
 		size_t placementNum = realInput->endOfSection - realInput->placement;
@@ -156,7 +156,7 @@ namespace parser
 			identifier = static_cast<SectioningIdentifier<N> const*>(_criteria)->integerIdentifier;
 		}
 
-		return { output.endOfSection, std::make_shared<BaseSection>(output.content, realInput->sectionAbove, identifier) };
+		return { output.endOfSection, std::make_unique<BaseSection>(output.content, realInput->sectionAbove, identifier) };
 
 	}
 }

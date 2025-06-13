@@ -4,12 +4,12 @@
 namespace parser 
 {
 
-	SectioningInput<true> const* parser::SectioningInputBase::get_specialized() const
+	view_ptr<SectioningInput<true>> parser::SectioningInputBase::get_specialized() const
 	{
 		return nullptr;
 	}
 
-	SectioningInput<true> const* SectioningInput<true>::get_specialized() const
+	view_ptr<SectioningInput<true>> SectioningInput<true>::get_specialized() const
 	{
 		return this;
 	}
@@ -19,7 +19,7 @@ namespace parser
 		return _sectionLevel;
 	}
 
-	std::shared_ptr<BaseSection> BaseSection::get_section_above() const
+	view_ptr<BaseSection> BaseSection::get_section_above() const
 	{
 		return _sectionAbove;
 	}

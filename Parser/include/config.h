@@ -35,10 +35,14 @@ namespace parser {
 	struct TokenizedSectionizedCompact // A compact representation of a tokenized section, which includes the tokens and their coordinates in the original file.
 	{
 		TockenizedUnsectionedFile tokens;
+		
 		std::vector<SectionCoords> coords;
+
 	};
 
+	using EntireTokenizedFile = std::vector<std::string_view>; // A vector of strings, each string is a section of the file that has been tokenized. Each string is a tockenized version of the entire file, where each token is separated by whitespace or newlines.
 
+	using EntireUntokenizedFile = std::string; // String that contains the entire file that has not been tockenized yet.
 
 	/*
 	using TockenizedSection = std::vector<std::string_view>; // A section of the file that has been tokenized, each token is a string_view to the tokenized version of the entire file.
@@ -48,9 +52,14 @@ namespace parser {
 	using TockenizedSectionsIterator = TockenizedSections::iterator; // Iterator value for the TockenizedSections, used to iterate over the sections of the file that have been tokenized.
 	*/
 
-	using EntireTokenizedFile = std::vector<std::string_view>; // A vector of strings, each string is a section of the file that has been tokenized. Each string is a tockenized version of the entire file, where each token is separated by whitespace or newlines.
 
-	using EntireUntokenizedFile = std::string; // String that contains the entire file that has not been tockenized yet.
+	template <class T>
+	using view_ptr = T const* const;
+	
+
+	template <class T>
+	using view_ptr_non_const = T const*;
+
 
 
 	enum class ParserReadType : uint32_t

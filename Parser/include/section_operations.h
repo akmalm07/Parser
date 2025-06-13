@@ -15,12 +15,12 @@ namespace parser {
 	public:
 
 		BaseSection() = default;
-		BaseSection(size_t sectionLevel, std::vector<std::string_view> const& content, std::shared_ptr<BaseSection> sectionAbove, size_t sectionIdentifier = 0)
-			: _sectionLevel(sectionLevel), _content(content), _sectionAbove(std::move(sectionAbove)), _sectionIdentifier(sectionIdentifier) 
+		BaseSection(size_t sectionLevel, std::vector<std::string_view> const& content, view_ptr<BaseSection> sectionAbove, size_t sectionIdentifier = 0)
+			: _sectionLevel(sectionLevel), _content(content), _sectionAbove(sectionAbove), _sectionIdentifier(sectionIdentifier) 
 		{
 		}
 
-		BaseSection(std::vector<std::string_view> const& content, std::shared_ptr<BaseSection> sectionAbove, size_t sectionIdentifier = 0)
+		BaseSection(std::vector<std::string_view> const& content, view_ptr<BaseSection> sectionAbove, size_t sectionIdentifier = 0)
 			: _sectionAbove(sectionAbove), _content(content), _sectionIdentifier(sectionIdentifier)
 		{
 			determine_section_level();
@@ -28,11 +28,11 @@ namespace parser {
 
 
 		//Without Content Ctors
-		BaseSection(size_t sectionLevel, std::shared_ptr<BaseSection> sectionAbove, size_t sectionIdentifier = 0)
+		BaseSection(size_t sectionLevel, view_ptr<BaseSection> sectionAbove, size_t sectionIdentifier = 0)
 			: _sectionLevel(sectionLevel), _sectionAbove(std::move(sectionAbove)), _sectionIdentifier(sectionIdentifier) {
 		}
 
-		BaseSection(std::shared_ptr<BaseSection> sectionAbove, size_t sectionIdentifier = 0)
+		BaseSection(view_ptr<BaseSection> sectionAbove, size_t sectionIdentifier = 0)
 			: _sectionAbove(sectionAbove), _sectionIdentifier(sectionIdentifier)
 		{
 			determine_section_level();
@@ -52,7 +52,7 @@ namespace parser {
 
 		size_t get_section_level() const;
 
-		std::shared_ptr<BaseSection> get_section_above() const;
+		view_ptr<BaseSection> get_section_above() const;
 
 		std::vector<std::string_view> get_content() const;
 		
@@ -65,7 +65,7 @@ namespace parser {
 	private:
 		size_t _sectionLevel = 0;
 		std::vector<std::string_view> _content;
-		std::shared_ptr<BaseSection> _sectionAbove = nullptr;
+		view_ptr<BaseSection> _sectionAbove = nullptr;
 		size_t _sectionIdentifier = -1;
 	};
 
@@ -78,25 +78,25 @@ namespace parser {
 	public:
 
 		TockenizedUnsectionedFileIteratorConst placement;
-		std::shared_ptr<BaseSection> sectionAbove;
+		view_ptr<BaseSection> sectionAbove = nullptr;
 		
 		SectioningInputBase() = default;
-		SectioningInputBase(TockenizedUnsectionedFileIteratorConst const& placement, std::shared_ptr<BaseSection> above)
-			: placement(placement), sectionAbove(std::move(above)) {
+		SectioningInputBase(TockenizedUnsectionedFileIteratorConst const& placement, view_ptr<BaseSection> above)
+			: placement(placement), sectionAbove(above) {
 		}
 
-		virtual SectioningInput<true> const* get_specialized() const;
+		virtual view_ptr<SectioningInput<true>> get_specialized() const;
 	};
 
-	template<bool IsSpecialized> // TODO: make it so that hte template is size_t N, so the number of targets could be infinite!
+	template<bool IsSpecialized> // TODO: make it so that the template is size_t N, so the number of targets could be infinite!
 	struct SectioningInput : public SectioningInputBase
 	{
-		SectioningInput(TockenizedUnsectionedFileIterator const& placement, std::shared_ptr<BaseSection> above)
-			: SectioningInputBase(placement, std::move(above)) {
+		SectioningInput(TockenizedUnsectionedFileIterator const& placement, view_ptr<BaseSection> above)
+			: SectioningInputBase(placement, above) {
 		}
 
-		SectioningInput(TockenizedUnsectionedFileIteratorConst const& placement, std::shared_ptr<BaseSection> above)
-			: SectioningInputBase(placement, std::move(above)) {
+		SectioningInput(TockenizedUnsectionedFileIteratorConst const& placement, view_ptr<BaseSection> above)
+			: SectioningInputBase(placement, above) {
 		}
 	};
 
@@ -109,42 +109,42 @@ namespace parser {
 
 		SectioningInput(TockenizedUnsectionedFileIterator const& placement,
 			TockenizedUnsectionedFileIterator const& endOfSection,
-			std::shared_ptr<BaseSection> above)
-			: SectioningInputBase(placement, std::move(above)), endOfSection(endOfSection) {
+			view_ptr<BaseSection> above)
+			: SectioningInputBase(placement, above), endOfSection(endOfSection) {
 		}
 		SectioningInput(TockenizedUnsectionedFileIteratorConst const& placement,
 			TockenizedUnsectionedFileIteratorConst const& endOfSection,
-			std::shared_ptr<BaseSection> above)
-			: SectioningInputBase(placement, std::move(above)), endOfSection(endOfSection) {
+			view_ptr<BaseSection> above)
+			: SectioningInputBase(placement, above), endOfSection(endOfSection) {
 		}
 
-		SectioningInput<true> const* get_specialized() const override;
+		view_ptr<SectioningInput<true>> get_specialized() const override;
 
 	};
 
 	SectioningInput(
 		TockenizedUnsectionedFileIterator const&,
 		TockenizedUnsectionedFileIterator const&,
-		std::shared_ptr<BaseSection>)
+		view_ptr<BaseSection>)
 		-> SectioningInput<true>;
 
 	SectioningInput(
 		TockenizedUnsectionedFileIteratorConst,
 		TockenizedUnsectionedFileIteratorConst,
-		std::shared_ptr<BaseSection>)
+		view_ptr<BaseSection>)
 		-> SectioningInput<true>;
 	
 	
 
 	SectioningInput(
 		TockenizedUnsectionedFileIterator const&,
-		std::shared_ptr<BaseSection>)
+		view_ptr<BaseSection>)
 		-> SectioningInput<false>;
 
 
 	SectioningInput(
 		TockenizedUnsectionedFileIteratorConst,
-		std::shared_ptr<BaseSection>)
+		view_ptr<BaseSection>)
 		-> SectioningInput<false>;
 
 
@@ -157,14 +157,14 @@ namespace parser {
 	public:
 
 		TockenizedUnsectionedFileIteratorConst endOfSection;
-		std::shared_ptr<BaseSection> section;
+		std::unique_ptr<BaseSection> section;
 
 		SectioningOutput() = default;
-		SectioningOutput(TockenizedUnsectionedFileIteratorConst end, std::shared_ptr<BaseSection> section)
+		SectioningOutput(TockenizedUnsectionedFileIteratorConst end, std::unique_ptr<BaseSection>&& section)
 			: endOfSection(end), section(std::move(section)) {
 		}
-		SectioningOutput(TockenizedUnsectionedFile file, std::shared_ptr<BaseSection> end)
-			: section(end), endOfSection(file.end()) {
+		SectioningOutput(TockenizedUnsectionedFile file, std::unique_ptr<BaseSection>&& section)
+			: section(std::move(section)), endOfSection(file.end()) {
 		}
 	};
 

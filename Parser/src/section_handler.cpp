@@ -8,6 +8,12 @@ namespace parser {
 	void add_triggers(std::unique_ptr<BaseSectioning> const& criteria, std::vector<std::array<std::string_view, 2>>& triggers);
 
 
+	void SectionHandler::add_section(SectionKey const& key, std::unique_ptr<BaseSection>&& section)
+	{
+		_sectionValues.push_back(std::move(section));
+	}
+
+
 	void SectionHandler::debug_print_sections() const
 	{
 		for (const auto& section : _sectionValues)
@@ -19,6 +25,18 @@ namespace parser {
 			}
 			std::cout << std::endl;
 		}
+	}
+
+	TokenizedSectionizedCompact SectionHandler::get_compressed_sections() const
+	{
+		return _compressedSections;
+	}
+
+	void SectionHandler::remove_section(SectionKey const& key)
+	{
+		_sectionKeys.erase(
+			std::remove(_sectionKeys.begin(), _sectionKeys.end(), key),
+			_sectionKeys.end());
 	}
 
 	CriteriaProcesserOutput SectionHandler::user_criteria_processer(TockenizedUnsectionedFile const& file, std::vector<std::unique_ptr<BaseSectioning>> const& criteria)
@@ -180,7 +198,7 @@ namespace parser {
 	{
 		CriteriaProcesserOutput userCriteria = user_criteria_processer(file, criteria);
 
-		std::shared_ptr<BaseSection> sectionAbove = std::make_shared<BaseSection>(1, file, nullptr);
+
 
 		_compressedSections.coords.reserve(file.size() / 4);
 		_compressedSections.tokens = file;
@@ -190,8 +208,10 @@ namespace parser {
 		_sectionValues.reserve(file.size() / 6);
 
 
+		_sectionValues.emplace_back(std::make_unique<BaseSection>(1, file, nullptr));
+		_sectionKeys.emplace_back(0, 0, 0, SectionCoords(0, file.size()));
+		view_ptr_non_const<BaseSection> sectionAbove = _sectionValues.back().get();
 
-		_sectionValues.push_back(sectionAbove);
 
 		TockenizedUnsectionedFileIteratorConst currentEndOfSection = file.end();
 		std::vector<TockenizedUnsectionedFileIteratorConst> prevEndOfSections;
@@ -204,17 +224,18 @@ namespace parser {
 					)
 
 				auto result = userCriteria.execute[iteration]->execute(SectioningInput(iterator, currentEndOfSection, sectionAbove));
-				_sectionValues.emplace_back(result.section);
 
-				_sectionKeys.emplace_back(result.section->get_section_level(), _sectionValues.size(), 
-					SectionCoords(iterator - file.begin(), result.endOfSection - file.begin()), result.section->get_section_identifier());
+				_sectionKeys.emplace_back(result.section->get_section_level(), result.section->get_section_identifier(), _sectionValues.size() - 1,
+					SectionCoords(iterator - file.begin(), result.endOfSection - file.begin()));
 
 				_compressedSections.coords.emplace_back(iterator - file.begin(), result.endOfSection - file.begin());
 
 				prevEndOfSections.push_back(currentEndOfSection);
 				currentEndOfSection = result.endOfSection;
 
-				sectionAbove = _sectionValues.back();
+				_sectionValues.emplace_back(std::move(result.section));
+				
+				sectionAbove = _sectionValues.back().get();
 				DEBUG(std::cout << "Section above updated to: " << sectionAbove->get_section_level() << std::endl;);
 			};
 

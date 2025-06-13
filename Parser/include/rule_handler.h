@@ -8,6 +8,9 @@
 namespace parser 
 {
 
+
+
+
 	class RuleHandler
 	{
 	public:
@@ -17,7 +20,7 @@ namespace parser
 
 		std::vector<std::unique_ptr<Rule>> const& get_rules() const;
 
-		bool check_rules(TokenizedSections files);
+		bool check_rules();
 		
 		virtual ~RuleHandler() = default;
 	protected:

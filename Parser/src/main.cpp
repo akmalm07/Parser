@@ -9,8 +9,7 @@ int main()
 	
 
 	EntireUntokenizedFile fileStr = R"(
-	IF (BOOL1)
-	{
+	IF (BOOL1) {
 		// Do something
 		IF (BOOL2)
 		{
@@ -39,6 +38,7 @@ int main()
 
 	std::vector<std::unique_ptr<BaseSectioning>> criteria;
 
+	criteria.push_back(new_section_when_between_unique<HasIdentifier::Yes>("(", ")", BOOL));
 	criteria.push_back(new_section_when_between_unique<HasIdentifier::Yes>("(", ")", BOOL));
 	criteria.push_back(new_section_when_between_unique<HasIdentifier::Yes>("IF (BOOL1) {", "}", IF));
 
