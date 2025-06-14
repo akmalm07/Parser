@@ -427,6 +427,20 @@ namespace parser
 		std::cout << std::endl;
 	}
 
+	void print_tokens(TokenizedSectionizedCompact const& sections)
+	{
+		for (const auto& coord : sections.coords)
+		{
+			std::cout << "Section from " << coord.start << " to " << coord.end << " with identifier: " << coord.identifier << ": ";
+			for (size_t i = coord.start; i < coord.end; i++)
+			{
+				std::cout << sections.tokens[i] << " ";
+			}
+			std::cout << "\n"; // New line for each section
+		}
+		std::cout << std::endl;
+	}
+
 
 	/*
 	std::string print_tokens(TockenizedSections const& sections)

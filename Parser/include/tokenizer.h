@@ -29,6 +29,8 @@ namespace parser
 		
 	void print_tokens(TokenizedSection const& tokens);
 
+	void print_tokens(TokenizedSectionizedCompact const& sections);
+
 	//std::string print_tokens(TockenizedSections const& sections);
 
 	bool check_str(std::string_view str, StringChecksFlag flags);

@@ -16,16 +16,17 @@ namespace parser
 	public:
 		RuleHandler() = default; 
 
-		RuleHandler(std::vector<std::unique_ptr<Rule>>& rules) : _rules(std::move(rules)) {}
+		RuleHandler(std::vector<std::unique_ptr<Rule>>& rules);
 
 		std::vector<std::unique_ptr<Rule>> const& get_rules() const;
 
-		bool check_rules();
+
+		bool check_rules(TokenizedSectionizedCompact const& sections);
 		
 		virtual ~RuleHandler() = default;
 	protected:
 
-		std::vector<std::unique_ptr<Rule>> _rules;
+		std::vector<std::unique_ptr<GlobalRule>> _rules;
 	};
 
 }

@@ -228,7 +228,7 @@ namespace parser {
 				_sectionKeys.emplace_back(result.section->get_section_level(), result.section->get_section_identifier(), _sectionValues.size() - 1,
 					SectionCoords(iterator - file.begin(), result.endOfSection - file.begin()));
 
-				_compressedSections.coords.emplace_back(iterator - file.begin(), result.endOfSection - file.begin());
+				_compressedSections.coords.emplace_back(iterator - file.begin(), result.endOfSection - file.begin(), result.section->get_section_identifier());
 
 				prevEndOfSections.push_back(currentEndOfSection);
 				currentEndOfSection = result.endOfSection;

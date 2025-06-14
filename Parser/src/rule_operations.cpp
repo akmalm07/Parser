@@ -4,6 +4,37 @@
 
 namespace parser
 {
+	GlobalRule::GlobalRule()
+		: Rule(RuleType::Global)
+	{
+	}
+
+	GlobalRule::GlobalRule(std::unique_ptr<BaseRuling>&& rule)
+		: Rule(std::move(rule), RuleType::Global)
+	{
+	}
+
+
+	GlobalRule::GlobalRule(std::unique_ptr<BaseRuling>&& rule, size_t identifier)
+		: Rule(std::move(rule), identifier, RuleType::Global)
+	{
+	}
+
+	LocalRule::LocalRule()
+		: Rule(RuleType::Local)
+	{
+	}
+
+	LocalRule::LocalRule(std::unique_ptr<BaseRuling>&& rule)
+		: Rule(std::move(rule), RuleType::Local)
+	{
+	}
+
+	LocalRule::LocalRule(std::unique_ptr<BaseRuling>&& rule, size_t identifier)
+		: Rule(std::move(rule), identifier, RuleType::Local)
+	{
+	}
+
 
 	bool GlobalRule::check_rule(RuleInputBase const& data)
 	{
@@ -32,6 +63,17 @@ namespace parser
 	}
 
 
+
+
+	RuleType Rule::get_type() const
+	{
+		return _type;
+	}
+
+	ParserRule Rule::get_rule_type() const
+	{
+		return _rule->type;
+	}
 
 
 	view_ptr<BaseRuling> Rule::get_rule()

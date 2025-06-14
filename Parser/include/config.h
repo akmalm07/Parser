@@ -13,6 +13,7 @@
 
 #define ANONYMUS_SECTIONS_NOT_DEFUALT_CHECKED_BY_RULE 0; // 1 for yes, 0 for no. This is used to determine if the sections that are created by the section handler will be checked by the rules by default. If this is set to 1, then the sections will be checked by the rules by default. If this is set to 0, then the sections will not be checked by the rules by default. This can be changed later on in the code if needed.
 
+
 namespace parser {
 
 
@@ -28,12 +29,15 @@ namespace parser {
 	{
 		size_t start;
 		size_t end;
+		size_t identifier;
 
-		SectionCoords(size_t start = 0, size_t end = 0) : start(start), end(end) {}
+		SectionCoords(size_t start = 0, size_t end = 0, size_t identifier = 0) : start(start), end(end), identifier(identifier) {}
 	};
 
 	struct TokenizedSectionizedCompact // A compact representation of a tokenized section, which includes the tokens and their coordinates in the original file.
 	{
+	public:
+
 		TockenizedUnsectionedFile tokens;
 		
 		std::vector<SectionCoords> coords;
