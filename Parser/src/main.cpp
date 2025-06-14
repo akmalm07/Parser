@@ -50,7 +50,7 @@ int main()
 
 	std::vector<std::unique_ptr<Rule>> rules;
 
-	rules.push_back(new_rule_must_include_after_unique(")", "BOOL1", IF));
+	rules.push_back(new_rule_must_include_in_file_unique("&"));
 
 	RuleHandler ruleHandler(rules);
 

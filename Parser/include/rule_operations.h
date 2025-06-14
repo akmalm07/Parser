@@ -139,8 +139,8 @@ namespace parser
 	template<>
 	struct ConcreteRule<ParserRule::CannotIncludeInFile> : public GlobalRule
 	{
-		ConcreteRule(RulingOneTarget const& rule, size_t identifier)
-			: _rule(rule), GlobalRule(identifier)
+		ConcreteRule(RulingOneTarget const& rule)
+			: _rule(rule), GlobalRule()
 		{}
 
 
@@ -210,8 +210,8 @@ namespace parser
 	struct ConcreteRule<ParserRule::MustIncludeInFile> : public GlobalRule
 	{
 
-		ConcreteRule(RulingOneTarget const& rule, size_t identifier)
-			: _rule(rule), GlobalRule(identifier)
+		ConcreteRule(RulingOneTarget const& rule)
+			: _rule(rule), GlobalRule()
 		{
 		}
 
@@ -591,9 +591,9 @@ namespace parser
 
 
 
-	ConcreteRule<ParserRule::MustIncludeAfter> new_rule_must_include_after(std::string_view t1, std::string_view t2, size_t id);
+	ConcreteRule<ParserRule::MustIncludeAfter> new_rule_must_include_after(std::string_view t1, std::string_view t2);
 
-	ConcreteRule<ParserRule::MustIncludeBefore> new_rule_must_include_before(std::string_view t1, std::string_view t2, size_t id);
+	ConcreteRule<ParserRule::MustIncludeBefore> new_rule_must_include_before(std::string_view t1, std::string_view t2);
 
 	ConcreteRule<ParserRule::CannotIncludeInFile> new_rule_cannot_include_in_file(std::string_view t, size_t id);
 
@@ -605,26 +605,26 @@ namespace parser
 
 
 
-	std::unique_ptr<ConcreteRule<ParserRule::MustIncludeAfter>> new_rule_must_include_after_unique(std::string_view t1, std::string_view t2, size_t id);
+	std::unique_ptr<ConcreteRule<ParserRule::MustIncludeAfter>> new_rule_must_include_after_unique(std::string_view t1, std::string_view t2);
 
-	std::unique_ptr<ConcreteRule<ParserRule::MustIncludeBefore>> new_rule_must_include_before_unique(std::string_view t1, std::string_view t2, size_t id);
+	std::unique_ptr<ConcreteRule<ParserRule::MustIncludeBefore>> new_rule_must_include_before_unique(std::string_view t1, std::string_view t2);
 
-	std::unique_ptr<ConcreteRule<ParserRule::CannotIncludeInFile>> new_rule_cannot_include_in_file_unique(std::string_view t, size_t id);
+	std::unique_ptr<ConcreteRule<ParserRule::CannotIncludeInFile>> new_rule_cannot_include_in_file_unique(std::string_view t);
 
-	std::unique_ptr<ConcreteRule<ParserRule::MustIncludeInFile>> new_rule_must_include_in_file_unique(std::string_view t, size_t id);
+	std::unique_ptr<ConcreteRule<ParserRule::MustIncludeInFile>> new_rule_must_include_in_file_unique(std::string_view t);
 
 	std::unique_ptr<ConcreteRule<ParserRule::CannotInlcude>> new_rule_cannot_include_unique(std::string_view t, size_t id);
 
 	std::unique_ptr<ConcreteRule<ParserRule::MustInclude>> new_rule_must_include_unique(std::string_view t, size_t id);
 
 
-	std::shared_ptr<ConcreteRule<ParserRule::MustIncludeAfter>> new_rule_must_include_after_shared(std::string_view t1, std::string_view t2, size_t id);
+	std::shared_ptr<ConcreteRule<ParserRule::MustIncludeAfter>> new_rule_must_include_after_shared(std::string_view t1, std::string_view t2);
 
-	std::shared_ptr<ConcreteRule<ParserRule::MustIncludeBefore>> new_rule_must_include_before_shared(std::string_view t1, std::string_view t2, size_t id);
+	std::shared_ptr<ConcreteRule<ParserRule::MustIncludeBefore>> new_rule_must_include_before_shared(std::string_view t1, std::string_view t2);
 
-	std::shared_ptr<ConcreteRule<ParserRule::CannotIncludeInFile>> new_rule_cannot_include_in_file_shared(std::string_view t, size_t id);
+	std::shared_ptr<ConcreteRule<ParserRule::CannotIncludeInFile>> new_rule_cannot_include_in_file_shared(std::string_view t);
 
-	std::shared_ptr<ConcreteRule<ParserRule::MustIncludeInFile>> new_rule_must_include_in_file_shared(std::string_view t, size_t id);
+	std::shared_ptr<ConcreteRule<ParserRule::MustIncludeInFile>> new_rule_must_include_in_file_shared(std::string_view t);
 
 	std::shared_ptr<ConcreteRule<ParserRule::CannotInlcude>> new_rule_cannot_include_shared(std::string_view t, size_t id);
 

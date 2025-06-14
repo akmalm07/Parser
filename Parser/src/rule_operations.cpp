@@ -103,14 +103,14 @@ namespace parser
 		return ConcreteRule<ParserRule::MustInclude>(RulingOneTarget{ ParserRule::MustInclude, std::string(t), "Item: " + std::string(t) + " must be included in this section." }, id);
 	}
 
-	ConcreteRule<ParserRule::CannotIncludeInFile> new_rule_cannot_include_in_file(std::string_view t, size_t id)
+	ConcreteRule<ParserRule::CannotIncludeInFile> new_rule_cannot_include_in_file(std::string_view t)
 	{
-		return ConcreteRule<ParserRule::CannotIncludeInFile>(RulingOneTarget{ ParserRule::CannotIncludeInFile, std::string(t), "Item: " + std::string(t) + " cannot be included in the file." }, id);
+		return ConcreteRule<ParserRule::CannotIncludeInFile>(RulingOneTarget{ ParserRule::CannotIncludeInFile, std::string(t), "Item: " + std::string(t) + " cannot be included in the file." });
 	}
 
-	ConcreteRule<ParserRule::MustIncludeInFile> new_rule_must_include_in_file(std::string_view t, size_t id)
+	ConcreteRule<ParserRule::MustIncludeInFile> new_rule_must_include_in_file(std::string_view t)
 	{
-		return ConcreteRule<ParserRule::MustIncludeInFile>(RulingOneTarget{ ParserRule::MustIncludeInFile, std::string(t), "Item: " + std::string(t) + " must be included in the file." }, id);
+		return ConcreteRule<ParserRule::MustIncludeInFile>(RulingOneTarget{ ParserRule::MustIncludeInFile, std::string(t), "Item: " + std::string(t) + " must be included in the file." });
 	}
 
 
@@ -137,15 +137,15 @@ namespace parser
 	}
 
 
-	std::unique_ptr<ConcreteRule<ParserRule::CannotIncludeInFile>> new_rule_cannot_include_in_file_unique(std::string_view t, size_t id)
+	std::unique_ptr<ConcreteRule<ParserRule::CannotIncludeInFile>> new_rule_cannot_include_in_file_unique(std::string_view t)
 	{
-		return std::make_unique<ConcreteRule<ParserRule::CannotIncludeInFile>>(RulingOneTarget{ ParserRule::CannotIncludeInFile, std::string(t), "Item: " + std::string(t) + " cannot be included in the file." }, id);
+		return std::make_unique<ConcreteRule<ParserRule::CannotIncludeInFile>>(RulingOneTarget{ ParserRule::CannotIncludeInFile, std::string(t), "Item: " + std::string(t) + " cannot be included in the file." });
 	}
 
 
-	std::unique_ptr<ConcreteRule<ParserRule::MustIncludeInFile>> new_rule_must_include_in_file_unique(std::string_view t, size_t id)
+	std::unique_ptr<ConcreteRule<ParserRule::MustIncludeInFile>> new_rule_must_include_in_file_unique(std::string_view t)
 	{
-		return std::make_unique<ConcreteRule<ParserRule::MustIncludeInFile>>(RulingOneTarget{ ParserRule::MustIncludeInFile, std::string(t), "Item: " + std::string(t) + " must be included in the file." }, id);
+		return std::make_unique<ConcreteRule<ParserRule::MustIncludeInFile>>(RulingOneTarget{ ParserRule::MustIncludeInFile, std::string(t), "Item: " + std::string(t) + " must be included in the file." });
 	}
 
 
@@ -170,14 +170,14 @@ namespace parser
 		return std::make_shared<ConcreteRule<ParserRule::MustInclude>>(RulingOneTarget{ ParserRule::MustInclude, std::string(t), "Item: " + std::string(t) + " must be included in this section." }, id);
 	}
 
-	std::shared_ptr<ConcreteRule<ParserRule::CannotIncludeInFile>> new_rule_cannot_include_in_file_shared(std::string_view t, size_t id)
+	std::shared_ptr<ConcreteRule<ParserRule::CannotIncludeInFile>> new_rule_cannot_include_in_file_shared(std::string_view t)
 	{
-		return std::make_shared<ConcreteRule<ParserRule::CannotIncludeInFile>>(RulingOneTarget{ ParserRule::CannotIncludeInFile, std::string(t), "Item: " + std::string(t) + " cannot be included in the file." }, id);
+		return std::make_shared<ConcreteRule<ParserRule::CannotIncludeInFile>>(RulingOneTarget{ ParserRule::CannotIncludeInFile, std::string(t), "Item: " + std::string(t) + " cannot be included in the file." });
 	}
 
-	std::shared_ptr<ConcreteRule<ParserRule::MustIncludeInFile>> new_rule_must_include_in_file_shared(std::string_view t, size_t id)
+	std::shared_ptr<ConcreteRule<ParserRule::MustIncludeInFile>> new_rule_must_include_in_file_shared(std::string_view t)
 	{
-		return std::make_shared<ConcreteRule<ParserRule::MustIncludeInFile>>(RulingOneTarget{ ParserRule::MustIncludeInFile, std::string(t), "Item: " + std::string(t) + " must be included in the file." }, id);
+		return std::make_shared<ConcreteRule<ParserRule::MustIncludeInFile>>(RulingOneTarget{ ParserRule::MustIncludeInFile, std::string(t), "Item: " + std::string(t) + " must be included in the file." });
 	}
 
 
