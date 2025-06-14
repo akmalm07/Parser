@@ -7,14 +7,14 @@ namespace parser
 {
 
 	RuleHandler::RuleHandler(std::vector<std::unique_ptr<Rule>>& rules)
-		: _rules(std::move(rules)),
+		: _rules(std::move(rules))
 
 	{
 	}
 
 	std::vector<std::unique_ptr<Rule>> const& RuleHandler::get_rules() const
 	{
-		// TODO: insert return statement here
+		return _rules;
 	}
 
 	bool RuleHandler::check_rules(TokenizedSectionizedCompact const& sections)
@@ -27,6 +27,7 @@ namespace parser
 				return false;
 			}
 		}
+
 	}
 
 }

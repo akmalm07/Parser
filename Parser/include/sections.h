@@ -27,12 +27,6 @@ namespace parser
 	};
 
 
-	enum class HasIdentifier : bool
-	{
-		No = false,
-		Yes = true
-	};
-
 
 
 	struct BaseSectioning
@@ -230,15 +224,6 @@ namespace parser
 
 
 
-
-	enum class PtrKind 
-	{ 
-		Raw, 
-		Unique, 
-		Shared 
-	};
-
-
 	template<size_t Dim, HasIdentifier N>
 	Sectioning<Dim, N> make_sectioning_value(std::array<std::string, Dim> const& targets,
 		size_t identifier,
@@ -311,76 +296,41 @@ namespace parser
 	}
 
 
-	template<HasIdentifier N>
-	auto new_section_when_found(std::string const& target, size_t id = std::numeric_limits<size_t>::max())
-	{
-		return make_sectioning_value<1, N>({ target, "" }, id, ParserSectioning::NewSectionWhenFound);
-	}
 
-	template<HasIdentifier N>
-	auto new_section_when_found_shared(std::string const& target, size_t id = std::numeric_limits<size_t>::max())
-	{
-		return make_sectioning_shared<1, N>({ target, "" }, id, ParserSectioning::NewSectionWhenFound);
-	}
+	Sectioning<1, HasIdentifier::Yes> new_section_when_found(std::string const& target, size_t id = std::numeric_limits<size_t>::max());
 
-	template<HasIdentifier N>
-	auto new_section_when_found_unique(std::string const& target, size_t id = std::numeric_limits<size_t>::max())
-	{
-		return make_sectioning_unique<1, N>({ target, "" }, id, ParserSectioning::NewSectionWhenFound);
-	}
 
-	template<HasIdentifier N>
-	auto new_section_when_between(std::string const& t1, std::string const& t2, size_t id = std::numeric_limits<size_t>::max())
-	{
-		return make_sectioning_value<2, N>({ t1, t2 }, id, ParserSectioning::NewSectionWhenBetween);
-	}
+	std::shared_ptr<Sectioning<1, HasIdentifier::Yes>> new_section_when_found_shared(std::string const& target, size_t id = std::numeric_limits<size_t>::max());
 
-	template<HasIdentifier N>
-	auto new_section_when_between_shared(std::string const& t1, std::string const& t2, size_t id = std::numeric_limits<size_t>::max())
-	{
-		return make_sectioning_shared<2, N>({ t1, t2 }, id, ParserSectioning::NewSectionWhenBetween);
-	}
 
-	template<HasIdentifier N>
-	auto new_section_when_between_unique(std::string const& t1, std::string const& t2, size_t id = std::numeric_limits<size_t>::max())
-	{
-		return make_sectioning_unique<2, N>({ t1, t2 }, id, ParserSectioning::NewSectionWhenBetween);
-	}
+	std::unique_ptr<Sectioning<1, HasIdentifier::Yes>> new_section_when_found_unique(std::string const& target, size_t id = std::numeric_limits<size_t>::max());
 
-	template<HasIdentifier N>
-	auto new_section_when_after(std::string const& t1, std::string const& t2, size_t id = std::numeric_limits<size_t>::max())
-	{
-		return make_sectioning_value<2, N>({ t1, t2 }, id, ParserSectioning::NewSectionWhenAfter);
-	}
 
-	template<HasIdentifier N>
-	auto new_section_when_after_shared(std::string const& t1, std::string const& t2, size_t id = std::numeric_limits<size_t>::max())
-	{
-		return make_sectioning_shared<2, N>({ t1, t2 }, id, ParserSectioning::NewSectionWhenAfter);
-	}
+	Sectioning<2, HasIdentifier::Yes> new_section_when_between(std::string const& t1, std::string const& t2, size_t id = std::numeric_limits<size_t>::max());
 
-	template<HasIdentifier N>
-	auto new_section_when_after_unique(std::string const& t1, std::string const& t2, size_t id = std::numeric_limits<size_t>::max())
-	{
-		return make_sectioning_unique<2, N>({ t1, t2 }, id, ParserSectioning::NewSectionWhenAfter);
-	}
 
-	template<HasIdentifier N>
-	auto new_section_when_before(std::string const& t1, std::string const& t2, size_t id = std::numeric_limits<size_t>::max())
-	{
-		return make_sectioning_value<2, N>({ t1, t2 }, id, ParserSectioning::NewSectionWhenBefore);
-	}
+	std::shared_ptr<Sectioning<2, HasIdentifier::Yes>> new_section_when_between_shared(std::string const& t1, std::string const& t2, size_t id = std::numeric_limits<size_t>::max());
 
-	template<HasIdentifier N>
-	auto new_section_when_before_shared(std::string const& t1, std::string const& t2, size_t id = std::numeric_limits<size_t>::max())
-	{
-		return make_sectioning_shared<2, N>({ t1, t2 }, id, ParserSectioning::NewSectionWhenBefore);
-	}
 
-	template<HasIdentifier N>
-	auto new_section_when_before_unique(std::string const& t1, std::string const& t2, size_t id = std::numeric_limits<size_t>::max())
-	{
-		return make_sectioning_unique<2, N>({ t1, t2 }, id, ParserSectioning::NewSectionWhenBefore);
-	}
+	std::unique_ptr<Sectioning<2, HasIdentifier::Yes>> new_section_when_between_unique(std::string const& t1, std::string const& t2, size_t id = std::numeric_limits<size_t>::max());
+
+
+	Sectioning<2, HasIdentifier::Yes> new_section_when_after(std::string const& t1, std::string const& t2, size_t id = std::numeric_limits<size_t>::max());
+
+
+	std::shared_ptr<Sectioning<2, HasIdentifier::Yes>> new_section_when_after_shared(std::string const& t1, std::string const& t2, size_t id = std::numeric_limits<size_t>::max());
+
+
+
+	std::unique_ptr<Sectioning<2, HasIdentifier::Yes>>  new_section_when_after_unique(std::string const& t1, std::string const& t2, size_t id = std::numeric_limits<size_t>::max());
+
+
+	Sectioning<2, HasIdentifier::Yes> new_section_when_before(std::string const& t1, std::string const& t2, size_t id = std::numeric_limits<size_t>::max());
+
+
+	std::shared_ptr<Sectioning<2, HasIdentifier::Yes>> new_section_when_before_shared(std::string const& t1, std::string const& t2, size_t id = std::numeric_limits<size_t>::max());
+
+
+	std::unique_ptr<Sectioning<2, HasIdentifier::Yes>>  new_section_when_before_unique(std::string const& t1, std::string const& t2, size_t id = std::numeric_limits<size_t>::max());
 
 }

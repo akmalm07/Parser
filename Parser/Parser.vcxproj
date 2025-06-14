@@ -50,6 +50,7 @@
   <ItemGroup>
     <None Include="include\parser.inl" />
     <None Include="include\section_operations.inl" />
+    <None Include="rule_operations.inl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="guidelines.md" />

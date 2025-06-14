@@ -25,10 +25,10 @@ namespace parser
 	public:
 
 		using Type = std::conditional_t<T, TokenizedSection, TokenizedSections>;
-		
+
 		Type data;
-	
-		RuleInput (Type const& d) : data(d) {}
+
+		RuleInput(Type const& d) : data(d) {}
 
 		TokenizedSection const* get_section() const override
 		{
@@ -54,7 +54,7 @@ namespace parser
 			}
 		}
 	};
-		
+
 	enum class RuleType
 	{
 		None = 0,
@@ -68,34 +68,34 @@ namespace parser
 
 		Rule(RuleType type = RuleType::None)
 			: _type(type)
-		{}
+		{
+		}
 
-		Rule(std::unique_ptr<BaseRuling>&& rule, RuleType type = RuleType::None)
-			: _rule(std::move(rule)), _type(type)
-		{}
-
-		Rule(std::unique_ptr<BaseRuling>&& rule, size_t identifier, RuleType type = RuleType::None)
-			: _rule(std::move(rule)), _identifier(identifier), _type(type)
-		{}
+		Rule(RuleType type, size_t identifier)
+			: _identifier(identifier), _type(type)
+		{
+		}
 
 		RuleType get_type() const;
 
-		ParserRule get_rule_type() const;
+		virtual ParserRule get_rule_type() const = 0;
 
-		view_ptr<BaseRuling> get_rule();
+		virtual view_ptr<BaseRuling> get_rule() = 0;
 
 		size_t get_identifier() const;
 
 		virtual bool check_rule(RuleInputBase const& data) = 0;
-		
-		virtual bool check_rule(TokenizedSectionizedCompact const& data) = 0;
+
+		bool check_rule(TokenizedSectionizedCompact const& data);
+
+		virtual bool check_rule_impl(TokenizedSectionizedCompact const& data) = 0;
+
 
 		virtual ~Rule() = default;
-	
+
 	protected:
-		std::unique_ptr<BaseRuling> _rule;
 		size_t _identifier = std::numeric_limits<size_t>::max() - ANONYMUS_SECTIONS_NOT_DEFUALT_CHECKED_BY_RULE;
-		RuleType _type = RuleType::None; 
+		RuleType _type = RuleType::None;
 
 	};
 
@@ -105,9 +105,7 @@ namespace parser
 
 		GlobalRule();
 
-		GlobalRule(std::unique_ptr<BaseRuling>&& rule);
-
-		GlobalRule(std::unique_ptr<BaseRuling>&& rule, size_t identifier);
+		GlobalRule(size_t identifier);
 
 		~GlobalRule() override = default;
 
@@ -123,9 +121,7 @@ namespace parser
 
 		LocalRule();
 
-		LocalRule(std::unique_ptr<BaseRuling>&& rule);
-
-		LocalRule(std::unique_ptr<BaseRuling>&& rule, size_t identifier);
+		LocalRule(size_t identifier);
 
 		~LocalRule() override = default;
 
@@ -143,9 +139,14 @@ namespace parser
 	template<>
 	struct ConcreteRule<ParserRule::CannotIncludeInFile> : public GlobalRule
 	{
-		bool check_rule_impl(TokenizedSections const& sections, RulingOneTarget const& rule)
+		ConcreteRule(RulingOneTarget const& rule, size_t identifier)
+			: _rule(rule), GlobalRule(identifier)
+		{}
+
+
+		bool check_global_rule(TokenizedSections const& sections) override
 		{
-			if (rule.type != ParserRule::CannotIncludeInFile)
+			if (_rule.type != ParserRule::CannotIncludeInFile)
 			{
 				std::cerr << PARSER_LOG_ERR << "Rule type mismatch." << std::endl;
 				return false;
@@ -155,22 +156,32 @@ namespace parser
 			{
 				for (const auto& token : section)
 				{
-					if (token == rule.target)
+					if (token == _rule.target)
 					{
-						std::cerr << PARSER_LOG_ERR << rule.errMsg << std::endl;
+						std::cerr << PARSER_LOG_ERR << _rule.errMsg << std::endl;
 						return false;
 					}
 				}
 
 			}
 
-			std::cout << PARSER_LOG_INFO << "Rule: Did Not Find Item: " << rule.target << " In File" << std::endl;
+			std::cout << PARSER_LOG_INFO << "Rule: Did Not Find Item: " << _rule.target << " In File" << std::endl;
 			return true;
 		}
 
-		bool check_rule_impl(TokenizedSectionizedCompact const& sections, RulingOneTarget const& rule)
+		ParserRule get_rule_type() const override
 		{
-			if (rule.type != ParserRule::CannotIncludeInFile)
+			return ParserRule::CannotIncludeInFile;
+		}
+
+		view_ptr<BaseRuling> get_rule() override
+		{
+			return &_rule;
+		}
+
+		bool check_rule_impl(TokenizedSectionizedCompact const& sections)
+		{
+			if (_rule.type != ParserRule::CannotIncludeInFile)
 			{
 				std::cerr << PARSER_LOG_ERR << "Rule type mismatch." << std::endl;
 				return false;
@@ -178,55 +189,35 @@ namespace parser
 
 			for (const auto& token : sections.tokens)
 			{
-				if (token == rule.target)
+				if (token == _rule.target)
 				{
-					std::cerr << PARSER_LOG_ERR << rule.errMsg << std::endl;
+					std::cerr << PARSER_LOG_ERR << _rule.errMsg << std::endl;
 					return false;
-				}	
+				}
 			}
-			std::cout << PARSER_LOG_INFO << "Rule: Did Not Find Item: " << rule.target << " In File" << std::endl;
+			std::cout << PARSER_LOG_INFO << "Rule: Did Not Find Item: " << _rule.target << " In File" << std::endl;
 			return true;
 		}
 
 
-		bool check_global_rule(TokenizedSections const& sections) override
-		{
-			if (_rule->get_target_count() == 1)
-			{
-				return check_rule_impl(sections, static_cast<RulingOneTarget&>(*_rule.get()));
-			}
-			else
-			{
-				std::cerr << PARSER_LOG_ERR << "Rule is not of type RulingOneTarget." << std::endl;
-				return false;
-			}
-		}
+	private:
 
-		bool check_rule(TokenizedSectionizedCompact const& data) override
-		{
-			if (data.tokens.empty())
-			{
-				std::cerr << PARSER_LOG_ERR << "No tokens to check." << std::endl;
-				return false;
-			}
-			if (_rule->get_target_count() == 1)
-			{
-				return check_rule_impl(data, static_cast<RulingOneTarget&>(*_rule.get()));
-			}
-			else
-			{
-				std::cerr << PARSER_LOG_ERR << "Rule is not of type RulingOneTarget." << std::endl;
-				return false;
-			}
-		}
+		RulingOneTarget _rule; 
 	};
+
 
 	template<>
 	struct ConcreteRule<ParserRule::MustIncludeInFile> : public GlobalRule
 	{
-		bool check_rule_impl(TokenizedSections const& sections, RulingOneTarget const& rule)
+
+		ConcreteRule(RulingOneTarget const& rule, size_t identifier)
+			: _rule(rule), GlobalRule(identifier)
 		{
-			if (rule.type != ParserRule::MustIncludeInFile)
+		}
+
+		bool check_global_rule(TokenizedSections const& sections) override
+		{
+			if (_rule.type != ParserRule::MustIncludeInFile)
 			{
 				std::cerr << PARSER_LOG_ERR << "Rule type mismatch." << std::endl;
 				return false;
@@ -236,22 +227,32 @@ namespace parser
 			{
 				for (const auto& token : section)
 				{
-					if (token == rule.target)
+					if (token == _rule.target)
 					{
-						std::cout << PARSER_LOG_INFO << "Rule: Found Item: " << rule.target << " In File" << std::endl;
+						std::cout << PARSER_LOG_INFO << "Rule: Found Item: " << _rule.target << " In File" << std::endl;
 						return true;
 					}
 				}
 
 			}
 
-			std::cerr << PARSER_LOG_ERR << rule.errMsg << std::endl;
+			std::cerr << PARSER_LOG_ERR << _rule.errMsg << std::endl;
 			return false;
 		}
 
-		bool check_rule_impl(TokenizedSectionizedCompact const& sections, RulingOneTarget const& rule)
+		ParserRule get_rule_type() const override
 		{
-			if (rule.type != ParserRule::MustIncludeInFile)
+			return ParserRule::MustIncludeInFile;
+		}
+
+		view_ptr<BaseRuling> get_rule() override
+		{
+			return &_rule;
+		}
+
+		bool check_rule_impl(TokenizedSectionizedCompact const& sections) override
+		{
+			if (_rule.type != ParserRule::MustIncludeInFile)
 			{
 				std::cerr << PARSER_LOG_ERR << "Rule type mismatch." << std::endl;
 				return false;
@@ -259,56 +260,32 @@ namespace parser
 
 			for (auto const& token : sections.tokens)
 			{
-				if (token == rule.target)
+				if (token == _rule.target)
 				{
-					std::cout << PARSER_LOG_INFO << "Rule: Found Item: " << rule.target << " In File" << std::endl;
+					std::cout << PARSER_LOG_INFO << "Rule: Found Item: " << _rule.target << " In File" << std::endl;
 					return true;
 				}
 
 			}
 
-			std::cerr << PARSER_LOG_ERR << rule.errMsg << std::endl;
+			std::cerr << PARSER_LOG_ERR << _rule.errMsg << std::endl;
 			return false;
 		}
 
-		bool check_global_rule(TokenizedSections const& sections) override
-		{
-			if (_rule->get_target_count() == 1)
-			{
-				return check_rule_impl(sections, static_cast<RulingOneTarget&>(*_rule.get()));
-			}
-			else
-			{
-				std::cerr << PARSER_LOG_ERR << "Rule is not of type RulingOneTarget." << std::endl;
-				return false;
-			}
-		}
-
-		bool check_rule(TokenizedSectionizedCompact const& data) override
-		{
-			if (data.tokens.empty())
-			{
-				std::cerr << PARSER_LOG_ERR << "No tokens to check." << std::endl;
-				return false;
-			}
-			if (_rule->get_target_count() == 1)
-			{
-				return check_rule_impl(data, static_cast<RulingOneTarget&>(*_rule.get()));
-			}
-			else
-			{
-				std::cerr << PARSER_LOG_ERR << "Rule is not of type RulingOneTarget." << std::endl;
-				return false;
-			}
-		}
+	private:
+		RulingOneTarget _rule;
 	};
 
 	template<>
 	struct ConcreteRule<ParserRule::CannotInlcude> : public LocalRule
 	{
-		bool check_rule_impl(TokenizedSection const& section, RulingOneTarget const& rule)
+		ConcreteRule(RulingOneTarget const& rule, size_t identifier)
+			: _rule(rule), LocalRule(identifier)
 		{
-			if (rule.type != ParserRule::CannotInlcude)
+		}
+		bool check_local_rule(TokenizedSection const& section) override
+		{
+			if (_rule.type != ParserRule::CannotInlcude)
 			{
 				std::cerr << PARSER_LOG_ERR << "Rule type mismatch." << std::endl;
 				return false;
@@ -316,21 +293,32 @@ namespace parser
 
 			for (const auto& token : section)
 			{
-				if (token == rule.target)
+				if (token == _rule.target)
 				{
-					std::cerr << PARSER_LOG_ERR << rule.errMsg << std::endl;
+					std::cerr << PARSER_LOG_ERR << _rule.errMsg << std::endl;
 					return false;
 				}
 			}
 
-			std::cout << PARSER_LOG_INFO << "Rule: Did Not Find Item: " << rule.target << std::endl;
+			std::cout << PARSER_LOG_INFO << "Rule: Did Not Find Item: " << _rule.target << std::endl;
 			return true;
 		}
-		
 
-		bool check_rule_impl(TokenizedSectionizedCompact const& sections, RulingOneTarget const& rule)
+
+		ParserRule get_rule_type() const override
 		{
-			if (rule.type != ParserRule::CannotInlcude)
+			return ParserRule::CannotInlcude;
+		}
+
+		view_ptr<BaseRuling> get_rule() override
+		{
+			return &_rule;
+		}
+
+
+		bool check_rule_impl(TokenizedSectionizedCompact const& sections) override
+		{
+			if (_rule.type != ParserRule::CannotInlcude)
 			{
 				std::cerr << PARSER_LOG_ERR << "Rule type mismatch." << std::endl;
 				return false;
@@ -346,12 +334,12 @@ namespace parser
 
 				if (coord.identifier == _identifier)
 				{
-	
+
 					for (size_t i = coord.start; i < coord.end; i++)
 					{
-						if (sections.tokens[i] == rule.target)
+						if (sections.tokens[i] == _rule.target)
 						{
-							std::cerr << PARSER_LOG_ERR << rule.errMsg << std::endl;
+							std::cerr << PARSER_LOG_ERR << _rule.errMsg << std::endl;
 							return false;
 						}
 					}
@@ -359,50 +347,26 @@ namespace parser
 
 			}
 
-			std::cout << PARSER_LOG_INFO << "Rule: Did Not Find Item: " << rule.target << std::endl;
+			std::cout << PARSER_LOG_INFO << "Rule: Did Not Find Item: " << _rule.target << std::endl;
 			return true;
 		}
-
-		bool check_local_rule(TokenizedSection const& section) override
-		{
-			if (_rule->get_target_count() == 1)
-			{
-				return check_rule_impl(section, static_cast<RulingOneTarget&>(*_rule.get()));
-
-			}
-			else
-			{
-				std::cerr << PARSER_LOG_ERR << "Rule is not of type RulingOneTarget." << std::endl;
-				return false;
-			}
-		}
-
-		bool check_rule(TokenizedSectionizedCompact const& data) override
-		{
-			if (data.tokens.empty())
-			{
-				std::cerr << PARSER_LOG_ERR << "No tokens to check." << std::endl;
-				return false;
-			}
-			if (_rule->get_target_count() == 1)
-			{
-				return check_rule_impl(data, static_cast<RulingOneTarget&>(*_rule.get()));
-			}
-			else
-			{
-				std::cerr << PARSER_LOG_ERR << "Rule is not of type RulingOneTarget." << std::endl;
-				return false;
-			}
-		}
+	private:
+		RulingOneTarget _rule;
 	};
 
 
 	template<>
 	struct ConcreteRule<ParserRule::MustInclude> : public LocalRule
 	{
-		bool check_rule_impl(TokenizedSection section, RulingOneTarget const& rule)
+
+		ConcreteRule(RulingOneTarget const& rule, size_t identifier)
+			: _rule(rule), LocalRule(identifier)
 		{
-			if (rule.type != ParserRule::MustInclude)
+		}
+
+		bool check_local_rule(TokenizedSection const& section) override
+		{
+			if (_rule.type != ParserRule::MustInclude)
 			{
 				std::cerr << PARSER_LOG_ERR << "Rule type mismatch." << std::endl;
 				return false;
@@ -410,22 +374,34 @@ namespace parser
 
 			for (const auto& token : section)
 			{
-				if (token == rule.target)
+				if (token == _rule.target)
 				{
-					std::cout << PARSER_LOG_INFO << "Rule: Found Item: " << rule.target << " In Section: ";
+					std::cout << PARSER_LOG_INFO << "Rule: Found Item: " << _rule.target << " In Section: ";
 					print_tokens(section);
 
 					return true;
 				}
 			}
 
-			std::cerr << PARSER_LOG_ERR << rule.errMsg << std::endl;
+			std::cerr << PARSER_LOG_ERR << _rule.errMsg << std::endl;
 			return false;
 		}
 
-		bool check_rule_impl(TokenizedSectionizedCompact sections, RulingOneTarget const& rule)
+
+		ParserRule get_rule_type() const override
 		{
-			if (rule.type != ParserRule::MustInclude)
+			return ParserRule::MustInclude;
+		}
+
+		view_ptr<BaseRuling> get_rule() override
+		{
+			return &_rule;
+		}
+
+
+		bool check_rule_impl(TokenizedSectionizedCompact const& sections) override
+		{
+			if (_rule.type != ParserRule::MustInclude)
 			{
 				std::cerr << PARSER_LOG_ERR << "Rule type mismatch." << std::endl;
 				return false;
@@ -444,9 +420,9 @@ namespace parser
 
 					for (size_t i = coord.start; i < coord.end; i++)
 					{
-						if (sections.tokens[i] == rule.target)
+						if (sections.tokens[i] == _rule.target)
 						{
-							std::cout << PARSER_LOG_INFO << "Rule: Found Item: " << rule.target << " In Section: ";
+							std::cout << PARSER_LOG_INFO << "Rule: Found Item: " << _rule.target << " In Section: ";
 							print_tokens(sections);
 
 							return true;
@@ -455,69 +431,56 @@ namespace parser
 				}
 			}
 
-			std::cerr << PARSER_LOG_ERR << rule.errMsg << std::endl;
+			std::cerr << PARSER_LOG_ERR << _rule.errMsg << std::endl;
 			return false;
 		}
 
-		bool check_local_rule(TokenizedSection const& section) override
-		{
-			if (_rule->get_target_count() == 1)
-			{
-				return check_rule_impl(section, static_cast<RulingOneTarget&>(*_rule.get()));
-
-			}
-			else
-			{
-				std::cerr << PARSER_LOG_ERR << "Rule is not of type RulingOneTarget." << std::endl;
-				return false;
-			}
-		}
-
-		bool check_rule(TokenizedSectionizedCompact const& data) override
-		{
-			if (data.tokens.empty())
-			{
-				std::cerr << PARSER_LOG_ERR << "No tokens to check." << std::endl;
-				return false;
-			}
-			if (_rule->get_target_count() == 1)
-			{
-				return check_rule_impl(data, static_cast<RulingOneTarget&>(*_rule.get()));
-			}
-			else
-			{
-				std::cerr << PARSER_LOG_ERR << "Rule is not of type RulingOneTarget." << std::endl;
-				return false;
-			}
-		}
+	private:
+		RulingOneTarget _rule;
 	};
 
 	template<>
 	struct ConcreteRule<ParserRule::MustIncludeBefore> : public LocalRule
 	{
-		bool check_rule_impl(TokenizedSection const& section, RulingTwoTarget const& rule)
+		ConcreteRule(RulingTwoTarget const& rule, size_t identifier)
+			: _rule(rule), LocalRule(identifier)
 		{
-			if (rule.type != ParserRule::MustIncludeBefore)
+		}
+
+
+		bool check_local_rule(TokenizedSection const& section)
+		{
+			if (_rule.type != ParserRule::MustIncludeBefore)
 			{
 				std::cerr << PARSER_LOG_ERR << "Rule type mismatch." << std::endl;
 				return false;
 			}
 			for (size_t i = 1; i < section.size(); i++)
 			{
-				if (section[i] == rule.targets[0] && section[i - 1] == rule.targets[1])
+				if (section[i] == _rule.targets[0] && section[i - 1] == _rule.targets[1])
 				{
-					std::cout << PARSER_LOG_INFO << "Rule: Found Item: " << rule.targets[0] << " Before Item: " << rule.targets[1] << std::endl;
+					std::cout << PARSER_LOG_INFO << "Rule: Found Item: " << _rule.targets[0] << " Before Item: " << _rule.targets[1] << std::endl;
 					return true;
 				}
 			}
-			std::cerr << PARSER_LOG_ERR << rule.errMsg << std::endl;
+			std::cerr << PARSER_LOG_ERR << _rule.errMsg << std::endl;
 			return false;
 		}
 
 
-		bool check_rule_impl(TokenizedSectionizedCompact const& sections, RulingTwoTarget const& rule)
+		ParserRule get_rule_type() const override
 		{
-			if (rule.type != ParserRule::MustIncludeBefore)
+			return ParserRule::MustIncludeBefore;
+		}
+
+		view_ptr<BaseRuling> get_rule() override
+		{
+			return &_rule;
+		}
+
+		bool check_rule_impl(TokenizedSectionizedCompact const& sections)
+		{
+			if (_rule.type != ParserRule::MustIncludeBefore)
 			{
 				std::cerr << PARSER_LOG_ERR << "Rule type mismatch." << std::endl;
 				return false;
@@ -536,78 +499,63 @@ namespace parser
 					for (size_t i = coord.start + 1; i < coord.end; i++)
 					{
 
-						if (sections.tokens[i] == rule.targets[0] && sections.tokens[i - 1] == rule.targets[1])
+						if (sections.tokens[i] == _rule.targets[0] && sections.tokens[i - 1] == _rule.targets[1])
 						{
-							std::cout << PARSER_LOG_INFO << "Rule: Found Item: " << rule.targets[0] << " Before Item: " << rule.targets[1] << std::endl;
+							std::cout << PARSER_LOG_INFO << "Rule: Found Item: " << _rule.targets[0] << " Before Item: " << _rule.targets[1] << std::endl;
 							return true;
 						}
-					
+
 					}
 				}
 			}
-			std::cerr << PARSER_LOG_ERR << rule.errMsg << std::endl;
+			std::cerr << PARSER_LOG_ERR << _rule.errMsg << std::endl;
 			return false;
 		}
-
-		bool check_local_rule(TokenizedSection const& section) override
-		{
-			if (_rule->get_target_count() == 2)
-			{
-				return check_rule_impl(section, static_cast<RulingTwoTarget&>(*_rule));
-
-			}
-			else
-			{
-				std::cerr << PARSER_LOG_ERR << "Rule is not of type RulingTwoTarget." << std::endl;
-				return false;
-			}
-		}
-
-		bool check_rule(TokenizedSectionizedCompact const& data) override
-		{
-			if (data.tokens.empty())
-			{
-				std::cerr << PARSER_LOG_ERR << "No tokens to check." << std::endl;
-				return false;
-			}
-			if (_rule->get_target_count() == 2)
-			{
-				return check_rule_impl(data, static_cast<RulingTwoTarget&>(*_rule.get()));
-			}
-			else
-			{
-				std::cerr << PARSER_LOG_ERR << "Rule is not of type RulingTwoTarget." << std::endl;
-				return false;
-			}
-		}
+	private:
+		RulingTwoTarget _rule;
 	};
 
 	template<>
 	struct ConcreteRule<ParserRule::MustIncludeAfter> : public LocalRule
 	{
-		bool check_rule_impl(TokenizedSection const& section, RulingTwoTarget const& rule)
+
+		ConcreteRule(RulingTwoTarget const& rule, size_t identifier)
+			: _rule(rule), LocalRule(identifier)
 		{
-			if (rule.type != ParserRule::MustIncludeAfter)
+		}
+
+		bool check_local_rule(TokenizedSection const& section) override
+		{
+			if (_rule.type != ParserRule::MustIncludeAfter)
 			{
 				std::cerr << PARSER_LOG_ERR << "Rule type mismatch." << std::endl;
 				return false;
 			}
 			for (size_t i = 0; i < section.size() - 1; i++)
 			{
-				if (section[i] == rule.targets[0] && section[i + 1] == rule.targets[1])
+				if (section[i] == _rule.targets[0] && section[i + 1] == _rule.targets[1])
 				{
-					std::cout << PARSER_LOG_INFO << "Rule: Found Item: " << rule.targets[0] << " After Item: " << rule.targets[1] << std::endl;
+					std::cout << PARSER_LOG_INFO << "Rule: Found Item: " << _rule.targets[0] << " After Item: " << _rule.targets[1] << std::endl;
 					return true;
 				}
 			}
-			std::cerr << PARSER_LOG_ERR << rule.errMsg << std::endl;
+			std::cerr << PARSER_LOG_ERR << _rule.errMsg << std::endl;
 			return false;
 		}
 
-
-		bool check_rule_impl(TokenizedSectionizedCompact const& sections, RulingTwoTarget const& rule)
+		ParserRule get_rule_type() const override
 		{
-			if (rule.type != ParserRule::MustIncludeAfter)
+			return ParserRule::MustIncludeAfter;
+		}
+
+		view_ptr<BaseRuling> get_rule() override
+		{
+			return &_rule;
+		}
+
+		bool check_rule_impl(TokenizedSectionizedCompact const& sections) override
+		{
+			if (_rule.type != ParserRule::MustIncludeAfter)
 			{
 				std::cerr << PARSER_LOG_ERR << "Rule type mismatch." << std::endl;
 				return false;
@@ -625,51 +573,72 @@ namespace parser
 				{
 					for (size_t i = coord.start; i < coord.end - 1; i++)
 					{
-						std::cout << PARSER_LOG_INFO << "Rule: Found Item: " << rule.targets[0] << " After Item: " << rule.targets[1] << std::endl;
+						std::cout << PARSER_LOG_INFO << "Rule: Found Item: " << _rule.targets[0] << " After Item: " << _rule.targets[1] << std::endl;
 						return true;
 					}
 				}
 			}
-			
-			std::cerr << PARSER_LOG_ERR << rule.errMsg << std::endl;
+
+			std::cerr << PARSER_LOG_ERR << _rule.errMsg << std::endl;
 			return false;
 		}
-
-		bool check_local_rule(TokenizedSection const& section) override
-		{
-			{
-				if (_rule->get_target_count() == 2)
-				{
-					return check_rule_impl(section, static_cast<RulingTwoTarget&>(*_rule));
-
-				}
-				else
-				{
-					std::cerr << PARSER_LOG_ERR << "Rule is not of type RulingTwoTarget." << std::endl;
-					return false;
-				}
-			}
-		}
-
-		bool check_rule(TokenizedSectionizedCompact const& data) override
-		{
-			if (data.tokens.empty())
-			{
-				std::cerr << PARSER_LOG_ERR << "No tokens to check." << std::endl;
-				return false;
-			}
-			if (_rule->get_target_count() == 2)
-			{
-				return check_rule_impl(data, static_cast<RulingTwoTarget&>(*_rule.get()));
-			}
-			else
-			{
-				std::cerr << PARSER_LOG_ERR << "Rule is not of type RulingTwoTarget." << std::endl;
-				return false;
-			}
-		}
+	private:
+		RulingTwoTarget _rule;
 	};
+
+
+
+
+
+
+	ConcreteRule<ParserRule::MustIncludeAfter> new_rule_must_include_after(std::string_view t1, std::string_view t2, size_t id);
+
+	ConcreteRule<ParserRule::MustIncludeBefore> new_rule_must_include_before(std::string_view t1, std::string_view t2, size_t id);
+
+	ConcreteRule<ParserRule::CannotIncludeInFile> new_rule_cannot_include_in_file(std::string_view t, size_t id);
+
+	ConcreteRule<ParserRule::MustIncludeInFile> new_rule_must_include_in_file(std::string_view t, size_t id);
+
+	ConcreteRule<ParserRule::CannotInlcude> new_rule_cannot_include(std::string_view t, size_t id);
+
+	ConcreteRule<ParserRule::MustInclude> new_rule_must_include(std::string_view t, size_t id);
+
+
+
+	std::unique_ptr<ConcreteRule<ParserRule::MustIncludeAfter>> new_rule_must_include_after_unique(std::string_view t1, std::string_view t2, size_t id);
+
+	std::unique_ptr<ConcreteRule<ParserRule::MustIncludeBefore>> new_rule_must_include_before_unique(std::string_view t1, std::string_view t2, size_t id);
+
+	std::unique_ptr<ConcreteRule<ParserRule::CannotIncludeInFile>> new_rule_cannot_include_in_file_unique(std::string_view t, size_t id);
+
+	std::unique_ptr<ConcreteRule<ParserRule::MustIncludeInFile>> new_rule_must_include_in_file_unique(std::string_view t, size_t id);
+
+	std::unique_ptr<ConcreteRule<ParserRule::CannotInlcude>> new_rule_cannot_include_unique(std::string_view t, size_t id);
+
+	std::unique_ptr<ConcreteRule<ParserRule::MustInclude>> new_rule_must_include_unique(std::string_view t, size_t id);
+
+
+	std::shared_ptr<ConcreteRule<ParserRule::MustIncludeAfter>> new_rule_must_include_after_shared(std::string_view t1, std::string_view t2, size_t id);
+
+	std::shared_ptr<ConcreteRule<ParserRule::MustIncludeBefore>> new_rule_must_include_before_shared(std::string_view t1, std::string_view t2, size_t id);
+
+	std::shared_ptr<ConcreteRule<ParserRule::CannotIncludeInFile>> new_rule_cannot_include_in_file_shared(std::string_view t, size_t id);
+
+	std::shared_ptr<ConcreteRule<ParserRule::MustIncludeInFile>> new_rule_must_include_in_file_shared(std::string_view t, size_t id);
+
+	std::shared_ptr<ConcreteRule<ParserRule::CannotInlcude>> new_rule_cannot_include_shared(std::string_view t, size_t id);
+
+	std::shared_ptr<ConcreteRule<ParserRule::MustInclude>> new_rule_must_include_shared(std::string_view t, size_t id);
+
+
+
+
+
+
+	//ConcreteRule<ParserRule::MustIncludeBetween> new_rule_must_include_between(std::string_view between1, std::string_view between2, std::string_view target,  size_t id);
+
+
+
+
+
 }
-
-
-

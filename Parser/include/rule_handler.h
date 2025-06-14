@@ -26,7 +26,7 @@ namespace parser
 		virtual ~RuleHandler() = default;
 	protected:
 
-		std::vector<std::unique_ptr<GlobalRule>> _rules;
+		std::vector<std::unique_ptr<Rule>> _rules;
 	};
 
 }
