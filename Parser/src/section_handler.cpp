@@ -216,19 +216,30 @@ namespace parser {
 		TockenizedUnsectionedFileIteratorConst currentEndOfSection = file.end();
 		std::vector<TockenizedUnsectionedFileIteratorConst> prevEndOfSections;
 
-		auto update = [&](TockenizedUnsectionedFileIteratorConst iterator, size_t iteration)
-			{
-				
+		auto update = [&](TockenizedUnsectionedFileIteratorConst iterator, size_t iterationForExecutor)
+			{	
+				/*
 				DEBUG(
 					std::cout << "Value for the currentEndOfSection:   " << (currentEndOfSection == file.end() ? "NULL" : *currentEndOfSection) << "   :and: " << *iterator << std::endl; // ERR, cannot dereference (*) the end of the file! its null
 					)
+				DEBUG(
+					std::cout << "Executing Iterator: " << *iterator << std::endl;
+				std::cout << "Result of execute: " << result.section->get_content().size() << " tokens." << std::endl;
+				for (const auto& token : result.section->get_content())
+				{
+					std::cout << token << " ";
+				}
+				std::cout << std::endl;
+					) */
 
-				auto result = userCriteria.execute[iteration]->execute(SectioningInput(iterator, currentEndOfSection, sectionAbove));
+				auto result = userCriteria.execute[iterationForExecutor]->execute(SectioningInput(iterator, currentEndOfSection, sectionAbove));
+
+				const auto beginningIterator = iterator + 1;
 
 				_sectionKeys.emplace_back(result.section->get_section_level(), result.section->get_section_identifier(), _sectionValues.size() - 1,
-					SectionCoords(iterator - file.begin(), result.endOfSection - file.begin()));
+					SectionCoords(beginningIterator - file.begin(), result.endOfSection - file.begin()));
 
-				_compressedSections.coords.emplace_back(iterator - file.begin(), result.endOfSection - file.begin(), result.section->get_section_identifier());
+				_compressedSections.coords.emplace_back(beginningIterator - file.begin(), result.endOfSection - file.begin(), result.section->get_section_identifier());
 
 				prevEndOfSections.push_back(currentEndOfSection);
 				currentEndOfSection = result.endOfSection;
@@ -245,7 +256,9 @@ namespace parser {
 
 			for (auto const& [j, trigger] : userCriteria.triggers | std::views::enumerate)
 			{
-
+				/*DEBUG(
+					std::cout << "Checking trigger: " << trigger[0] << " and " << trigger[1] << " at iterator " << j << std::endl;
+					)*/
 				if (currentEndOfSection != file.end() && file[i] == *currentEndOfSection)
 				{
 					currentEndOfSection = prevEndOfSections.empty() ? file.end() : prevEndOfSections.back();
@@ -261,9 +274,6 @@ namespace parser {
 				{
 				case ParserSectioning::NewSectionWhenFound:
 
-					DEBUG(
-						std::cout << "NewSectionWhenFound Trigger: " << trigger[0] << " and " << file[i] << std::endl;
-					)
 					if (trigger[0] == file[i])
 					{
 						update(it, j);
@@ -286,8 +296,6 @@ namespace parser {
 					}
 					break;
 				case ParserSectioning::NewSectionWhenBetween:
-
-					DEBUG(std::cout << "NewSectionWhenBetween Trigger: " << trigger[0] << " and " << file[i] << std::endl;)
 
 					if (trigger[0] == file[i])
 					{

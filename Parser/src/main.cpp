@@ -40,8 +40,8 @@ int main()
 	std::vector<std::unique_ptr<BaseSectioning>> criteria;
 
 	criteria.push_back(new_section_when_between_unique("(", ")", BOOL));
-	criteria.push_back(new_section_when_between_unique("(", ")", BOOL));
-	criteria.push_back(new_section_when_between_unique("IF (BOOL1) {", "}", IF));
+	//criteria.push_back(new_section_when_between_unique("(", ")", BOOL));
+	criteria.push_back(new_section_when_between_unique("{", "}", IF));
 
 
 	SectionHandler handler(file, criteria);
@@ -50,9 +50,23 @@ int main()
 
 	std::vector<std::unique_ptr<Rule>> rules;
 
-	rules.push_back(new_rule_must_include_in_file_unique("&"));
+	rules.push_back(new_rule_must_include_in_file_unique("BOOL1"));
+	rules.push_back(new_rule_must_include_unique("BOOL1", BOOL));
 
 	RuleHandler ruleHandler(rules);
+
+	for (const auto& section : handler.get_compressed_sections().coords)
+	{
+		std::cout << std::endl;
+		std::cout << std::endl;
+		std::cout << std::endl;
+
+		std::cout << "Section ID: " << section.identifier << ", Content: ";
+
+		for (size_t i = section.start; i < section.end; ++i)
+			std::cout << handler.get_compressed_sections().tokens[i];
+		std::cout << std::endl;
+	}
 
 	if (!ruleHandler.check_rules(handler.get_compressed_sections()))
 	{
