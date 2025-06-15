@@ -40,7 +40,6 @@ int main()
 	std::vector<std::unique_ptr<BaseSectioning>> criteria;
 
 	criteria.push_back(new_section_when_between_unique("(", ")", BOOL));
-	//criteria.push_back(new_section_when_between_unique("(", ")", BOOL));
 	criteria.push_back(new_section_when_between_unique("{", "}", IF));
 
 
