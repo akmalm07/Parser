@@ -25,10 +25,10 @@ int main()
 	}
 )";
 		
-	enum STUFF
+	enum Identifiers : size_t
 	{
-		BOOL,
-		IF,
+		BOOL = 1ULL << 0,
+		IF = 1ULL << 1,
 	};
 
 	EntireTokenizedFile file = tokenize(fileStr, TokenizationSeperationBitFlags::TokenizeBrackets, WhiteSpaceDissolveBitFlags::DissolveAll, true);
@@ -39,7 +39,7 @@ int main()
 
 	std::vector<std::unique_ptr<BaseSectioning>> criteria;
 
-	criteria.push_back(new_section_when_between_unique("(", ")", BOOL));
+	criteria.push_back(new_section_when_between_unique("(", ")", IF | BOOL));
 	criteria.push_back(new_section_when_between_unique("{", "}", IF));
 
 
@@ -68,6 +68,7 @@ int main()
 			std::cout << std::endl;
 		}
 	);*/
+
 	if (!ruleHandler.check_rules(handler.get_compressed_sections()))
 	{
 		std::cerr << red_text("Rule check failed.") << std::endl;

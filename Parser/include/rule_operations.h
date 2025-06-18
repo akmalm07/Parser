@@ -94,7 +94,7 @@ namespace parser
 		virtual ~Rule() = default;
 
 	protected:
-		size_t _identifier = std::numeric_limits<size_t>::max() - ANONYMUS_SECTIONS_NOT_DEFUALT_CHECKED_BY_RULE;
+		size_t _identifier = 0b0000;
 		RuleType _type = RuleType::None;
 
 	};
@@ -332,7 +332,7 @@ namespace parser
 					return false;
 				}
 
-				if (coord.identifier == _identifier)
+				if (coord.identifier & _identifier)
 				{
 
 					for (size_t i = coord.start; i < coord.end; i++)
@@ -415,7 +415,7 @@ namespace parser
 					return false;
 				}
 
-				if (coord.identifier == _identifier)
+				if (coord.identifier & _identifier)
 				{
 
 					for (size_t i = coord.start; i < coord.end; i++)
@@ -494,7 +494,7 @@ namespace parser
 					return false;
 				}
 
-				if (coord.identifier == _identifier && coord.end - coord.start > 0)
+				if (coord.identifier & _identifier && coord.end - coord.start > 0)
 				{
 					for (size_t i = coord.start + 1; i < coord.end; i++)
 					{
@@ -569,7 +569,7 @@ namespace parser
 					return false;
 				}
 
-				if (coord.identifier == _identifier && coord.end > coord.start)
+				if (coord.identifier & _identifier && coord.end > coord.start)
 				{
 					for (size_t i = coord.start; i < coord.end - 1; i++)
 					{
