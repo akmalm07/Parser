@@ -23,6 +23,12 @@ namespace parser
 		MustIncludeBetween,
 	};
 
+	enum class HasRegex : bool
+	{
+		No = false,
+		Yes = true
+	};
+
 
 	struct BaseRuling
 	{
@@ -30,52 +36,137 @@ namespace parser
 		ParserRule type;
 		std::string errMsg;
 
+		BaseRuling(ParserRule type, std::string_view errMsg)
+			: type(type), errMsg(errMsg) {}
+
+		virtual bool is_regex_based() const = 0;
+
 		virtual size_t get_target_count() const = 0;
+	};
+
+
+	template<size_t N, HasRegex R>
+		requires (N > 0)
+	struct Ruling;
+
+
+
+	template<size_t N>
+		requires (N > 0)
+	struct RulingMultiTarget : public BaseRuling
+	{
+	public:
+		RulingMultiTarget(ParserRule type, std::string_view errMsg)
+			: BaseRuling(type, errMsg) {}
+
+		virtual ~RulingMultiTarget() = default;
+
+		size_t get_target_count() const override final
+		{
+			return N;
+		}
 	};
 
 	template<size_t N>
 		requires (N > 0)
-	struct Ruling : public BaseRuling
+	struct Ruling<N, HasRegex::No> : public RulingMultiTarget<N>
 	{
 	public:
 
 		std::array<std::string, N> targets; // This is a fixed size array of strings that contains the targets of the rule. The size of the array is determined by the template parameter N.
 
-		size_t get_target_count() const override { return N; }
-
 		Ruling(ParserRule r, std::array<std::string, N> const& t, std::string_view e)
+			: RulingMultiTarget<N>(r, e), targets(t)
+		{}
+		 
+		bool is_regex_based() const override
 		{
-			type = r;
-			targets = t;
-			errMsg = e;
+			return false;
 		}
 
 		~Ruling() = default;
 
 	};
 
+	template<size_t N>
+		requires (N > 0)
+	struct Ruling<N, HasRegex::Yes> : public RulingMultiTarget<N>
+	{
+	public:
+
+		std::array<std::regex, N> targets;
+
+		Ruling(ParserRule r, std::array<std::regex, N> const& t, std::string_view e)
+			: RulingMultiTarget<N>(r, e), targets(t)
+		{}
+
+		bool is_regex_based() const override
+		{
+			return true;
+		}
+
+		~Ruling() = default;
+
+	};
+
+	
+	struct RulingOneTarget : public BaseRuling
+	{
+	public:
+
+		RulingOneTarget(ParserRule type, std::string_view errMsg)
+			: BaseRuling(type, errMsg)
+		{}
+
+		virtual ~RulingOneTarget() = default;
+
+		size_t get_target_count() const override final
+		{
+			return 1;
+		}
+	};
+
+
 	template<>
-	struct Ruling<1> : BaseRuling
+	struct Ruling<1, HasRegex::No> : public RulingOneTarget
 	{
 	public:
 		std::string target;
 
-		size_t get_target_count() const override { return 1; }
-
 		Ruling(ParserRule r, std::string_view t, std::string_view e)
+			: RulingOneTarget(r, e), target(t)
 		{
-			type = r;
-			target = t;
-			errMsg = e;
+		}
+
+		bool is_regex_based() const override
+		{
+			return false;
 		}
 
 		~Ruling() = default;
 	};
 
-	using RulingOneTarget = Ruling<1>;
-	using RulingTwoTarget = Ruling<2>;
 
-	template<size_t N>
-	using RulingMultiTarget = Ruling<N>;
+
+	template<>
+	struct Ruling<1, HasRegex::Yes> : public RulingOneTarget
+	{
+	public:
+		std::regex target;
+
+		Ruling(ParserRule r, std::regex const& t, std::string_view e)
+			: RulingOneTarget(r, e), target(t)
+		{}
+
+
+		bool is_regex_based() const override
+		{
+			return true;
+		}
+
+		~Ruling() = default;
+	};
+
+	using RulingTwoTarget = RulingMultiTarget<2>;
 
 }

@@ -9,6 +9,7 @@
 #include <string>
 #include <memory>
 #include <limits>
+#include <regex>
 
 
 //#define ANONYMUS_SECTIONS_NOT_DEFUALT_CHECKED_BY_RULE 0 // 1 for yes, 0 for no. This is used to determine if the sections that are created by the section handler will be checked by the rules by default. If this is set to 1, then the sections will be checked by the rules by default. If this is set to 0, then the sections will not be checked by the rules by default. This can be changed later on in the code if needed.
@@ -56,6 +57,8 @@ namespace parser {
 	using TockenizedSectionsIterator = TockenizedSections::iterator; // Iterator value for the TockenizedSections, used to iterate over the sections of the file that have been tokenized.
 	*/
 
+
+	constexpr std::array<std::string_view, 5> REGEX_KEYWORD_LIST = { "", "", "", "", "" };
 
 	template <class T>
 	using view_ptr = T const* const;

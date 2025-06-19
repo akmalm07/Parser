@@ -9,6 +9,11 @@ namespace parser
 	{
 	}
 
+	GlobalRule::GlobalRule(std::string_view str)
+		: Rule(str, RuleType::Global)
+	{
+	}
+
 	GlobalRule::GlobalRule(size_t identifier)
 	: Rule(RuleType::Global, identifier)
 	{}
@@ -20,10 +25,17 @@ namespace parser
 	{
 	}
 
-	LocalRule::LocalRule(size_t identifier)
-		: Rule(RuleType::Local, identifier)
+	LocalRule::LocalRule(std::string_view str)
+		: Rule(str, RuleType::Local)
 	{
 	}
+
+	LocalRule::LocalRule(std::string_view str, size_t identifier)
+		: Rule(str, RuleType::Local, identifier)
+	{
+	}
+
+
 
 
 	bool GlobalRule::check_rule(RuleInputBase const& data)
@@ -55,6 +67,24 @@ namespace parser
 
 
 
+	Rule::Rule(std::string_view str, RuleType type)
+	{
+		if (is_regex(str))
+		{
+			_regex = std::regex(std::string(str));
+		}
+	}
+
+	Rule::Rule(std::string_view str, RuleType type, size_t identifier)
+		: _identifier(identifier), _type(type)
+	{
+		if (is_regex(str))
+		{
+			_regex = std::regex(std::string(str));
+		}
+
+	}
+
 	RuleType Rule::get_type() const
 	{
 		return _type;
@@ -64,6 +94,19 @@ namespace parser
 	size_t Rule::get_identifier() const
 	{
 		return _identifier;
+	}
+
+	bool Rule::is_regex(std::string_view str)
+	{
+		try
+		{
+			std::regex reg(std::string(pattern));
+			return true;
+		}
+		catch (const std::regex_error&)
+		{
+			return false;
+		}
 	}
 
 	bool Rule::check_rule(TokenizedSectionizedCompact const& data)
