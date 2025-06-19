@@ -1,21 +1,39 @@
-##Guide Lin
+# Guide Lines
 
+## 1. Use Clear and Descriptive Names
 
-### 1. Use Clear and Descriptive Names
+- Use meaningful names for variables, functions, and classes.
+- Avoid abbreviations unless they are well-known and widely accepted.
+- Use **camelCase** for variable names.
+- Use **snake_case** for function names.
+- Use **PascalCase** for class/structure names.
+- For member variables:
+  - Use an underscore (`_`) prefix.
+  - Prefix with lowercase `g` for global variables (e.g., `g_globalVar`).
+  - Prefix with lowercase `s` for static variables (e.g., `s_staticVar`).
+- For constants, use uppercase letters with underscores (e.g., `MAX_SIZE`).
+- For constant or reference parameters, use `const&` after the type (e.g., `std::vector<int> const& param1`).
+- For lists, use plural nouns (e.g., `items`, `users`).
 
--	Use meaningful names for variables, functions, and classes.
+## 2. Maintain Consistent Code Style
 
--	Avoid abbreviations unless they are well-known and widely accepted.
+- Align your code according to indentation and brace style conventions.
+- Put `{` on a new line for blocks, functions, and class definitions.
+- Group related variables together.
 
--	Use camel case (camalCase) for variable names, snake case (snake_case) for function names, and pascal case (PascalCode) or class/structure names.
+## 3. Separate Interface from Implementation
 
--	For member variables, add underscore (_) and add the prefix lowercase G (g) and S (s) for global and static variables respectively (e.g., s_privateStaticMember).
+- Use header files (`.h`) for declarations.
+- Use source files (`.cpp`) for implementations.
+- Use `.inl` files if separating template implementations from headers.
 
--	For constants, use uppercase letters with underscores (e.g., MAX_SIZE).
+## 4. Use RAII and Smart Pointers
 
--	For constant and/or reference definitions, add the key words (const&) after the type definition (e.g., std::vector<int> const& param1).
+- Prefer `std::unique_ptr` or `std::shared_ptr` over raw pointers.
+- Manage resources (memory, files, etc.) using RAII principles.
 
--	For list names, use plural nouns (e.g., items, users).
+## 5. Use `const` and `constexpr` Where Possible
 
-
+- Mark variables and member functions `const` when they don’t modify state.
+- Use `constexpr` for compile-time constants.
 

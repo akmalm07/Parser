@@ -25,7 +25,7 @@ namespace parser
 			{
 				if (isRegex)
 				{
-					view_ptr<Ruling<1, HasRegex::Yes>> rule = static_cast<Ruling<1, HasRegex::Yes> const*>(_rule.get());
+					auto rule = static_cast<Ruling<1, HasRegex::Yes> const*>(_rule.get());
 
 					if (std::regex_match(std::string(token), rule->reg.target))
 					{
@@ -36,7 +36,7 @@ namespace parser
 				}
 				else
 				{
-					view_ptr<Ruling<1, HasRegex::No>> rule = static_cast<Ruling<1, HasRegex::No> const*>(_rule.get());
+					auto rule = static_cast<Ruling<1, HasRegex::No> const*>(_rule.get());
 
 					if (token == rule->target)
 					{
@@ -76,7 +76,7 @@ namespace parser
 		{
 			if (isRegex)
 			{
-				view_ptr<Ruling<1, HasRegex::Yes>> rule = static_cast<Ruling<1, HasRegex::Yes> const*>(_rule.get());
+				auto rule = static_cast<Ruling<1, HasRegex::Yes> const*>(_rule.get());
 				if (std::regex_match(std::string(token), rule->reg.target))
 				{
 					name = rule->reg.pattern;
@@ -86,7 +86,7 @@ namespace parser
 			}
 			else
 			{
-				view_ptr<Ruling<1, HasRegex::No>> rule = static_cast<Ruling<1, HasRegex::No> const*>(_rule.get());
+				auto rule = static_cast<Ruling<1, HasRegex::No> const*>(_rule.get());
 				if (token == rule->target)
 				{
 					name = rule->target;
@@ -138,7 +138,7 @@ namespace parser
 		{
 			if (isRegex)
 			{
-				view_ptr<Ruling<1, HasRegex::Yes>> rule = static_cast<Ruling<1, HasRegex::Yes> const*>(_rule.get());
+				auto rule = static_cast<Ruling<1, HasRegex::Yes> const*>(_rule.get());
 				if (std::regex_match(std::string(token), rule->reg.target))
 				{
 					name = rule->reg.pattern;
@@ -148,7 +148,7 @@ namespace parser
 			}
 			else
 			{
-				view_ptr<Ruling<1, HasRegex::No>> rule = static_cast<Ruling<1, HasRegex::No> const*>(_rule.get());
+				auto rule = static_cast<Ruling<1, HasRegex::No> const*>(_rule.get());
 				if (token == rule->target)
 				{
 					name = rule->target;
@@ -190,7 +190,7 @@ namespace parser
 			{
 				if (isRegex)
 				{
-					view_ptr<Ruling<1, HasRegex::Yes>> rule = static_cast<Ruling<1, HasRegex::Yes> const*>(_rule.get());
+					auto rule = static_cast<Ruling<1, HasRegex::Yes> const*>(_rule.get());
 					if (std::regex_match(std::string(token), rule->reg.target))
 					{
 						name = rule->reg.pattern;
@@ -200,7 +200,7 @@ namespace parser
 				}
 				else
 				{
-					view_ptr<Ruling<1, HasRegex::No>> rule = static_cast<Ruling<1, HasRegex::No> const*>(_rule.get());
+					auto rule = static_cast<Ruling<1, HasRegex::No> const*>(_rule.get());
 					if (token == rule->target)
 					{
 						name = rule->target;
@@ -237,7 +237,7 @@ namespace parser
 		{
 			if (isRegex)
 			{
-				view_ptr<Ruling<1, HasRegex::Yes>> rule = static_cast<Ruling<1, HasRegex::Yes> const*>(_rule.get());
+				auto rule = static_cast<Ruling<1, HasRegex::Yes> const*>(_rule.get());
 				if (std::regex_match(std::string(token), rule->reg.target))
 				{
 					name = rule->reg.pattern;
@@ -247,7 +247,7 @@ namespace parser
 			}
 			else
 			{
-				view_ptr<Ruling<1, HasRegex::No>> rule = static_cast<Ruling<1, HasRegex::No> const*>(_rule.get());
+				auto rule = static_cast<Ruling<1, HasRegex::No> const*>(_rule.get());
 				if (token == rule->target)
 				{
 					name = rule->target;
@@ -290,7 +290,7 @@ namespace parser
 
 			if (isRegex && coord.identifier & _identifier)
 			{
-				view_ptr<Ruling<1, HasRegex::Yes>> rule = static_cast<Ruling<1, HasRegex::Yes> const*>(_rule.get());
+				auto rule = static_cast<Ruling<1, HasRegex::Yes> const*>(_rule.get());
 
 				for (size_t i = coord.start; i < coord.end; i++)
 				{
@@ -305,7 +305,7 @@ namespace parser
 			}
 			else if (!isRegex && coord.identifier & _identifier)
 			{
-				view_ptr<Ruling<1, HasRegex::No>> rule = static_cast<Ruling<1, HasRegex::No> const*>(_rule.get());
+				auto rule = static_cast<Ruling<1, HasRegex::No> const*>(_rule.get());
 
 				for (size_t i = coord.start; i < coord.end; i++)
 				{
@@ -348,7 +348,7 @@ namespace parser
 		{
 			if (isRegex)
 			{
-				view_ptr<Ruling<1, HasRegex::Yes>> rule = static_cast<Ruling<1, HasRegex::Yes> const*>(_rule.get());
+				auto rule = static_cast<Ruling<1, HasRegex::Yes> const*>(_rule.get());
 
 				if (std::regex_match(std::string(token), rule->reg.target))
 				{
@@ -359,7 +359,7 @@ namespace parser
 			}
 			else
 			{
-				view_ptr<Ruling<1, HasRegex::No>> rule = static_cast<Ruling<1, HasRegex::No> const*>(_rule.get());
+				auto rule = static_cast<Ruling<1, HasRegex::No> const*>(_rule.get());
 				if (token == rule->target)
 				{
 					name = rule->target;
@@ -405,7 +405,7 @@ namespace parser
 
 			if (isRegex && coord.identifier & _identifier)
 			{
-				view_ptr<Ruling<1, HasRegex::Yes>> rule = static_cast<Ruling<1, HasRegex::Yes> const*>(_rule.get());
+				auto rule = static_cast<Ruling<1, HasRegex::Yes> const*>(_rule.get());
 				for (size_t i = coord.start; i < coord.end; i++)
 				{
 					if (std::regex_match(std::string(sections.tokens[i]), rule->reg.target))
@@ -418,7 +418,7 @@ namespace parser
 			}
 			else if (!isRegex && coord.identifier & _identifier)
 			{
-				view_ptr<Ruling<1, HasRegex::No>> rule = static_cast<Ruling<1, HasRegex::No> const*>(_rule.get());
+				auto rule = static_cast<Ruling<1, HasRegex::No> const*>(_rule.get());
 				for (size_t i = coord.start; i < coord.end; i++)
 				{
 					if (sections.tokens[i] == rule->target)
@@ -462,7 +462,7 @@ namespace parser
 		{
 			if (isRegex)
 			{
-				view_ptr<Ruling<2, HasRegex::Yes>> rule = static_cast<Ruling<2, HasRegex::Yes> const*>(_rule.get());
+				auto rule = static_cast<Ruling<2, HasRegex::Yes> const*>(_rule.get());
 
 				if (std::regex_match(std::string(section[i]), rule->reg.targets[0]) && std::regex_match(std::string(section[i - 1]), rule->reg.targets[1]))
 				{
@@ -473,7 +473,7 @@ namespace parser
 			}
 			else
 			{
-				view_ptr<Ruling<2, HasRegex::No>> rule = static_cast<Ruling<2, HasRegex::No> const*>(_rule.get());
+				auto rule = static_cast<Ruling<2, HasRegex::No> const*>(_rule.get());
 
 				if (section[i] == rule->targets[0] && section[i - 1] == rule->targets[1])
 				{
@@ -522,7 +522,7 @@ namespace parser
 
 				if (isRegex && coord.identifier & _identifier && coord.end - coord.start > 0)
 				{
-					view_ptr<Ruling<2, HasRegex::Yes>> rule = static_cast<view_ptr<Ruling<2, HasRegex::Yes>>>(_rule.get());
+					auto rule = static_cast<view_ptr<Ruling<2, HasRegex::Yes>>>(_rule.get());
 
 					if (std::regex_match(std::string(sections.tokens[i]), rule->reg.targets[0]) &&
 						std::regex_match(std::string(sections.tokens[i - 1]), rule->reg.targets[1]))
@@ -535,7 +535,7 @@ namespace parser
 				}
 				else if (!isRegex && coord.identifier & _identifier && coord.end - coord.start > 0)
 				{
-					view_ptr<Ruling<2, HasRegex::No>> rule = static_cast<view_ptr<Ruling<2, HasRegex::No>>>(_rule.get());
+					auto rule = static_cast<view_ptr<Ruling<2, HasRegex::No>>>(_rule.get());
 
 					if (sections.tokens[i] == rule->targets[0] && sections.tokens[i - 1] == rule->targets[1])
 					{
@@ -586,7 +586,7 @@ namespace parser
 
 				if (isRegex && coord.identifier & _identifier && coord.end > coord.start)
 				{
-					view_ptr<Ruling<2, HasRegex::Yes>> rule = static_cast<view_ptr<Ruling<2, HasRegex::Yes>>>(_rule.get());
+					auto rule = static_cast<view_ptr<Ruling<2, HasRegex::Yes>>>(_rule.get());
 					if (std::regex_match(std::string(sections.tokens[i]), rule->reg.targets[0]) && std::regex_match(std::string(sections.tokens[i + 1]), rule->reg.targets[1]))
 					{
 						name1 = rule->reg.patterns[0];
@@ -597,7 +597,7 @@ namespace parser
 				}
 				else if (!isRegex && coord.identifier & _identifier && coord.end > coord.start)
 				{
-					view_ptr<Ruling<2, HasRegex::No>> rule = static_cast<view_ptr<Ruling<2, HasRegex::No>>>(_rule.get());
+					auto rule = static_cast<view_ptr<Ruling<2, HasRegex::No>>>(_rule.get());
 
 					if (sections.tokens[i] == rule->targets[0] && sections.tokens[i + 1] == rule->targets[1])
 					{
@@ -641,7 +641,7 @@ namespace parser
 		{
 			if (isRegex)
 			{
-				view_ptr<Ruling<2, HasRegex::Yes>> rule = static_cast<view_ptr<Ruling<2, HasRegex::Yes>>>(_rule.get());
+				auto rule = static_cast<view_ptr<Ruling<2, HasRegex::Yes>>>(_rule.get());
 				if (std::regex_match(std::string(section[i]), rule->reg.targets[0]) && std::regex_match(std::string(section[i + 1]), rule->reg.targets[1]))
 				{
 					name1 = rule->reg.patterns[0];
@@ -651,7 +651,7 @@ namespace parser
 			}
 			else
 			{
-				view_ptr<Ruling<2, HasRegex::No>> rule = static_cast<view_ptr<Ruling<2, HasRegex::No>>>(_rule.get());
+				auto rule = static_cast<view_ptr<Ruling<2, HasRegex::No>>>(_rule.get());
 
 				if (section[i] == rule->targets[0] && section[i + 1] == rule->targets[1])
 				{

@@ -10,20 +10,20 @@ int main()
 	
 
 	EntireUntokenizedFile fileStr = R"(
-	IF (BOOL1) {
-		// Do something
-		IF (BOOL2)
-		{
-			// Do something else
+		IF (BOOL1) {
+			// Do something
+			IF (BOOL2)
+			{
+				// Do something else
 
+			}
+
+		WHILE(BOOL3)
+		{
 		}
 
-	WHILE(BOOL3)
-	{
 	}
-
-	}
-)";
+	)";
 		
 	enum Identifiers : size_t
 	{
