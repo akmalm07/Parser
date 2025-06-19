@@ -10,7 +10,7 @@ project "Parser"
     targetdir ("Parser/bin/%{cfg.buildcfg}")
     objdir ("Parser/bin-int/%{cfg.buildcfg}")
 
-    files { "%{prj.name}/include/**.h", "%{prj.name}/include/**.inl", "%{prj.name}/**.cpp" }
+    files { "%{prj.name}/headers.h", "%{prj.name}/include/**.h", "%{prj.name}/include/**.inl", "%{prj.name}/**.cpp" }
 
     pchheader "headers.h"
     pchsource "Parser/src/headers.cpp"
