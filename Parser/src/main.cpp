@@ -39,7 +39,7 @@ int main()
 
 	std::vector<std::unique_ptr<BaseSectioning>> criteria;
 
-	criteria.push_back(new_section_when_between_unique("(", ")", IF | BOOL));
+	criteria.push_back(new_section_when_between_unique("(", ")", BOOL));
 	criteria.push_back(new_section_when_between_unique("{", "}", IF));
 
 
@@ -51,6 +51,7 @@ int main()
 
 	rules.push_back(new_rule_must_include_in_file_unique("BOOL1"));
 	rules.push_back(new_rule_must_include_unique("BOOL1", BOOL));
+	rules.push_back(new_rule_must_include_in_file_unique("WHILE|while"));
 
 	RuleHandler ruleHandler(rules);
 

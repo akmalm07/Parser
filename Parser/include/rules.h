@@ -61,6 +61,8 @@ namespace parser
 
 		virtual ~RulingMultiTarget() = default;
 
+		virtual bool is_regex_based() const override = 0;
+
 		size_t get_target_count() const override final
 		{
 			return N;
@@ -79,6 +81,7 @@ namespace parser
 			: RulingMultiTarget<N>(r, e), targets(t)
 		{}
 		 
+
 		bool is_regex_based() const override
 		{
 			return false;
@@ -94,11 +97,30 @@ namespace parser
 	{
 	public:
 
-		std::array<std::regex, N> targets;
+		struct
+		{
+			std::array<std::string, N> patterns;
+			std::array<std::regex, N> targets;
+		}reg;
 
-		Ruling(ParserRule r, std::array<std::regex, N> const& t, std::string_view e)
-			: RulingMultiTarget<N>(r, e), targets(t)
-		{}
+
+		Ruling(ParserRule r, std::array<std::string, N> const& t, std::string_view e)
+			: RulingMultiTarget<N>(r, e)
+		{
+			for (size_t i = 0; i < N; ++i)
+			{
+				reg.patterns[i] = t[i];
+				try
+				{
+					reg.targets[i] = std::regex(t[i]);
+				}
+				catch (const std::regex_error& e)
+				{
+					std::cerr << PARSER_LOG_ERR << "Invalid regex pattern: " << t[i] << ". Error: " << e.what() << std::endl;
+					throw;
+				}
+			}
+		}
 
 		bool is_regex_based() const override
 		{
@@ -119,6 +141,8 @@ namespace parser
 		{}
 
 		virtual ~RulingOneTarget() = default;
+
+		virtual bool is_regex_based() const override = 0;
 
 		size_t get_target_count() const override final
 		{
@@ -152,11 +176,26 @@ namespace parser
 	struct Ruling<1, HasRegex::Yes> : public RulingOneTarget
 	{
 	public:
-		std::regex target;
+		struct
+		{
+			std::string pattern;
+			std::regex target;
+		}reg;
 
-		Ruling(ParserRule r, std::regex const& t, std::string_view e)
-			: RulingOneTarget(r, e), target(t)
-		{}
+		Ruling(ParserRule r, std::string const& t, std::string_view e)
+			: RulingOneTarget(r, e)
+		{
+			reg.pattern = t;
+			try
+			{
+				reg.target = std::regex(t);
+			}
+			catch (const std::regex_error& e)
+			{
+				std::cerr << PARSER_LOG_ERR << "Invalid regex pattern: " << t << ". Error: " << e.what() << std::endl;
+				throw;
+			}
+		}
 
 
 		bool is_regex_based() const override
