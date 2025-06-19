@@ -33,7 +33,6 @@
     <ClInclude Include="include\regex.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source.cpp" />
     <ClCompile Include="src\regex.cpp" />
     <ClCompile Include="src\rule_handler.cpp" />
     <ClCompile Include="src\sections.cpp" />
