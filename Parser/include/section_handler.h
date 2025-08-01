@@ -77,7 +77,8 @@ namespace parser {
 
 
 
-	class SectionHandler
+	class SectionHandler 
+		// This class is responsible for handling/creating sections in a tokenized file.
 	{
 	public:
 		SectionHandler() = default;

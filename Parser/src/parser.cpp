@@ -63,7 +63,7 @@ namespace parser {
 	}
 	void Parser::parse_binary(const std::ifstream& file) 
 	{
-		
+
 	}
 	void Parser::parse_text(const std::ifstream& file)
 	{

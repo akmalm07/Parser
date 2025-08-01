@@ -31,6 +31,8 @@ int main()
 		IF = 1ULL << 1,
 	};
 
+
+
 	EntireTokenizedFile file = tokenize(fileStr, TokenizationSeperationBitFlags::TokenizeBrackets, WhiteSpaceDissolveBitFlags::DissolveAll, true);
 
 
@@ -55,26 +57,13 @@ int main()
 
 	RuleHandler ruleHandler(rules);
 
-	/*DEBUG(
-		for (const auto& section : handler.get_compressed_sections().coords)
-		{
-			std::cout << std::endl;
-			std::cout << std::endl;
-			std::cout << std::endl;
-
-			std::cout << "Section ID: " << section.identifier << ", Content: ";
-
-			for (size_t i = section.start; i < section.end; ++i)
-				std::cout << handler.get_compressed_sections().tokens[i];
-			std::cout << std::endl;
-		}
-	);*/
-
 	if (!ruleHandler.check_rules(handler.get_compressed_sections()))
 	{
 		std::cerr << red_text("Rule check failed.") << std::endl;
 		return 1;
 	}
+
+
 
 	std::cout << green_text("Test completed successfully.") << std::endl;
 

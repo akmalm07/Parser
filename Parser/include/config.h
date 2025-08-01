@@ -20,6 +20,8 @@ namespace parser {
 
 	using TockenizedUnsectionedFile = std::vector<std::string_view>; // A vector of string_views, each string_view is a token in the file that has been tockenized. Each token is a view into the original file, so it can be used to access the original file without copying it. This is useful for large files where copying the entire file would be expensive in terms of memory and performance.
 	
+	using TockenizedUnsectionedFileStr = std::vector<std::string>; // A vector of strings, each string is a token in the file that has been tockenized. Each token is a view into the original file, so it can be used to access the original file without copying it. This is useful for large files where copying the entire file would be expensive in terms of memory and performance.
+	
 	using TockenizedUnsectionedFileIterator = TockenizedUnsectionedFile::iterator; // A vector of string_views, each string_view is a token in the file that has been tockenized. Each token is a view into the original file, so it can be used to access the original file without copying it. This is useful for large files where copying the entire file would be expensive in terms of memory and performance.
 	using TockenizedUnsectionedFileIteratorConst = TockenizedUnsectionedFile::const_iterator; // A vector of string_views, each string_view is a token in the file that has been tockenized. Each token is a view into the original file, so it can be used to access the original file without copying it. This is useful for large files where copying the entire file would be expensive in terms of memory and performance.
 
@@ -35,7 +37,7 @@ namespace parser {
 		SectionCoords(size_t start = 0, size_t end = 0, size_t identifier = 0) : start(start), end(end), identifier(identifier) {}
 	};
 
-	struct TokenizedSectionizedCompact // A compact representation of a tokenized section, which includes the tokens and their coordinates in the original file.
+	struct TokenizedSectionizedCompact 
 	{
 	public:
 
@@ -44,6 +46,8 @@ namespace parser {
 		std::vector<SectionCoords> coords;
 
 	};
+
+
 
 	using EntireTokenizedFile = std::vector<std::string_view>; // A vector of strings, each string is a section of the file that has been tokenized. Each string is a tockenized version of the entire file, where each token is separated by whitespace or newlines.
 

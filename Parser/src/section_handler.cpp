@@ -218,19 +218,6 @@ namespace parser {
 
 		auto update = [&](TockenizedUnsectionedFileIteratorConst iterator, size_t iterationForExecutor)
 			{	
-				/*
-				DEBUG(
-					std::cout << "Value for the currentEndOfSection:   " << (currentEndOfSection == file.end() ? "NULL" : *currentEndOfSection) << "   :and: " << *iterator << std::endl; // ERR, cannot dereference (*) the end of the file! its null
-					)
-				DEBUG(
-					std::cout << "Executing Iterator: " << *iterator << std::endl;
-				std::cout << "Result of execute: " << result.section->get_content().size() << " tokens." << std::endl;
-				for (const auto& token : result.section->get_content())
-				{
-					std::cout << token << " ";
-				}
-				std::cout << std::endl;
-					) */
 
 				auto result = userCriteria.execute[iterationForExecutor]->execute(SectioningInput(iterator, currentEndOfSection, sectionAbove));
 
@@ -256,9 +243,6 @@ namespace parser {
 
 			for (auto const& [j, trigger] : userCriteria.triggers | std::views::enumerate)
 			{
-				/*DEBUG(
-					std::cout << "Checking trigger: " << trigger[0] << " and " << trigger[1] << " at iterator " << j << std::endl;
-					)*/
 				if (currentEndOfSection != file.end() && file[i] == *currentEndOfSection)
 				{
 					currentEndOfSection = prevEndOfSections.empty() ? file.end() : prevEndOfSections.back();

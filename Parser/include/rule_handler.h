@@ -11,7 +11,8 @@ namespace parser
 
 
 
-	class RuleHandler //FIX THIS
+	class RuleHandler 
+		// This is a class that handles rules for sections in a file.
 	{
 	public:
 		RuleHandler() = default; 
