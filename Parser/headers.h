@@ -11,6 +11,7 @@
 #include <functional>
 #include <ranges> 
 #include <algorithm> 
+#include <regex> 
 
 
 #ifdef DEBUG

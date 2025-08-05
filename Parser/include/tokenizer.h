@@ -13,9 +13,12 @@ namespace parser
 	};
 
 
-	EntireTokenizedFile tokenize(EntireUntokenizedFile& file, TokenizationSeperationFlag flags, WhiteSpaceDissolveFlag deleteWhiteSpace = WhiteSpaceDissolveBitFlags::DissolveAll, bool isolate = false);
-	
+	EntireTokenizedFile tokenize(EntireUntokenizedFile& file, TokenizationSeperationFlag flags, WhiteSpaceDissolveFlag deleteWhiteSpace = WhiteSpaceDissolveBitFlags::DissolveAll);
 	EntireTokenizedFile tokenize(EntireUntokenizedFile& file, std::vector<std::string> const& targets, WhiteSpaceDissolveFlag deleteWhiteSpace = WhiteSpaceDissolveBitFlags::DissolveAll);
+
+
+	// The Isolated flag is depriciated, but supported witht he __ suffix and prefix. by default, the isolated flag is true
+	EntireTokenizedFile __tokenize__(EntireUntokenizedFile& file, TokenizationSeperationFlag flags, WhiteSpaceDissolveFlag deleteWhiteSpace = WhiteSpaceDissolveBitFlags::DissolveAll, bool isolate = false);
 
 	bool includes_token_seperator_char(char c, TokenizationSeperationFlag flags);
 	

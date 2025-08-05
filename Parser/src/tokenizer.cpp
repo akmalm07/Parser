@@ -4,7 +4,12 @@
 
 namespace parser
 {
-	EntireTokenizedFile tokenize(EntireUntokenizedFile& text, TokenizationSeperationFlag flags, WhiteSpaceDissolveFlag dissolveWhiteSpace, bool isolate)
+	EntireTokenizedFile tokenize(EntireUntokenizedFile& file, TokenizationSeperationFlag flags, WhiteSpaceDissolveFlag deleteWhiteSpace)
+	{
+		return __tokenize__(file, flags, deleteWhiteSpace, false);
+	}
+
+	EntireTokenizedFile __tokenize__(EntireUntokenizedFile& text, TokenizationSeperationFlag flags, WhiteSpaceDissolveFlag dissolveWhiteSpace, bool isolate)
 	{
 		std::vector<std::string_view> tokens;
 		size_t tokenStart = 0;
@@ -52,9 +57,9 @@ namespace parser
 						std::string_view currentToken(text.data() + tokenStart, len);
 
 						bool allDissolvable = true;
-						for (char tok_c : currentToken)
+						for (char tokenCurrent : currentToken)
 						{
-							if (!isCharDissolvable(tok_c)) 
+							if (!isCharDissolvable(tokenCurrent)) 
 							{
 								allDissolvable = false;
 								break;
@@ -89,9 +94,9 @@ namespace parser
 						{
 							std::string_view currentToken(text.data() + tokenStart, len);
 							bool allDissolvable = true;
-							for (char tok_c : currentToken) 
+							for (char tokenCurrent : currentToken) 
 							{
-								if (!isCharDissolvable(tok_c))
+								if (!isCharDissolvable(tokenCurrent))
 								{
 									allDissolvable = false;
 									break;
@@ -123,8 +128,10 @@ namespace parser
 			{
 				std::string_view lastToken(text.data() + tokenStart, len);
 				bool allDissolvable = true;
-				for (char tok_c : lastToken) {
-					if (!isCharDissolvable(tok_c)) {
+				for (char tokenCurrent : lastToken) 
+				{
+					if (!isCharDissolvable(tokenCurrent))
+					{
 						allDissolvable = false;
 						break;
 					}
@@ -437,7 +444,6 @@ namespace parser
 				std::cout << sections.tokens[i] << " ";
 			}
 			std::cout << "\n"; // New line for each section
-		}
 		std::cout << std::endl;
 	}
 

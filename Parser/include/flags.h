@@ -169,4 +169,33 @@ namespace parser
 	{
 		return SectioningFlag(static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs));
 	}
+
+
+	// --BeforeOrAfterFlags--
+
+	enum class BeforeOrAfterFlagBits
+	{
+		None = 0,
+		Before = 1 << 0, 
+		After = 1 << 1,
+		Both = Before | After
+	};
+
+	using BeforeOrAfterFlag = Flags<BeforeOrAfterFlagBits>;
+
+	inline BeforeOrAfterFlag operator|(BeforeOrAfterFlagBits lhs, BeforeOrAfterFlagBits rhs)
+	{
+		return BeforeOrAfterFlag(static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs));
+	}
+
+	// --AddWhiteSpaceFlags--
+
+	enum class AddWhiteSpaceFlags
+	{
+		None = 0,
+		AddSpace = 1 << 0,
+		AddTab = 1 << 1,
+		AddNewLine = 1 << 2
+	};
+
 }
