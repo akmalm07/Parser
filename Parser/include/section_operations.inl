@@ -119,6 +119,7 @@ namespace parser
 
 		size_t placementNum = realInput->endOfSection - realInput->placement;
 
+		std::cout << "Placement Num: " << placementNum << " in placement: " << *realInput->placement << std::endl;
 
 
 		ExecutionOutput output = _execute(placementNum, realInput->placement, realInput->endOfSection, const_cast<BaseSectioning*>(_criteria));

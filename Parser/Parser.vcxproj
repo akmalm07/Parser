@@ -15,6 +15,7 @@
     <IgnoreWarnCompileDuplicatedFilename>true</IgnoreWarnCompileDuplicatedFilename>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Parser</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -41,15 +42,15 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>bin\Debug\</OutDir>
-    <IntDir>bin-int\Debug\</IntDir>
+    <OutDir>Parser\bin\Debug\</OutDir>
+    <IntDir>Parser\bin-int\Debug\</IntDir>
     <TargetName>Parser</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>bin\Release\</OutDir>
-    <IntDir>bin-int\Release\</IntDir>
+    <OutDir>Parser\bin\Release\</OutDir>
+    <IntDir>Parser\bin-int\Release\</IntDir>
     <TargetName>Parser</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
@@ -59,11 +60,11 @@
       <PrecompiledHeaderFile>headers.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp23</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
-      <AdditionalIncludeDirectories>$(SolutionDir)Parser;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -76,12 +77,13 @@
       <PrecompiledHeaderFile>headers.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp23</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
     </ClCompile>
     <Link>
@@ -96,7 +98,7 @@
     <ClInclude Include="include\compact_map.inl" />
     <ClInclude Include="include\config.h" />
     <ClInclude Include="include\flags.h" />
-    <ClInclude Include="include\lexer.h" />
+    <ClInclude Include="include\identifier_handler.h" />
     <ClInclude Include="include\parser.h" />
     <ClInclude Include="include\parser.inl" />
     <ClInclude Include="include\regex.h" />
@@ -109,13 +111,14 @@
     <ClInclude Include="include\section_operations.inl" />
     <ClInclude Include="include\sections.h" />
     <ClInclude Include="include\tokenizer.h" />
+    <ClInclude Include="include\identifier.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\config.cpp" />
     <ClCompile Include="src\headers.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="src\lexer.cpp" />
+    <ClCompile Include="src\identifier_handler.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\parser.cpp" />
     <ClCompile Include="src\regex.cpp" />

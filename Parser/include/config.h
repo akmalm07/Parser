@@ -11,6 +11,7 @@
 #include <limits>
 #include <filesystem>
 #include <regex>
+#include <functional>
 
 
 //#define ANONYMUS_SECTIONS_NOT_DEFUALT_CHECKED_BY_RULE 0 // 1 for yes, 0 for no. This is used to determine if the sections that are created by the section handler will be checked by the rules by default. If this is set to 1, then the sections will be checked by the rules by default. If this is set to 0, then the sections will not be checked by the rules by default. This can be changed later on in the code if needed.
@@ -18,10 +19,16 @@
 
 namespace parser {
 
+	struct ItemsIdentified
+	{
+		std::vector<std::string> items;
+		std::vector <size_t> identifiers;
+	};
 
 	using TockenizedUnsectionedFile = std::vector<std::string_view>; // A vector of string_views, each string_view is a token in the file that has been tockenized. Each token is a view into the original file, so it can be used to access the original file without copying it. This is useful for large files where copying the entire file would be expensive in terms of memory and performance.
 	
 	using TockenizedUnsectionedFileStr = std::vector<std::string>; // A vector of strings, each string is a token in the file that has been tockenized. Each token is a view into the original file, so it can be used to access the original file without copying it. This is useful for large files where copying the entire file would be expensive in terms of memory and performance.
+
 	
 	using TockenizedUnsectionedFileIterator = TockenizedUnsectionedFile::iterator; // A vector of string_views, each string_view is a token in the file that has been tockenized. Each token is a view into the original file, so it can be used to access the original file without copying it. This is useful for large files where copying the entire file would be expensive in terms of memory and performance.
 	using TockenizedUnsectionedFileIteratorConst = TockenizedUnsectionedFile::const_iterator; // A vector of string_views, each string_view is a token in the file that has been tockenized. Each token is a view into the original file, so it can be used to access the original file without copying it. This is useful for large files where copying the entire file would be expensive in terms of memory and performance.

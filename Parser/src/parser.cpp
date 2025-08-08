@@ -1,74 +1,13 @@
 #include "headers.h"
 #include "include/parser.h"
+#include "include/section_handler.h"
+#include "include/rule_handler.h"
+#include "include/tokenizer.h"
+#include "include/identifier_handler.h"
 
+namespace parser 
+{
 
-namespace parser {
-	// Constructor
-	Parser::Parser(std::filesystem::path const& fileLoc, ParserReadType type)
-		: _fileLocation(fileLoc), _readType(type) 
-	{
-		_fileStream = open_file(fileLoc, type);
-	}
-
-	void Parser::set_rules(std::vector<RuleHandler> const& rules)
-	{
-		if (_rules.empty()) 
-		{
-			std::cerr << PARSER_LOG_ERR << "No rules set for parser." << std::endl;
-		}
-		else 
-		{
-			std::cout << PARSER_LOG_INFO << "Rules set for parser. Number of rules set: " << _rules.size() << std::endl;
-		}
-	}
-
-	bool Parser::parse(std::string_view fileLoc, ParserReadType type)
-	{
-		_fileStream = open_file(fileLoc, type);
-		if (!_fileStream.is_open()) {
-			return false;
-		}
-
-		if (type == ParserReadType::Binary) 
-		{
-			parse_binary(_fileStream);
-		}
-		else 
-		{
-			parse_text(_fileStream);
-		}
-
-		return true;
-	}
-
-	void Parser::operator<<(const std::ifstream& file) 
-	{
-		
-			parse_text(file);
-
-	}
-	std::ifstream Parser::open_file(std::filesystem::path const& fileLoc, ParserReadType type)
-	{
-		std::ios_base::openmode mode = (type == ParserReadType::Binary) ? std::ios::binary : std::ios::in;
-		_readType = type;
-
-		std::ifstream file(fileLoc, mode);
-
-		if (!file.is_open()) 
-		{
-			std::cerr << PARSER_LOG_ERR << "Failed to open file: " << fileLoc << "\n";
-		}
-
-		return file;
-	}
-	void Parser::parse_binary(const std::ifstream& file) 
-	{
-
-	}
-	void Parser::parse_text(const std::ifstream& file)
-	{
-		
-	}
 	TockenizedUnsectionedFileStr get_str_as_vec(const EntireUntokenizedFile& str, WhiteSpaceDissolveFlag flags)
 	{
 		TockenizedUnsectionedFileStr vec;
@@ -100,79 +39,100 @@ namespace parser {
 			!(flags & WhiteSpaceDissolveBitFlags::None);
 	}
 
+	std::optional<char> determine_whitespace_addition(BeforeOrAfterFlagBits flag, const std::string& token, const AddWhiteSpace& ws, bool aleadyAdded)
+	{
+
+		if (ws.flag & flag)
+		{
+			if (ws.wholeStrOnlyApply && ws.regexBased && 
+				std::regex_match(token, std::regex(ws.target)) && 
+				(!aleadyAdded || (aleadyAdded && ws.addIfAlreadyPresent)))
+			{
+				return add_whitespace(ws.addInPlace);
+			}
+			else if (ws.wholeStrOnlyApply && 
+				token == ws.target && 
+				(!aleadyAdded || (aleadyAdded && ws.addIfAlreadyPresent)))
+			{
+				return add_whitespace(ws.addInPlace);
+			}
+			else if (!ws.wholeStrOnlyApply &&
+				!ws.regexBased &&
+				str_includes(token, ws.target) &&
+				(!aleadyAdded || (aleadyAdded && ws.addIfAlreadyPresent)))
+			{
+				return add_whitespace(ws.addInPlace);
+			}
+		}
+	}
+
+	// TODO: Unit test later
 	std::string get_vec_as_str(const TockenizedUnsectionedFileStr& vec, const std::vector<AddWhiteSpace>& addWhiteSpace, AddWhiteSpaceFlags defaultAdd)
 	{
 		std::string result;
-		bool aleadyAdd = false;
+		bool aleadyAdded = false;
 		for (const auto& token : vec)
 		{
 			for (const auto& ws : addWhiteSpace)
 			{
-				aleadyAdd = false;
 
-				if (defaultAdd == AddWhiteSpaceFlags::AddSpace) 
+				if (!disallow_white_space(defaultAdd))
 				{
-					result += " ";
+					aleadyAdded = true;
+					result += add_whitespace(defaultAdd);
+				}
+				else
+				{
+					aleadyAdded = false;
 				}
 
-				if (disallow_white_space(ws.addInPlace))
-					goto SKIP_EXTRA_WHITESPACE_ADD_FROM_GET_VEC_AS_STR;
 
-				if (ws.wholeStrOnlyApply && 
-					ws.flag & BeforeOrAfterFlagBits::Before) 
+				if (!ws.addIfAlreadyPresent)
 				{
-					if (ws.regexBased)
-					{
-						if (std::regex_match(token, std::regex(ws.target)))
-						{
-							result += add_whitespace(ws.addInPlace); // Add space before
-						}
-					}
-					else
-					{
-						if (token == ws.target) 
-						{
-							result += add_whitespace(ws.addInPlace);
-							aleadyAdd = true;
-						}
-					}
+					result += token;
+					continue;
 				}
-				else if (ws.flag & BeforeOrAfterFlagBits::Before)
+
+				auto whitespaceAddtionResult = determine_whitespace_addition(BeforeOrAfterFlagBits::Before, token, ws, aleadyAdded);
+
+				if (whitespaceAddtionResult.has_value())
 				{
-					if (ws.regexBased)
+					result += whitespaceAddtionResult.value();
+				}
+
+				if (!ws.wholeStrOnlyApply && ws.regexBased) // TODO: Unit test later
+				{
+					auto indices = str_includes_reg(token, ws.target); 
+					
+					std::string finalStr;
+					size_t lastIndex = 0;
+					for (size_t i = 0; i < indices.startIndices.size(); i++)
 					{
-						auto indices = str_includes_reg(token, ws.target); 
-						for (size_t i = 0; i < indices.startIndices.size(); ++i)
-						{
-							if (indices.startIndices[i] == 0)
-							{
-								result += add_whitespace(ws.addInPlace);
-								aleadyAdd = true;
-								break;
-							}
-						}
-					}
-					else
-					{
+						finalStr += token.substr(lastIndex, indices.startIndices[i]);
 						
+						if (ws.flag & BeforeOrAfterFlagBits::Before)
+							finalStr += add_whitespace(ws.addInPlace);
+
+						finalStr += token.substr(indices.startIndices[i], indices.endIndices[i] - indices.startIndices[i]);
+
+						if (ws.flag & BeforeOrAfterFlagBits::After)
+							finalStr += add_whitespace(ws.addInPlace);
+
+						lastIndex = indices.endIndices[i];
 					}
+					if (lastIndex < token.size())
+						finalStr += token.substr(lastIndex);
 				}
-				
-
-
-				result += token;
-
-				SKIP_EXTRA_WHITESPACE_ADD_FROM_GET_VEC_AS_STR:
-
-				if (defaultAdd == AddWhiteSpaceFlags::AddSpace)
+				else
 				{
-					result += " ";
+					result += token;
 				}
 
+				whitespaceAddtionResult = determine_whitespace_addition(BeforeOrAfterFlagBits::After, token, ws, aleadyAdded);
 
-				if (disallow_white_space(defaultAdd))
+				if (whitespaceAddtionResult.has_value())
 				{
-					result += " "; // Default space after each token
+					result += whitespaceAddtionResult.value();
 				}
 			}
 		}

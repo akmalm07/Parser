@@ -218,7 +218,7 @@ namespace parser
 	{
 		if (is_regex(t))
 		{
-			return std::make_unique<ConcreteRule<ParserRule::MustInclude>>(Ruling<1, HasRegex::Yes>{ ParserRule::MustInclude, std::string(t), "Item: " + std::string(t) + " must be included in this section." }, id);
+			return std::make_unique<ConcreteRule<ParserRule::MustInclude>>(Ruling<1, HasRegex::Yes>{ ParserRule::MustInclude, std::string(t), "Regex Item: " + std::string(t) + " must be included in this section." }, id);
 		}
 		return std::make_unique<ConcreteRule<ParserRule::MustInclude>>(Ruling<1, HasRegex::No>{ ParserRule::MustInclude, std::string(t), "Item: " + std::string(t) + " must be included in this section." }, id);
 	}

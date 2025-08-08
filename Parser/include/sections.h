@@ -23,7 +23,6 @@ namespace parser
 		NewSectionWhenBetween, // 2 param
 		NewSectionWhenAfter, // 2 param
 		NewSectionWhenBefore, // 2 param
-
 	};
 
 

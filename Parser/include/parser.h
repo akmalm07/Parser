@@ -1,10 +1,9 @@
 #pragma once
 
-#include "include/config.h"
-#include "include/flags.h"
+#include "include/section_handler.h"
 #include "include/rule_handler.h"
-
-#include <regex>
+#include "include/tokenizer.h"
+#include "include/identifier_handler.h"
 
 namespace parser
 {
@@ -15,49 +14,23 @@ namespace parser
 		std::string target;
 		bool regexBased = false; 
 		bool wholeStrOnlyApply = false; // This flag implies whether the check should be applyed to the whole string or if its okay to apply to string parts (substrings)
+		bool addIfAlreadyPresent = false; // If the whitespace is already present, should it be added again?
 		BeforeOrAfterFlag flag = BeforeOrAfterFlagBits::None;
-		AddWhiteSpaceFlags addInPlace = AddWhiteSpaceFlags::None;
+		AddWhiteSpaceFlags addInPlace = AddWhiteSpaceFlags::None; // This flag indicates what type of whitespace to add in place
 	};
 
-	class Parser
-	{
-	public:
 
-		Parser() = default;
-
-		Parser(std::filesystem::path const& fileLoc, ParserReadType type);
-
-		void set_rules(std::vector<RuleHandler> const& rules);
-
-		bool parse(std::string_view fileLoc, ParserReadType type);
-
-		void operator<<(const std::ifstream& file);
-
-
-	private:
-
-		std::filesystem::path _fileLocation;
-		ParserReadType _readType;
-		std::ifstream _fileStream;
-
-		TokenizedSections _sections;
-
-		std::vector<RuleHandler> _rules;
-
-		EntireUntokenizedFile _entireFile;
-
-
-		void parse_binary(const std::ifstream& file);
-		void parse_text(const std::ifstream& file);
-		std::ifstream open_file(std::filesystem::path const& fileLoc, ParserReadType type);
-
-	};
-
+	// --String Decoders and Encoders--
 	TockenizedUnsectionedFileStr get_str_as_vec(const EntireUntokenizedFile& str, WhiteSpaceDissolveFlag flags = WhiteSpaceDissolveBitFlags::DissolveAll);
 	
+	std::string get_vec_as_str(const TockenizedUnsectionedFileStr& vec, const std::vector<AddWhiteSpace>& addWhiteSpace, AddWhiteSpaceFlags defaultAdd = AddWhiteSpaceFlags::None);
+	
+
+
 	bool disallow_white_space(WhiteSpaceDissolveFlag flag, char charater);
 
-	std::string get_vec_as_str(const TockenizedUnsectionedFileStr& vec, const std::vector<AddWhiteSpace>& addWhiteSpace, AddWhiteSpaceFlags defaultAdd = AddWhiteSpaceFlags::None);
+	std::optional<char> determine_whitespace_addition(BeforeOrAfterFlagBits flag, const std::string& token, const AddWhiteSpace& ws, bool aleadyAdded);
+
 
 	bool disallow_white_space(AddWhiteSpaceFlags flag);
 

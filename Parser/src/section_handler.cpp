@@ -1,5 +1,8 @@
 #include "headers.h"
 #include "include/section_handler.h"
+#include "include/parser.h"
+#include "include/tokenizer.h"
+
 
 
 namespace parser {
@@ -75,9 +78,9 @@ namespace parser {
 						std::vector<std::string_view> content;
 						content.reserve(placementNum);
 
-						for (size_t i = 0; i < placementNum; i++)
+						for (size_t j = 0; j < placementNum; j++)
 						{
-							content.push_back(*(placement + i));
+							content.push_back(*(placement + j));
 						}
 
 						return { currentEndOfSection, content };
@@ -88,6 +91,7 @@ namespace parser {
 			case ParserSectioning::NewSectionWhenBetween:
 
 				sectioningType.emplace_back(ParserSectioning::NewSectionWhenBetween);
+
 				if (criteria[i]->get_target_count() != 2)
 				{
 					std::cerr << PARSER_LOG_ERR << "Input for BaseSectioning Must have at only two targets." << std::endl;
@@ -96,33 +100,56 @@ namespace parser {
 
 				add_triggers<2, false>(criteria[i], triggers);
 
+			
+
 				execute.emplace_back(std::make_unique<ExecuteFuncWithCriteria<2>>(criteria[i].get(), []
 					(size_t placementNum, TockenizedUnsectionedFileIteratorConst placement, TockenizedUnsectionedFileIteratorConst currentEndOfSection, BaseSectioning* criteria) -> ExecutionOutput
 					{
 						std::vector<std::string_view> content;
 						content.reserve(placementNum);
-						std::string_view stopTrigger;
+						std::vector<std::string> stopTrigger;
+
 						if (criteria->is_identifible())
 						{
-							stopTrigger = static_cast<SectioningIdentifier<2>*>(criteria)->targets[1];
+							auto target = static_cast<SectioningIdentifier<2>*>(criteria)->targets[1];
+
+							if (str_includes(target, " "))
+							{
+								auto parts = tokenize(target, TokenizationSeperationBitFlags::TockeizeSpace, WhiteSpaceDissolveBitFlags::DissolveAll);
+								stopTrigger.insert(stopTrigger.end(), std::make_move_iterator(parts.begin()), std::make_move_iterator(parts.end()));
+							}
+							else
+							{
+								stopTrigger.push_back(target);
+							}
 						}
 						else
 						{
-							stopTrigger = static_cast<SectioningUnidentifier<2>*>(criteria)->targets[1];
+							auto target = static_cast<SectioningUnidentifier<2>*>(criteria)->targets[1];
+
+							if (str_includes(target, " "))
+							{
+								auto parts = tokenize(target, TokenizationSeperationBitFlags::TockeizeSpace, WhiteSpaceDissolveBitFlags::DissolveAll);
+								stopTrigger.insert(stopTrigger.end(), std::make_move_iterator(parts.begin()), std::make_move_iterator(parts.end()));
+							}
+							else
+							{
+								stopTrigger.push_back(target);
+							}
 						}
 
-						if (stopTrigger == *placement)
+				//Critical Change
+						for (size_t j = 0; j < placementNum; j++)
 						{
-							return { currentEndOfSection, content};
-						}
-						for (size_t i = 1; i < placementNum; i++)
-						{
-							if (stopTrigger == *(placement + i) || (placement + i) == currentEndOfSection)
+							for (size_t k = 0; k < stopTrigger.size(); k++)
 							{
-								currentEndOfSection = placement + i;
-								break;
+								if (stopTrigger[k] == *(placement + j + k) || (placement + j + k) == currentEndOfSection)
+								{
+									currentEndOfSection = placement + j;
+									break;
+								}
+								content.push_back(*(placement + j));
 							}
-							content.push_back(*(placement + i));
 						}
 
 						return { currentEndOfSection, content };
@@ -164,13 +191,13 @@ namespace parser {
 						{
 							stopTrigger = static_cast<SectioningUnidentifier<2>*>(criteria)->targets[1];
 						}
-						for (size_t i = 0; i < placementNum; i++)
+						for (size_t j = 0; j < placementNum; j++)
 						{
-							if (stopTrigger == *(placement + i))
+							if (stopTrigger == *(placement + j))
 							{
 								break;
 							}
-							content.push_back(*(placement + i));
+							content.push_back(*(placement + j));
 						}
 						return { currentEndOfSection, content };
 					}) 
@@ -237,8 +264,10 @@ namespace parser {
 				DEBUG(std::cout << "Section above updated to: " << sectionAbove->get_section_level() << std::endl;);
 			};
 
+
 		for (size_t i = 0; i < file.size(); i++)
 		{
+		
 			TockenizedUnsectionedFileIteratorConst it = file.begin() + i;
 
 			for (auto const& [j, trigger] : userCriteria.triggers | std::views::enumerate)
@@ -281,11 +310,35 @@ namespace parser {
 					break;
 				case ParserSectioning::NewSectionWhenBetween:
 
-					if (trigger[0] == file[i])
+					std::vector<std::string> triggers;
+
+					if (str_includes(trigger[0], " "))
 					{
+						std::string str(trigger[0]);
+						auto parts = tokenize(str, TokenizationSeperationBitFlags::TockeizeSpace, WhiteSpaceDissolveBitFlags::DissolveSpace);
+
+						triggers.insert(triggers.end(), parts.begin(), parts.end());
+					}
+					else
+					{
+						triggers.emplace_back(trigger[0]);
+					}
+
+					//	stopTrigger.insert(stopTrigger.end(), std::make_move_iterator(parts.rbegin()), std::make_move_iterator(parts.rend()));
+					
+					bool success = true;
+					for (size_t k = 0; k < triggers.size(); k++)
+					{
+						if (triggers[k] != file[i + k] || i + k >= file.size())
+						{
+							success = false;
+							break;
+						}
+					}
+					
+					if (success)
 						update(it, j);
 
-					}
 					break;
 				}
 	

@@ -6,7 +6,7 @@ namespace parser
 {
 	EntireTokenizedFile tokenize(EntireUntokenizedFile& file, TokenizationSeperationFlag flags, WhiteSpaceDissolveFlag deleteWhiteSpace)
 	{
-		return __tokenize__(file, flags, deleteWhiteSpace, false);
+		return __tokenize__(file, flags, deleteWhiteSpace, true);
 	}
 
 	EntireTokenizedFile __tokenize__(EntireUntokenizedFile& text, TokenizationSeperationFlag flags, WhiteSpaceDissolveFlag dissolveWhiteSpace, bool isolate)
@@ -444,7 +444,8 @@ namespace parser
 				std::cout << sections.tokens[i] << " ";
 			}
 			std::cout << "\n"; // New line for each section
-		std::cout << std::endl;
+			std::cout << std::endl;
+		}
 	}
 
 

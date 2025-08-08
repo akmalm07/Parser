@@ -1,8 +1,8 @@
 #pragma once
-#include "tools/include/compact_map.h"
+#include "include/compact_map.h"
 
 
-namespace tools
+namespace std
 {
     template<Sortable Key, typename Value>
     inline size_t compact_map<Key, Value>::find_index(const Key& key) const

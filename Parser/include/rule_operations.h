@@ -112,7 +112,7 @@ namespace parser
 		virtual ~Rule() = default;
 
 	protected:
-		size_t _identifier = 0b0000;
+		size_t _identifier = 0;
 		RuleType _type = RuleType::None;
 
 	};
