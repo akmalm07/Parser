@@ -116,7 +116,7 @@ namespace parser {
 							if (str_includes(target, " "))
 							{
 								auto parts = tokenize(target, TokenizationSeperationBitFlags::TockeizeSpace, WhiteSpaceDissolveBitFlags::DissolveAll);
-								stopTrigger.insert(stopTrigger.end(), std::make_move_iterator(parts.begin()), std::make_move_iterator(parts.end()));
+								stopTrigger.insert(stopTrigger.end(), parts.begin(), parts.end());
 							}
 							else
 							{
@@ -130,7 +130,7 @@ namespace parser {
 							if (str_includes(target, " "))
 							{
 								auto parts = tokenize(target, TokenizationSeperationBitFlags::TockeizeSpace, WhiteSpaceDissolveBitFlags::DissolveAll);
-								stopTrigger.insert(stopTrigger.end(), std::make_move_iterator(parts.begin()), std::make_move_iterator(parts.end()));
+								stopTrigger.insert(stopTrigger.end(), parts.begin(), parts.end());
 							}
 							else
 							{
@@ -145,6 +145,7 @@ namespace parser {
 							{
 								if (stopTrigger[k] == *(placement + j + k) || (placement + j + k) == currentEndOfSection)
 								{
+									content.push_back(*(placement + j));
 									currentEndOfSection = placement + j;
 									break;
 								}
@@ -310,31 +311,67 @@ namespace parser {
 					break;
 				case ParserSectioning::NewSectionWhenBetween:
 
-					std::vector<std::string> triggers;
+					bool noReg = true;
 
+					std::string str(trigger[0]);
+					auto parts = tokenize(str, TokenizationSeperationBitFlags::TockeizeSpace, WhiteSpaceDissolveBitFlags::DissolveSpace);
+				
 					if (str_includes(trigger[0], " "))
 					{
-						std::string str(trigger[0]);
-						auto parts = tokenize(str, TokenizationSeperationBitFlags::TockeizeSpace, WhiteSpaceDissolveBitFlags::DissolveSpace);
 
-						triggers.insert(triggers.end(), parts.begin(), parts.end());
+						
+
+						
+						bool findUntilSuccess = check_find_until_regex(str, file, i);
+
+						bool skipOneSuccess = check_skip_one_regex(str, file, i);
+
+
+
+
+							/*noReg = false;
+							auto check1 = std::find(parts.begin(), parts.end(), *(orBeginReg + 1));
+							auto check2 = std::find(parts.begin(), parts.end(), *(orSeporatorReg + 1));
+							auto check3 = std::find(parts.begin(), parts.end(), *(orEndReg + 1));
+							if (check1 != parts.end() && check2 != parts.end() && check3 != parts.end())
+							{
+								if (file[i] == *check1 || file[i] == *check2 || file[i] == *check3)
+								{
+									triggers.insert(triggers.end(), parts.begin(), orBeginReg);
+									regSuccess = true;
+								}
+							}*/
+						
+
+						
+						if (!regSuccess)
+							continue;
 					}
-					else
+
+					std::vector<std::string> triggers;
+					if (noReg)
 					{
 						triggers.emplace_back(trigger[0]);
+						triggers.insert(triggers.end(), parts.begin(), parts.end());
 					}
 
 					//	stopTrigger.insert(stopTrigger.end(), std::make_move_iterator(parts.rbegin()), std::make_move_iterator(parts.rend()));
 					
 					bool success = true;
-					for (size_t k = 0; k < triggers.size(); k++)
+					if(noReg)
 					{
-						if (triggers[k] != file[i + k] || i + k >= file.size())
+
+						for (size_t k = 0; k < triggers.size(); k++)
 						{
-							success = false;
-							break;
+							if (triggers[k] != file[i + k] || i + k >= file.size())
+							{
+								success = false;
+								break;
+							}
 						}
 					}
+
+
 					
 					if (success)
 						update(it, j);
@@ -345,6 +382,90 @@ namespace parser {
 			}
 		}
 	}
+
+	bool SectionHandler::check_find_until_regex(std::string& trigger, TockenizedUnsectionedFile const& file, size_t currentIndex) const
+	{
+		auto parts = tokenize(trigger, TokenizationSeperationBitFlags::TockeizeSpace, WhiteSpaceDissolveBitFlags::DissolveSpace);
+		auto findUntilReg = std::find(parts.begin(), parts.end(), REGEX_KEYWORD_LIST[0]);
+		if (findUntilReg != parts.end())
+		{
+			for (size_t k = currentIndex; k < file.size(); k++)
+			{
+				if (file[k] == *(findUntilReg + 1))
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	bool SectionHandler::check_skip_one_regex(std::string& trigger, TockenizedUnsectionedFile const& file, size_t currentIndex) const
+	{
+		auto parts = tokenize(trigger, TokenizationSeperationBitFlags::TockeizeSpace, WhiteSpaceDissolveBitFlags::DissolveSpace);
+		auto findUntilReg = std::find(parts.begin(), parts.end(), REGEX_KEYWORD_LIST[1]);
+		if (findUntilReg != parts.end())
+		{
+			if (currentIndex + 1 < file.size() && file[currentIndex + 1] == *(findUntilReg + 1))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool SectionHandler::check_or_regex(std::string& trigger, TockenizedUnsectionedFile const& file, size_t currentIndex) const
+	{
+		auto parts = tokenize(trigger, TokenizationSeperationBitFlags::TockeizeSpace, WhiteSpaceDissolveBitFlags::DissolveSpace);
+
+		auto orBeginReg = std::find(parts.begin(), parts.end(), REGEX_KEYWORD_LIST[2]);
+		auto orSeporatorReg = std::find(parts.begin(), parts.end(), REGEX_KEYWORD_LIST[3]);
+		auto orEndReg = std::find(parts.begin(), parts.end(), REGEX_KEYWORD_LIST[4]);
+
+		if (orBeginReg != parts.end() && orSeporatorReg != parts.end() && orEndReg != parts.end()
+			&& orBeginReg < orSeporatorReg && orSeporatorReg < orEndReg)
+		{
+			size_t orCount = 0;
+			for (auto iterator = orSeporatorReg; iterator < orEndReg; iterator++)
+			{
+				if (*iterator == REGEX_KEYWORD_LIST[3])
+					orCount++;
+			}
+
+			std::vector<std::string_view> options;
+			options.reserve(orCount + 1);
+
+			std::string accumulated;
+			for (auto iterator = orBeginReg + 1; iterator <= orEndReg; iterator++)
+			{
+				if (*iterator != REGEX_KEYWORD_LIST[3] || *iterator != REGEX_KEYWORD_LIST[3])
+				{
+					options.push_back(accumulated);
+					accumulated = "";
+				}
+				else
+				{
+					if (accumulated == REGEX_KEYWORD_LIST[0] || accumulated == REGEX_KEYWORD_LIST[1])
+						accumulated += " ";
+					accumulated += *iterator;
+				}
+			}
+
+			for (auto const& opt : options)
+			{
+				if (str_includes(opt, " "))
+				{
+					if (check_skip_one_regex(trigger, file, currentIndex) || check_find_until_regex(trigger, file, currentIndex))
+					{
+						return true;
+					}
+				}
+				else if (file[currentIndex] == opt) 
+				{
+					return true;
+				}
+			}
+		}
 
 
 

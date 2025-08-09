@@ -13,17 +13,16 @@ int main()
 
 	// FIX THE TOKENIZER, as it did
 	EntireUntokenizedFile fileStr = R"( 
-		int func()
+		int func
 		{
 			bool var = true;
 			while (i < j)
 			{
-				if (var)
+				if ()
 				{
 					var = false;
 				}
 			}
-			return 0;
 		}
 	)";
 		
@@ -47,8 +46,8 @@ int main()
 
 	std::vector<std::unique_ptr<BaseSectioning>> criteria;
 
-	criteria.push_back(new_section_when_between_unique("if (", ")", BOOL));
-	criteria.push_back(new_section_when_between_unique("{", "}", CURLY));
+	criteria.push_back(new_section_when_between_unique(" if (", ")", BOOL));
+	criteria.push_back(new_section_when_between_unique("while ( *** ) {", "}", CURLY));
 
 
 	SectionHandler handler(file, criteria);
@@ -81,7 +80,7 @@ int main()
 
 	std::cout << green_text("Test completed successfully.") << std::endl;
 
-	std::system("start cmd");
+	//std::system("start cmd");
 
 	return 0;
 }

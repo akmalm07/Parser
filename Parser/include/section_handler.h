@@ -107,6 +107,16 @@ namespace parser {
 		std::vector<std::unique_ptr<BaseSection>> _sectionValues;
 	
 		TokenizedSectionizedCompact _compressedSections; // A compact representation of the sections, which includes the tokens and their coordinates in the original file.
+	
+		constexpr static std::array<std::string_view, 5> REGEX_KEYWORD_LIST = { "|***|", "|*|", "|<<|", "|||", "|>>|" };
+	
+	private:
+
+		bool check_find_until_regex(std::string& trigger, TockenizedUnsectionedFile const& file, size_t currentIndex) const;
+
+		bool check_skip_one_regex(std::string& trigger, TockenizedUnsectionedFile const& file, size_t currentIndex) const;
+
+		bool check_or_regex(std::string& trigger, TockenizedUnsectionedFile const& file, size_t currentIndex) const;
 	};
 }
 
