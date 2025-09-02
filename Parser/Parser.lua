@@ -1,10 +1,10 @@
-project "Parser"
+project "parser"
     location "."
     kind "ConsoleApp"
     language "C++"
-    cppdialect "C++20"
-    targetdir ("Parser/bin/%{cfg.buildcfg}")
-    objdir ("Parser/bin-int/%{cfg.buildcfg}")
+    cppdialect "C++23"
+    targetdir ("binaries/bin/%{cfg.buildcfg}")
+    objdir ("binaries/bin-int/%{cfg.buildcfg}")
 
     files { "headers.h", "include/**.h", "include/**.inl", "**.cpp" }
 

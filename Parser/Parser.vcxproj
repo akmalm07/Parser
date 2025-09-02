@@ -11,10 +11,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{D27997C9-BE1B-C29F-A7D6-D5F3931749F0}</ProjectGuid>
+    <ProjectGuid>{F28D3C14-DE2F-67EA-C7EA-7A3EB32BEE3A}</ProjectGuid>
     <IgnoreWarnCompileDuplicatedFilename>true</IgnoreWarnCompileDuplicatedFilename>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>Parser</RootNamespace>
+    <RootNamespace>parser</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -42,16 +42,16 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>Parser\bin\Debug\</OutDir>
-    <IntDir>Parser\bin-int\Debug\</IntDir>
-    <TargetName>Parser</TargetName>
+    <OutDir>binaries\bin\Debug\</OutDir>
+    <IntDir>binaries\bin-int\Debug\</IntDir>
+    <TargetName>parser</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>Parser\bin\Release\</OutDir>
-    <IntDir>Parser\bin-int\Release\</IntDir>
-    <TargetName>Parser</TargetName>
+    <OutDir>binaries\bin\Release\</OutDir>
+    <IntDir>binaries\bin-int\Release\</IntDir>
+    <TargetName>parser</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -63,7 +63,7 @@
       <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <LanguageStandard>stdcpp23</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
     </ClCompile>
     <Link>
@@ -83,7 +83,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
-      <LanguageStandard>stdcpp23</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
     </ClCompile>
     <Link>
@@ -98,10 +98,14 @@
     <ClInclude Include="include\compact_map.inl" />
     <ClInclude Include="include\config.h" />
     <ClInclude Include="include\flags.h" />
+    <ClInclude Include="include\identifier.h" />
     <ClInclude Include="include\identifier_handler.h" />
     <ClInclude Include="include\parser.h" />
     <ClInclude Include="include\parser.inl" />
     <ClInclude Include="include\regex.h" />
+    <ClInclude Include="include\regex_checker_engine.h" />
+    <ClInclude Include="include\regex_finder_executor_engine.h" />
+    <ClInclude Include="include\regex_parts.h" />
     <ClInclude Include="include\rule_handler.h" />
     <ClInclude Include="include\rule_operations.h" />
     <ClInclude Include="include\rule_operations.inl" />
@@ -111,7 +115,6 @@
     <ClInclude Include="include\section_operations.inl" />
     <ClInclude Include="include\sections.h" />
     <ClInclude Include="include\tokenizer.h" />
-    <ClInclude Include="include\identifier.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\config.cpp" />
@@ -122,6 +125,9 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\parser.cpp" />
     <ClCompile Include="src\regex.cpp" />
+    <ClCompile Include="src\regex_checker_engine.cpp" />
+    <ClCompile Include="src\regex_finder_executor_engine.cpp" />
+    <ClCompile Include="src\regex_parts.cpp" />
     <ClCompile Include="src\rule_handler.cpp" />
     <ClCompile Include="src\rule_operations.cpp" />
     <ClCompile Include="src\section_handler.cpp" />

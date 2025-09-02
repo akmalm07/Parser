@@ -12,6 +12,14 @@
 #include <ranges> 
 #include <algorithm> 
 #include <regex> 
+#include <string>
+#include <string_view>
+#include <vector>
+#include <array>
+#include <cstdint>
+#include <limits>
+#include <optional>
+#include <expected>
 
 
 #ifdef DEBUG
