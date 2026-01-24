@@ -40,7 +40,7 @@ int main()
 		IF = 1ULL << 2,
 	};
 
-
+	
 	EntireTokenizedFile file = tokenize(fileStr, TokenizationSeperationBitFlags::TokenizeBrackets, WhiteSpaceDissolveBitFlags::DissolveAll);
 	
 

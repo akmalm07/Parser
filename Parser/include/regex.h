@@ -2,23 +2,22 @@
 
 #include "config.h"
 
-#include "regex_parts.h"
+#include "regex_ast_parts.h"
 
 namespace parser
 {
-	enum class ErrCode
+	
+	class Regex 
 	{
-		None = 0,
-		UnmatchedClosingParenthesis,
-		InvalidEscapeSequence,
-		UnexpectedEndOfPattern,
-		InvalidQuantifierPosition,
-		UnmatchedOpeningParenthesis,
-		UnknownError
+	public:
+		Regex() = default;
+		
+		unsigned int compile(std::string_view pattern);
+		
+		~Regex() = default;
+	private:
+		std::vector<std::unique_ptr<BasePart>> _parts;
 	};
-
-	std::expected<std::vector<std::unique_ptr<BasePart>>, ErrCode> regex_parser(const std::string& pattern);
-
 }
 
 

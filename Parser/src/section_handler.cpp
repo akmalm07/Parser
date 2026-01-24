@@ -5,6 +5,10 @@
 
 
 
+// -------------------------------------------
+// ----- REPLACE WITH REGEX SYSTEM LATER -----
+// -------------------------------------------
+
 namespace parser {
 	
 	template <size_t T, bool Both>
@@ -344,8 +348,8 @@ namespace parser {
 						
 
 						
-						if (!regSuccess)
-							continue;
+						//if (!regSuccess)
+							//continue;
 					}
 
 					std::vector<std::string> triggers;
@@ -471,7 +475,7 @@ namespace parser {
 
 
 
-
+		
 	template<size_t T, bool Both>
 	void add_triggers(std::unique_ptr<BaseSectioning> const& criteria, std::vector<std::array<std::string_view, 2>>& triggers)
 	{

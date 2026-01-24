@@ -15,20 +15,19 @@
     <IgnoreWarnCompileDuplicatedFilename>true</IgnoreWarnCompileDuplicatedFilename>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>parser</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -42,15 +41,15 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>binaries\bin\Debug\</OutDir>
-    <IntDir>binaries\bin-int\Debug\</IntDir>
+    <OutDir>$(ProjectDir)binaries\bin\Debug\</OutDir>
+    <IntDir>$(ProjectDir)binaries\bin-int\Debug\</IntDir>
     <TargetName>parser</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>binaries\bin\Release\</OutDir>
-    <IntDir>binaries\bin-int\Release\</IntDir>
+    <OutDir>$(ProjectDir)binaries\bin\Release\</OutDir>
+    <IntDir>$(ProjectDir)binaries\bin-int\Release\</IntDir>
     <TargetName>parser</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
@@ -104,8 +103,7 @@
     <ClInclude Include="include\parser.inl" />
     <ClInclude Include="include\regex.h" />
     <ClInclude Include="include\regex_checker_engine.h" />
-    <ClInclude Include="include\regex_finder_executor_engine.h" />
-    <ClInclude Include="include\regex_parts.h" />
+    <ClInclude Include="include\regex_ast_parts.h" />
     <ClInclude Include="include\rule_handler.h" />
     <ClInclude Include="include\rule_operations.h" />
     <ClInclude Include="include\rule_operations.inl" />
@@ -126,8 +124,7 @@
     <ClCompile Include="src\parser.cpp" />
     <ClCompile Include="src\regex.cpp" />
     <ClCompile Include="src\regex_checker_engine.cpp" />
-    <ClCompile Include="src\regex_finder_executor_engine.cpp" />
-    <ClCompile Include="src\regex_parts.cpp" />
+    <ClCompile Include="src\regex_ast_parts.cpp" />
     <ClCompile Include="src\rule_handler.cpp" />
     <ClCompile Include="src\rule_operations.cpp" />
     <ClCompile Include="src\section_handler.cpp" />
