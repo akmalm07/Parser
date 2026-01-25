@@ -96,41 +96,17 @@
     <ClInclude Include="include\compact_map.h" />
     <ClInclude Include="include\compact_map.inl" />
     <ClInclude Include="include\config.h" />
-    <ClInclude Include="include\flags.h" />
-    <ClInclude Include="include\identifier.h" />
-    <ClInclude Include="include\identifier_handler.h" />
-    <ClInclude Include="include\parser.h" />
-    <ClInclude Include="include\parser.inl" />
+    <ClInclude Include="include\nanobench.h" />
     <ClInclude Include="include\regex.h" />
-    <ClInclude Include="include\regex_checker_engine.h" />
     <ClInclude Include="include\regex_ast_parts.h" />
-    <ClInclude Include="include\rule_handler.h" />
-    <ClInclude Include="include\rule_operations.h" />
-    <ClInclude Include="include\rule_operations.inl" />
-    <ClInclude Include="include\rules.h" />
-    <ClInclude Include="include\section_handler.h" />
-    <ClInclude Include="include\section_operations.h" />
-    <ClInclude Include="include\section_operations.inl" />
-    <ClInclude Include="include\sections.h" />
-    <ClInclude Include="include\tokenizer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\config.cpp" />
     <ClCompile Include="src\headers.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="src\identifier_handler.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\parser.cpp" />
     <ClCompile Include="src\regex.cpp" />
-    <ClCompile Include="src\regex_checker_engine.cpp" />
     <ClCompile Include="src\regex_ast_parts.cpp" />
-    <ClCompile Include="src\rule_handler.cpp" />
-    <ClCompile Include="src\rule_operations.cpp" />
-    <ClCompile Include="src\section_handler.cpp" />
-    <ClCompile Include="src\section_operations.cpp" />
-    <ClCompile Include="src\sections.cpp" />
-    <ClCompile Include="src\tokenizer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -73,17 +73,13 @@ namespace parser
 		
 		// Backreferences
 		
-		Backreference,      // \1, \2, etc.
+		//Backreference,      // \1, \2, etc. -- Too Compilcated to implement right now
 
 		// Markers (To make compiling easier)
 		PerenToAddHere
 	};
 
-	struct FitsResult
-	{
-		std::unique_ptr<BasePart> part = nullptr;
-		size_t length = 0;
-	};
+
 
 	class BasePart
 	{
@@ -91,28 +87,85 @@ namespace parser
 
 		virtual constexpr RegType type() const = 0;
 
+		virtual bool execute(std::string_view substr, int& i) const = 0;
+
 		virtual size_t charater_length() const = 0;
 
 		// Figure out to execute the checks
-
-		//virtual FitsResult fits_start(std::string_view substr) = 0;
 
 		virtual ~BasePart() = default;
 	};
 
 
+	class BracketAcceptedPart
+	{
+	public:
+		virtual size_t charater_length() const = 0;
+		virtual constexpr RegType type() const = 0;
+		virtual bool execute(std::string_view substr, int& i) const = 0;
+		virtual ~BracketAcceptedPart() = default;
+
+	};
+
+
+
+	class CharacterPart : public BasePart, public BracketAcceptedPart
+	{
+	public:
+		CharacterPart(char c, bool createdWithBackslash = false) : _char(c), _backslash(createdWithBackslash) {}
+
+		bool execute(std::string_view substr, int& i) const override;
+
+		size_t charater_length() const override { return 1 + (_backslash ? 1 : 0); }
+
+		constexpr RegType type() const override { return RegType::Character; }
+
+		~CharacterPart() = default;
+	private:
+		char _char;
+		bool _backslash = false;
+
+		friend class DashOp;
+	};
+
+
+	class DashOp : public BracketAcceptedPart
+		// This is so that the bracket container can accept dashes in the inheritance tree
+	{
+	public:
+		DashOp(char left, char right) : _left(std::make_unique<CharacterPart>(left)), _right(std::make_unique<CharacterPart>(right)) {};
+
+		size_t charater_length() const override { return 3; }
+
+		bool execute(std::string_view substr, int& i) const override;
+
+		constexpr RegType type() const override { return RegType::Dash; }
+
+		~DashOp() = default;
+	private:
+		std::unique_ptr<CharacterPart> _left;
+		std::unique_ptr<CharacterPart> _right;
+	};
+
+
+
+
+	/* --- PLACEHOLDERS ---*/
 
 	class PlaceHolder : public BasePart
 	{
 	public: 
 		size_t charater_length() const override { return 2; }
+		~PlaceHolder() = default;
 	};
 
 	class NotNumberPH : public PlaceHolder
 	{
+	public:
 		NotNumberPH() = default;
-		constexpr RegType type() const override { return RegType::NotNumberPH; }		
-		~NotNumberPH() override = default;
+		constexpr RegType type() const override { return RegType::NotNumberPH; }
+		bool execute(std::string_view substr, int& i) const override;
+		~NotNumberPH() = default;
 	};
 
 	class NumberPH : public PlaceHolder
@@ -120,7 +173,8 @@ namespace parser
     public:
 		NumberPH() = default;
 		constexpr RegType type() const override { return RegType::NumberPH; }
-		~NumberPH() override = default;
+		bool execute(std::string_view substr, int& i) const override;
+		~NumberPH() = default;
 	};
 
 	class WordPH : public PlaceHolder
@@ -128,7 +182,8 @@ namespace parser
     public:
 		WordPH() = default;
 		constexpr RegType type() const override { return RegType::WordPH; }
-		~WordPH() override = default;
+		bool execute(std::string_view substr, int& i) const override;
+		~WordPH() = default;
 	};
 
 	class NotWordPH : public PlaceHolder
@@ -136,23 +191,26 @@ namespace parser
     public:
 		NotWordPH() = default;
 		constexpr RegType type() const override { return RegType::NotWordPH; }
-		~NotWordPH() override = default;
+		bool execute(std::string_view substr, int& i) const override;
+		~NotWordPH() = default;
 	};
-
 
 	class WhitespacePH : public PlaceHolder
 	{
     public:
 		WhitespacePH() = default;
 		constexpr RegType type() const override { return RegType::WhitespacePH; }
-		~WhitespacePH() override = default;
+		bool execute(std::string_view substr, int& i) const override;
+		~WhitespacePH() = default;
 	};
+
 	class NotWhitespacePH : public PlaceHolder
 	{
     public:
 		NotWhitespacePH() = default;
 		constexpr RegType type() const override { return RegType::NotWhitespacePH; }
-		~NotWhitespacePH() override = default;
+		bool execute(std::string_view substr, int& i) const override;
+		~NotWhitespacePH() = default;
 	};
 
 	class DotPH : public PlaceHolder
@@ -160,49 +218,33 @@ namespace parser
     public:
 		DotPH() = default;
 		constexpr RegType type() const override { return RegType::DotPH; }
-		~DotPH() override = default;
+		bool execute(std::string_view substr, int& i) const override;
+		~DotPH() = default;
 	};
 
 
 	/* --- CONTAINER REGS ---*/
 
-	class Container : public BasePart
-	{
-	public:
-		Container() = default;
-		 
-		//BasePart* part_back_ptr()
-		//{
-		//	return _parts.back().get();
-		//}
-
-		~Container() override = default;
-	protected:
-		//std::vector<std::unique_ptr<BasePart>> _parts;
-	};
-
-
-	class ParenContainer : public Container
+	class ParenContainer : public BasePart
 	{
 	public:
 		ParenContainer() = default;
 
-		void add_part(std::unique_ptr<BasePart> part) { _parts.emplace_back(std::move(part)); }
+		void add_part(std::unique_ptr<BasePart> part);
 
-		std::unique_ptr<BasePart>& get_back_part_ref() { return _parts.back(); }
+		std::unique_ptr<BasePart>& get_back_part_ref();
 
-		void replace_back_part(std::unique_ptr<BasePart> part) { _parts.pop_back(); _parts.push_back(std::move(part)); }
+		void delete_back();
+
+		void replace_back_part(std::unique_ptr<BasePart> part);
 
 		constexpr RegType type() const override { return RegType::Parentheses; }
+		
+		bool execute(std::string_view substr, int& i) const override;
 
-		size_t charater_length() const override 
-		{ 
-			size_t length = 2;
-			for (const auto& part : _parts)
-				length += part->charater_length();
-			return length;
-		}
-		~ParenContainer() override = default;
+		size_t charater_length() const override;
+		
+		~ParenContainer() = default;
 	private:
 		std::vector<std::unique_ptr<BasePart>> _parts;
 	};
@@ -213,15 +255,7 @@ namespace parser
 		POSITIVE = 1,
 	};
 
-	class BracketAcceptedPart
-	{
-	public:
-		virtual size_t charater_length() const = 0;
-		virtual ~BracketAcceptedPart() = default;
-
-	};
-
-	class BracketContainer : public Container
+	class BracketContainer : public BasePart
 	{
 	public:
 		BracketContainer() = default;
@@ -229,26 +263,32 @@ namespace parser
 
 		constexpr RegType type() const override { return RegType::Bracket; }
 
-		size_t charater_length() const override 
-		{ 
-			size_t length = (_not == NEGETIVE ? 3 : 2);
-			for (const auto& part : _parts)
-				length += part->charater_length();
-			return length;
-		}
+		bool execute(std::string_view substr, int& i) const override;
 
-		void add_char(char part, bool usesBackslash = false) { _parts.push_back(std::make_unique<CharacterPart>(part, usesBackslash)); }
-		void add_dash(char left, char right) 
-		{
-			if (left > right)
-				std::swap(left, right);
-			_parts.push_back(std::make_unique<DashOp>(left, right));
-		}
+		size_t charater_length() const override;
+
+		void add_char(char part, bool usesBackslash = false);
+		void add_dash(char left, char right);
+		
 		~BracketContainer() override = default;
 	private:
 		NegetiveFlag _not = POSITIVE;
 		std::vector<std::unique_ptr<BracketAcceptedPart>> _parts;
-		//std::unique_ptr<BasePart> _quantifier;
+	};
+
+
+	class RepeatPartsBase : public BasePart
+	{
+	public:
+		RepeatPartsBase() = default;
+
+		void add(std::unique_ptr<BasePart> part);
+
+		size_t charater_length() const override;
+
+		~RepeatPartsBase() = default;
+	protected:
+		std::unique_ptr<BasePart> _repetition;
 	};
 
 
@@ -256,11 +296,12 @@ namespace parser
 	class RepeatRangedTimes : public RepeatPartsBase
 	{
 	public:
-		RepeatRangedTimes(std::unique_ptr<BasePart> part, std::optional<uint16_t> min, std::optional<uint16_t> max) : RepeatPartsBase(std::move(part)), _min(min), _max(max)
-		{};
+		RepeatRangedTimes(std::optional<uint16_t> min, std::optional<uint16_t> max);
 
 		constexpr RegType type() const override { return RegType::RepeatRangedTimes; }
 
+		bool execute(std::string_view substr, int& i) const override;
+		
 		size_t charater_length() const override;
 
 		~RepeatRangedTimes() override = default;
@@ -273,63 +314,27 @@ namespace parser
 	class RepeatNumberedTimes : public RepeatPartsBase
 	{
 	public:
-		RepeatNumberedTimes(std::unique_ptr<BasePart> part, int times) : RepeatPartsBase(std::move(part)), _times(times) {};
+		RepeatNumberedTimes(uint16_t times);
 
 		constexpr RegType type() const override { return RegType::RepeatNumberedTimes; }
 
+		bool execute(std::string_view substr, int& i) const override;
+
 		~RepeatNumberedTimes() override = default;
 	private:
-		int _times;
+		uint16_t _times;
 	};
-
-	class RealValue : public BasePart
-	{};
-
-	class CharacterPart : public RealValue, public BracketAcceptedPart
-	{
-	public:
-		CharacterPart(char c, bool createdWithBackslash = false) : _char(c), _backslash(createdWithBackslash) {}
-
-		size_t charater_length() const override { return 1 + (_backslash ? 1 : 0); }
-
-		constexpr RegType type() const override { return RegType::Character; }
-
-		~CharacterPart() override = default;
-	private:
-		char _char;
-		bool _backslash = false;
-	};
-
-	//class NumberPart : public CharacterPart
-	//{
-	//public:
-	//	NumberPart(std::string_view number);
-
-	//	size_t charater_length() const override { return digits_in_number(_number); }
-
-	//	constexpr RegType type() const override { return RegType::Number; }
-	//	
-	//	int get_number() const { return _number; }
-	//	
-	//	~NumberPart() override = default;
-	//private:
-	//	unsigned int _number = 0;
-	//};
-
-
-
 
 	class OrOp : public BasePart
 	{
 	public:
 		OrOp(std::unique_ptr<BasePart> left) { _left = std::move(left); };
 
-		size_t charater_length() const override { return _left->charater_length() + _right->charater_length() + 1; }
+		size_t charater_length() const override;
+		
+		bool execute(std::string_view substr, int& i) const override;
 
-		void set_right(std::unique_ptr<BasePart> part) 
-		{
-			_right = std::move(part);
-		}
+		void set_right(std::unique_ptr<BasePart> part);
 
 		constexpr RegType type() const override { return RegType::Or; }
 
@@ -340,103 +345,53 @@ namespace parser
 	};
 
 
-	class RepeatPartsBase : public BasePart
-	{
-	public:
-		RepeatPartsBase() = default;
-		
-		void add(std::unique_ptr<BasePart> part)
-		{
-			_repetition = std::move(part);
-		}
-		//RepeatPartsBase(std::unique_ptr<BasePart> part) : _repetition(std::move(part)) {};
 
-		virtual ~RepeatPartsBase() = default;
-	protected:
-		std::unique_ptr<BasePart> _repetition;
-	};
 
 
 
 	class StarOp : public RepeatPartsBase
 	{
 	public:
-		StarOp(std::unique_ptr<BasePart>& part) : RepeatPartsBase(std::move(part)) {};
+
+		StarOp() = default;
 
 		constexpr RegType type() const override { return RegType::Star; }
+
+		bool execute(std::string_view substr, int& i) const override;
 
 		~StarOp() override = default;
 	};
 
 
-	class PlusOp : public RepeatPartsBase
+	class PlusOp : public RepeatPartsBase // One or more times
 	{
 	public:
-		PlusOp(std::unique_ptr<BasePart>& part) : RepeatPartsBase(std::move(part)) {};
+		PlusOp() = default;
+
+		bool execute(std::string_view substr, int& i) const override;
 
 		constexpr RegType type() const override { return RegType::Plus; }
 
 		~PlusOp() override = default;
-	private:
-		std::shared_ptr<BasePart> _repetition;
+
 	};
 
 
 	class OneOrZeroOp : public RepeatPartsBase
 	{
     public:
-		OneOrZeroOp(std::unique_ptr<BasePart>& part) : RepeatPartsBase(std::move(part)) {};
+		OneOrZeroOp() = default;
 		constexpr RegType type() const override { return RegType::OneOrZero; }
+		bool execute(std::string_view substr, int& i) const override;
 		~OneOrZeroOp() override = default;
-	private:
-		std::shared_ptr<BasePart> _repetition;
 	};
 
-	// template<typename T>
-	// concept CharOrNumber = std::is_same_v<T, CharacterPart> || std::is_same_v<T, NumberPart>;
-
-	class DashOp : public BracketAcceptedPart, public BasePart
-		// This is so that the bracket container can accept dashes in the inheritance tree
-	{
-    public:
-		DashOp(char left, char right) : _left(std::make_unique<CharacterPart>(left)), _right(std::make_unique<CharacterPart>(right)) {};
-
-		size_t charater_length() const override { return 3; }
-
-		constexpr RegType type() const override { return RegType::Dash; }
-		
-		~DashOp() override = default;
-	private:
-		std::unique_ptr<CharacterPart> _left;
-		std::unique_ptr<CharacterPart> _right;
-	};
-
-
-
-
-	enum class MinOrMaxVal
-	{
-		Min = 0,
-		Max,
-	};
-
-
-	//class BackreferencePart : public BasePart
-	//{
-	//public:
-	//	BackreferencePart(int groupNumber) : _groupNumber(groupNumber) {}
-
-	//	constexpr RegType type() const override { return RegType::Backreference; }
-
-	//	~BackreferencePart() override = default;
-	//private:
-	//	int _groupNumber;
-	//};
 
 	class StringPlacementPartsBase : public BasePart
 	{
 	public:
 		StringPlacementPartsBase() = default;
+		bool execute(std::string_view substr, int& i) const override { return true; };
 		virtual ~StringPlacementPartsBase() = default;
 	protected:
 	};
@@ -447,6 +402,8 @@ namespace parser
 		StartOfString() = default;
 
 		constexpr RegType type() const override { return RegType::StartOfString; }
+
+		size_t charater_length() const override;
 
 		~StartOfString() override = default;
 	private:
@@ -459,6 +416,8 @@ namespace parser
 
 		constexpr RegType type() const override { return RegType::EndOfString; }
 
+		size_t charater_length() const override;
+
 		~EndOfString() override = default;
 	private:
 	};
@@ -468,10 +427,13 @@ namespace parser
 	public:
 		WordBoundary() = default;
 
+		bool execute(std::string_view substr, int& i) const override;
+
+		size_t charater_length() const override;
+
 		constexpr RegType type() const override { return RegType::WordBoundary; }
 
 		~WordBoundary() override = default;
-	private:
 
 	};
 
@@ -479,6 +441,10 @@ namespace parser
 	{
 	public:
 		NonWordBoundary() = default;
+
+		bool execute(std::string_view substr, int& i) const override;
+
+		size_t charater_length() const override;
 
 		constexpr RegType type() const override { return RegType::NonWordBoundary; }
 
@@ -492,6 +458,7 @@ namespace parser
 	{
 	public:
 		PerenMarker() = default;
+		bool execute(std::string_view substr, int& i) const override { return true; }
 		constexpr RegType type() const override { return RegType::PerenToAddHere; }
 		size_t charater_length() const override { return 0; }
 		~PerenMarker() override = default;

@@ -15,37 +15,75 @@ namespace parser
 		return value;
 	}
 
-	unsigned int Regex::compile(std::string_view pattern)
+	std::string Regex::compile(std::string_view givenPattern)
 	{
 		_parts.clear();
 
-		uint32_t numOfPatterns = 0; // ret value
-		uint32_t numOfDefaults = 0; // ret value
+		std::string_view pattern;
+		bool pushEndOfString = false;
+
+		if (givenPattern.size() < 1)
+			return "";
+		
+		// Trimming the starting ^ and ending $ if they exist and diagnosing 
+		{
+			size_t start = 0;
+			size_t end = givenPattern.size();
+
+			if (givenPattern.front() == '^') 
+			{
+				_parts.push_back(std::make_unique<StartOfString>());
+				start++;
+			}
+
+			if (end > start && givenPattern.back() == '$')
+			{
+				_parts.push_back(std::make_unique<EndOfString>());
+				end--;
+			}
+
+			pattern = givenPattern.substr(start, end - start);
+
+		}
+
+
 		std::vector<std::unique_ptr<ParenContainer>> perens;
 		std::unique_ptr<BracketContainer> brak;
-		std::unique_ptr<OrOp> orOp;
-
+		bool wasLastOrOp = false;
 		// int charactersSinceLastPush = 0;
 
 
 		auto emit_item = [&](std::unique_ptr<BasePart> item, int& i, int incVal) {
-			
-			if (orOp)
-			{
-				orOp->set_right(std::move(item));
-				item.reset();
-				item = std::move(orOp);
-				orOp.reset();
-			}
 
 			if (perens.size() != 0)
-			{ 
+			{
+				if (wasLastOrOp && perens.back()->type() != RegType::PerenToAddHere)
+				{
+					auto orOp = std::unique_ptr<OrOp>(static_cast<OrOp*>(perens.back()->get_back_part_ref().release()));
+					perens.back()->delete_back();
+					orOp->set_right(std::move(item));
+					item.reset();
+					item = std::move(orOp);
+					orOp.reset();
+					wasLastOrOp = false;
+				}
 				//charactersSinceLastPush+=item->charater_length();
 				perens.back()->add_part(std::move(item));
 			}
 			else
+			{
+				if (wasLastOrOp)
+				{
+					auto orOp = std::unique_ptr<OrOp>(static_cast<OrOp*>(_parts.back().release()));
+					_parts.pop_back();
+					orOp->set_right(std::move(item));
+					item.reset();
+					item = std::move(orOp);
+					orOp.reset();
+					wasLastOrOp = false;
+				}
 				_parts.push_back(std::move(item));
-			numOfPatterns++;
+			}
 			i += incVal;
 		};
 
@@ -55,12 +93,16 @@ namespace parser
 			{
 				//charactersSinceLastPush += item->charater_length();
 				item->add(std::move(perens.back()->get_back_part_ref()));
-				if (orOp)
+				if (wasLastOrOp)
 				{
+					auto orOp = std::unique_ptr<OrOp>(static_cast<OrOp*>(perens.back()->get_back_part_ref().release()));
+					perens.back()->delete_back();
 					orOp->set_right(std::move(item));
 					item.reset();
 					perens.back()->replace_back_part(std::move(orOp));
 					orOp.reset();
+					wasLastOrOp = false;
+					i += incVal;
 					return;
 				}
 				perens.back()->replace_back_part(std::move(item));
@@ -68,24 +110,25 @@ namespace parser
 			else
 			{
 				if (_parts.size() == 0)
-				{
 					_parts.push_back(std::make_unique<CharacterPart>('*')); // Defaulting value for quantifier
-					numOfDefaults++;
-				}
 				
 				item->add(std::move(_parts.back()));// Dangerous, steals ownership
 				_parts.pop_back(); 
-				if (orOp)
+				if (wasLastOrOp)
 				{
+					auto orOp = std::unique_ptr<OrOp>(static_cast<OrOp*>(_parts.back().release()));
+					_parts.pop_back();
 					orOp->set_right(std::move(item));
 					item.reset();
 					_parts.push_back(std::move(orOp));
 					orOp.reset();
+					wasLastOrOp = false;
+					i += incVal;
 					return;
 				}
 				_parts.push_back(std::move(item));
 			}
-			numOfPatterns++;
+			
 			i += incVal;
 			};
 
@@ -106,23 +149,25 @@ namespace parser
 				emit_qual_item(std::make_unique<OneOrZeroOp>(), i, 1);
 				continue;
 			case '|':
-
+			{
 				if (perens.size() != 0)
 				{
 					// If inside parentheses, attach to the last part inside the parens
-					orOp = std::make_unique<OrOp>(std::move(perens.back()->get_back_part_ref()));
+					auto orOp = std::make_unique<OrOp>(std::move(perens.back()->get_back_part_ref()));
 					perens.back()->replace_back_part(std::move(orOp));
+					wasLastOrOp = true;
 				}
 				else
 				{
 					// Otherwise attach to the last item in _parts
-					orOp = std::make_unique<OrOp>(std::move(_parts.back()));
+					auto orOp = std::make_unique<OrOp>(std::move(_parts.back()));
 					_parts.pop_back();
 					_parts.push_back(std::move(orOp));
+					wasLastOrOp = true;
 				}
 
-				i++;
 				continue;
+			}
 			case '{':
 			{
 				std::string number1, number2;
@@ -172,8 +217,8 @@ namespace parser
 						continue;
 					}
 				}
-			}
 				continue;
+			}
 
 			case '[':
 			{
@@ -187,7 +232,7 @@ namespace parser
 
 				brak = std::make_unique<BracketContainer>(flag);
 
-				for (i = i + 1; i < pattern.size(); i++) 
+				for (i = i + 1; i < pattern.size(); i++)
 				{
 
 					if (pattern[i] == ']')
@@ -222,9 +267,9 @@ namespace parser
 					std::vector<std::unique_ptr<CharacterPart>> charPartsVec;
 					charPartsVec.reserve(brakLen);
 
-					for (size_t j = prevI + 1; j < i; j++) {
+					for (size_t j = prevI + 1; j < i; j++) 
 						charPartsVec.push_back(std::make_unique<CharacterPart>(pattern[j]));
-					
+
 
 					_parts.insert(_parts.end(),
 						std::make_move_iterator(charPartsVec.begin()),
@@ -233,10 +278,11 @@ namespace parser
 
 					brak.reset();
 				}
-
 				continue;
 			}
+			
 			case '\\':
+			{
 				if (i + 1 >= pattern.size()) break;
 				switch (pattern[i + 1])
 				{
@@ -268,12 +314,18 @@ namespace parser
 					emit_item(std::make_unique<CharacterPart>(pattern[i + 1], true), i, 1);
 					continue;
 				}
-				break;
+			}
 			case '(':
+			{
+				if (perens.size() == 0)
+					_parts.push_back(std::make_unique<PerenMarker>());
+				perens.back()->add_part(std::make_unique<PerenMarker>());
 				perens.push_back(std::make_unique<ParenContainer>());
-				_parts.push_back(std::make_unique<PerenMarker>()); 
+
 				break;
+			}
 			case ')':
+			{
 				if (perens.size() == 0)
 				{
 					emit_item(std::make_unique<CharacterPart>(pattern[i]), i, 0);
@@ -283,35 +335,33 @@ namespace parser
 				{
 					_parts.pop_back(); // Remove the PerenMarker
 
-					emit_item(std::move(perens.back()), i, 0);
+					auto ptr = std::move(perens.back());
 					perens.pop_back();
+					emit_item(std::move(ptr), i, 0);
 					continue;
 				}
-				perens[perens.size() - 2]->add_part(std::move(perens.back()));
+				auto ptr = std::move(perens.back());
 				perens.pop_back();
+				perens[perens.size() - 1]->delete_back(); // Remove the PerenMarker
+				perens[perens.size() - 1]->add_part(std::move(ptr));
 
 				continue;
-			
+			}
 			default:
-				_parts.push_back(std::make_unique<CharacterPart>(pattern[i]));
+				emit_item(std::make_unique<CharacterPart>(pattern[i]), i, 0);
 			}
 		}
 
-		// Handling Start and End of string anchors
-
-		if (pattern[0] == '^')
-		{
-			_parts.insert(_parts.begin(), std::make_unique<StartOfString>());
-		}
-		if (pattern.size() > 0 && pattern[pattern.size() - 1] == '$')
-		{
-			_parts.push_back(std::make_unique<EndOfString>());
-		}
-
 		if (_parts.back()->type() != RegType::PerenToAddHere)
-			return numOfPatterns;
-		
+		{
+			if (pushEndOfString)
+				_parts.push_back(std::make_unique<EndOfString>());
+			return "";
+		}
+
 		// Replace the parentheses sequnace as literals because the closing parenthesis was not provided
+		_parts.pop_back(); // Remove the PerenMarker
+		
 		size_t perenIdx = 0;
 
 		for (size_t i = 0; i < _parts.size(); i++)
@@ -332,9 +382,28 @@ namespace parser
 			std::make_move_iterator(charPartsVec.end())
 		);
 		
-
-		return numOfPatterns;
+		if (pushEndOfString)
+			_parts.push_back(std::make_unique<EndOfString>());
+		return "";
 	}
+
+
+	bool Regex::execute(std::string_view test)
+	{
+		if (_parts.size() == 0)
+			return false;
+		if (_parts[0]->type() == RegType::StartOfString)
+		{
+			int idx = 0;
+			for (const auto& part : _parts)
+			{
+				if (!part->execute(test, idx))
+					return false;
+			}
+		}
+	}
+
+
 
 
 

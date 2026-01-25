@@ -2,7 +2,7 @@
 #include "include/compact_map.h"
 
 
-namespace std
+namespace smallVecMap
 {
     template<Sortable Key, typename Value>
     inline size_t compact_map<Key, Value>::find_index(const Key& key) const
@@ -158,13 +158,4 @@ namespace std
     {
         return !(*this == other);
     }
-
-
-
-
-
-
-
-
-
 }

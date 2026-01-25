@@ -21,7 +21,7 @@
 #include <optional>
 #include <expected>
 
-
+/*
 #ifdef DEBUG
 constexpr bool debug = true;
 #elif defined (NDEBUG)
@@ -38,3 +38,5 @@ constexpr bool debug = false;
 	}
 
 #define NDEBUG(stuff) stuff
+
+*/

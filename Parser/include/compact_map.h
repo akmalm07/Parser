@@ -1,18 +1,11 @@
 #pragma once
 
-
-#include "config.h"
-
-namespace std
+namespace smallVecMap
 {
-
-
     template<typename T>
     concept Sortable = requires(T a, T b) {
         { a < b } -> std::convertible_to<bool>;
     };
-
-
 
     template<Sortable Key, typename Value>
     class compact_map {

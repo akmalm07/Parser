@@ -12,7 +12,9 @@ namespace parser
 	public:
 		Regex() = default;
 		
-		unsigned int compile(std::string_view pattern);
+		std::string compile(std::string_view pattern);
+
+		bool execute(std::string_view test);
 		
 		~Regex() = default;
 	private:
