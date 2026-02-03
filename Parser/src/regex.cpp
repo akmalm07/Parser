@@ -50,6 +50,7 @@ namespace parser
 		std::vector<std::unique_ptr<ParenContainer>> perens;
 		std::unique_ptr<BracketContainer> brak;
 		bool wasLastOrOp = false;
+		std::unique_ptr<OrOp> orOp;
 		// int charactersSinceLastPush = 0;
 
 
@@ -57,15 +58,16 @@ namespace parser
 
 			if (perens.size() != 0)
 			{
-				if (wasLastOrOp && perens.back()->type() != RegType::PerenToAddHere)
+				if (wasLastOrOp && (perens.size() == 1 || perens[perens.size() - 2]->get_back()->type() != RegType::PerenToAddHere))
 				{
-					auto orOp = std::unique_ptr<OrOp>(static_cast<OrOp*>(perens.back()->get_back_part_ref().release()));
-					perens.back()->delete_back();
+					//assert(basePtr->type() == RegType::Or);
+					//perens.back()->pop_back(); // this is deleted pointer!
 					orOp->set_right(std::move(item));
-					item.reset();
-					item = std::move(orOp);
-					orOp.reset();
+					perens.back()->add_part(std::move(orOp));
+					
 					wasLastOrOp = false;
+					i += incVal;
+					return;
 				}
 				//charactersSinceLastPush+=item->charater_length();
 				perens.back()->add_part(std::move(item));
@@ -74,12 +76,9 @@ namespace parser
 			{
 				if (wasLastOrOp)
 				{
-					auto orOp = std::unique_ptr<OrOp>(static_cast<OrOp*>(_parts.back().release()));
-					_parts.pop_back();
 					orOp->set_right(std::move(item));
-					item.reset();
-					item = std::move(orOp);
-					orOp.reset();
+					_parts.push_back(std::move(orOp));
+
 					wasLastOrOp = false;
 				}
 				_parts.push_back(std::move(item));
@@ -92,20 +91,16 @@ namespace parser
 			if (perens.size() != 0)
 			{
 				//charactersSinceLastPush += item->charater_length();
-				item->add(std::move(perens.back()->get_back_part_ref()));
+				item->add(std::move(perens.back()->pop_back_and_transfer()));
 				if (wasLastOrOp)
 				{
-					auto orOp = std::unique_ptr<OrOp>(static_cast<OrOp*>(perens.back()->get_back_part_ref().release()));
-					perens.back()->delete_back();
 					orOp->set_right(std::move(item));
-					item.reset();
-					perens.back()->replace_back_part(std::move(orOp));
-					orOp.reset();
+					perens.back()->add_part(std::move(orOp));
 					wasLastOrOp = false;
 					i += incVal;
 					return;
 				}
-				perens.back()->replace_back_part(std::move(item));
+				perens.back()->add_part(std::move(item));
 			}
 			else
 			{
@@ -116,12 +111,8 @@ namespace parser
 				_parts.pop_back(); 
 				if (wasLastOrOp)
 				{
-					auto orOp = std::unique_ptr<OrOp>(static_cast<OrOp*>(_parts.back().release()));
-					_parts.pop_back();
 					orOp->set_right(std::move(item));
-					item.reset();
 					_parts.push_back(std::move(orOp));
-					orOp.reset();
 					wasLastOrOp = false;
 					i += incVal;
 					return;
@@ -153,16 +144,20 @@ namespace parser
 				if (perens.size() != 0)
 				{
 					// If inside parentheses, attach to the last part inside the parens
-					auto orOp = std::make_unique<OrOp>(std::move(perens.back()->get_back_part_ref()));
-					perens.back()->replace_back_part(std::move(orOp));
+					if (perens.back()->size() == 0)
+					{
+						emit_item(std::make_unique<CharacterPart>(pattern[i]), i, 0);
+						continue;
+					}
+					auto ptr = perens.back()->pop_back_and_transfer();
+					orOp = std::make_unique<OrOp>(std::move(ptr));
 					wasLastOrOp = true;
 				}
 				else
 				{
 					// Otherwise attach to the last item in _parts
-					auto orOp = std::make_unique<OrOp>(std::move(_parts.back()));
+					orOp = std::make_unique<OrOp>(std::move(_parts.back()));
 					_parts.pop_back();
-					_parts.push_back(std::move(orOp));
 					wasLastOrOp = true;
 				}
 
@@ -319,7 +314,8 @@ namespace parser
 			{
 				if (perens.size() == 0)
 					_parts.push_back(std::make_unique<PerenMarker>());
-				perens.back()->add_part(std::make_unique<PerenMarker>());
+				else
+					perens.back()->add_part(std::make_unique<PerenMarker>());
 				perens.push_back(std::make_unique<ParenContainer>());
 
 				break;
@@ -342,7 +338,7 @@ namespace parser
 				}
 				auto ptr = std::move(perens.back());
 				perens.pop_back();
-				perens[perens.size() - 1]->delete_back(); // Remove the PerenMarker
+				perens[perens.size() - 1]->pop_back(); // Remove the PerenMarker
 				perens[perens.size() - 1]->add_part(std::move(ptr));
 
 				continue;
@@ -356,7 +352,7 @@ namespace parser
 		{
 			if (pushEndOfString)
 				_parts.push_back(std::make_unique<EndOfString>());
-			return "";
+			return print_regex_compilation();
 		}
 
 		// Replace the parentheses sequnace as literals because the closing parenthesis was not provided
@@ -384,7 +380,7 @@ namespace parser
 		
 		if (pushEndOfString)
 			_parts.push_back(std::make_unique<EndOfString>());
-		return "";
+		return print_regex_compilation();
 	}
 
 
@@ -401,6 +397,16 @@ namespace parser
 					return false;
 			}
 		}
+	}
+
+	std::string Regex::print_regex_compilation() const
+	{
+		std::string output;
+		for (const auto& part : _parts)
+		{
+			output += part->print() + " ";
+		}
+		return output;
 	}
 
 

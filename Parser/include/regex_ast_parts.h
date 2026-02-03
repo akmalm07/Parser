@@ -93,6 +93,8 @@ namespace parser
 
 		// Figure out to execute the checks
 
+		virtual std::string print() const;
+
 		virtual ~BasePart() = default;
 	};
 
@@ -102,6 +104,7 @@ namespace parser
 	public:
 		virtual size_t charater_length() const = 0;
 		virtual constexpr RegType type() const = 0;
+		virtual std::string print() const = 0;
 		virtual bool execute(std::string_view substr, int& i) const = 0;
 		virtual ~BracketAcceptedPart() = default;
 
@@ -119,6 +122,8 @@ namespace parser
 		size_t charater_length() const override { return 1 + (_backslash ? 1 : 0); }
 
 		constexpr RegType type() const override { return RegType::Character; }
+
+		std::string print() const override;
 
 		~CharacterPart() = default;
 	private:
@@ -138,6 +143,8 @@ namespace parser
 		size_t charater_length() const override { return 3; }
 
 		bool execute(std::string_view substr, int& i) const override;
+
+		std::string print() const override;
 
 		constexpr RegType type() const override { return RegType::Dash; }
 
@@ -164,6 +171,7 @@ namespace parser
 	public:
 		NotNumberPH() = default;
 		constexpr RegType type() const override { return RegType::NotNumberPH; }
+		std::string print() const override;
 		bool execute(std::string_view substr, int& i) const override;
 		~NotNumberPH() = default;
 	};
@@ -173,6 +181,7 @@ namespace parser
     public:
 		NumberPH() = default;
 		constexpr RegType type() const override { return RegType::NumberPH; }
+		std::string print() const override;
 		bool execute(std::string_view substr, int& i) const override;
 		~NumberPH() = default;
 	};
@@ -182,6 +191,7 @@ namespace parser
     public:
 		WordPH() = default;
 		constexpr RegType type() const override { return RegType::WordPH; }
+		std::string print() const override;
 		bool execute(std::string_view substr, int& i) const override;
 		~WordPH() = default;
 	};
@@ -191,6 +201,7 @@ namespace parser
     public:
 		NotWordPH() = default;
 		constexpr RegType type() const override { return RegType::NotWordPH; }
+		std::string print() const override;
 		bool execute(std::string_view substr, int& i) const override;
 		~NotWordPH() = default;
 	};
@@ -200,6 +211,7 @@ namespace parser
     public:
 		WhitespacePH() = default;
 		constexpr RegType type() const override { return RegType::WhitespacePH; }
+		std::string print() const override;
 		bool execute(std::string_view substr, int& i) const override;
 		~WhitespacePH() = default;
 	};
@@ -209,6 +221,7 @@ namespace parser
     public:
 		NotWhitespacePH() = default;
 		constexpr RegType type() const override { return RegType::NotWhitespacePH; }
+		std::string print() const override;
 		bool execute(std::string_view substr, int& i) const override;
 		~NotWhitespacePH() = default;
 	};
@@ -218,6 +231,7 @@ namespace parser
     public:
 		DotPH() = default;
 		constexpr RegType type() const override { return RegType::DotPH; }
+		std::string print() const override;
 		bool execute(std::string_view substr, int& i) const override;
 		~DotPH() = default;
 	};
@@ -232,9 +246,15 @@ namespace parser
 
 		void add_part(std::unique_ptr<BasePart> part);
 
-		std::unique_ptr<BasePart>& get_back_part_ref();
+		size_t size() const;
 
-		void delete_back();
+		std::unique_ptr<BasePart> pop_back_and_transfer();
+
+		std::unique_ptr<BasePart>& get_back();
+
+		std::string print() const override;
+
+		void pop_back();
 
 		void replace_back_part(std::unique_ptr<BasePart> part);
 
@@ -262,6 +282,8 @@ namespace parser
 		BracketContainer(NegetiveFlag negetive) : _not(negetive) {}
 
 		constexpr RegType type() const override { return RegType::Bracket; }
+
+		std::string print() const override;
 
 		bool execute(std::string_view substr, int& i) const override;
 
@@ -301,7 +323,9 @@ namespace parser
 		constexpr RegType type() const override { return RegType::RepeatRangedTimes; }
 
 		bool execute(std::string_view substr, int& i) const override;
-		
+
+		std::string print() const override;
+
 		size_t charater_length() const override;
 
 		~RepeatRangedTimes() override = default;
@@ -318,6 +342,8 @@ namespace parser
 
 		constexpr RegType type() const override { return RegType::RepeatNumberedTimes; }
 
+		std::string print() const override;
+
 		bool execute(std::string_view substr, int& i) const override;
 
 		~RepeatNumberedTimes() override = default;
@@ -328,17 +354,23 @@ namespace parser
 	class OrOp : public BasePart
 	{
 	public:
-		OrOp(std::unique_ptr<BasePart> left) { _left = std::move(left); };
+		OrOp() = default;
+
+		OrOp(std::unique_ptr<BasePart> left) : _left(std::move(left)) { _right.reset(); }
+
+		OrOp(BasePart* left) : _left(left) { _right.reset(); }
 
 		size_t charater_length() const override;
 		
 		bool execute(std::string_view substr, int& i) const override;
 
+		std::string print() const override;
+
 		void set_right(std::unique_ptr<BasePart> part);
 
 		constexpr RegType type() const override { return RegType::Or; }
 
-		~OrOp() override = default;
+		~OrOp() = default;
 	private:
 			std::unique_ptr<BasePart> _left;
 			std::unique_ptr<BasePart> _right;
@@ -354,12 +386,10 @@ namespace parser
 	public:
 
 		StarOp() = default;
-
 		constexpr RegType type() const override { return RegType::Star; }
-
+		std::string print() const override;
 		bool execute(std::string_view substr, int& i) const override;
-
-		~StarOp() override = default;
+		~StarOp() = default;
 	};
 
 
@@ -367,11 +397,9 @@ namespace parser
 	{
 	public:
 		PlusOp() = default;
-
 		bool execute(std::string_view substr, int& i) const override;
-
+		std::string print() const override;
 		constexpr RegType type() const override { return RegType::Plus; }
-
 		~PlusOp() override = default;
 
 	};
@@ -382,6 +410,7 @@ namespace parser
     public:
 		OneOrZeroOp() = default;
 		constexpr RegType type() const override { return RegType::OneOrZero; }
+		std::string print() const override;
 		bool execute(std::string_view substr, int& i) const override;
 		~OneOrZeroOp() override = default;
 	};
@@ -400,11 +429,9 @@ namespace parser
 	{
 	public:
 		StartOfString() = default;
-
 		constexpr RegType type() const override { return RegType::StartOfString; }
-
+		std::string print() const override;
 		size_t charater_length() const override;
-
 		~StartOfString() override = default;
 	private:
 	};
@@ -413,11 +440,9 @@ namespace parser
 	{
 	public:
 		EndOfString() = default;
-
 		constexpr RegType type() const override { return RegType::EndOfString; }
-
+		std::string print() const override;
 		size_t charater_length() const override;
-
 		~EndOfString() override = default;
 	private:
 	};
@@ -426,13 +451,10 @@ namespace parser
 	{
 	public:
 		WordBoundary() = default;
-
 		bool execute(std::string_view substr, int& i) const override;
-
 		size_t charater_length() const override;
-
 		constexpr RegType type() const override { return RegType::WordBoundary; }
-
+		std::string print() const override;
 		~WordBoundary() override = default;
 
 	};
@@ -441,13 +463,10 @@ namespace parser
 	{
 	public:
 		NonWordBoundary() = default;
-
 		bool execute(std::string_view substr, int& i) const override;
-
 		size_t charater_length() const override;
-
 		constexpr RegType type() const override { return RegType::NonWordBoundary; }
-
+		std::string print() const override;
 		~NonWordBoundary() override = default;
 	private:
 	};

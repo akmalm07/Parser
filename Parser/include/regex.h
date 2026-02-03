@@ -14,6 +14,8 @@ namespace parser
 		
 		std::string compile(std::string_view pattern);
 
+		std::string print_regex_compilation() const;
+
 		bool execute(std::string_view test);
 		
 		~Regex() = default;

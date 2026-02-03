@@ -21,6 +21,11 @@ namespace parser {
 		return 3 + (_min ? digits_in_number(_min.value()) : 0) + 3 + (_max ? digits_in_number(_max.value()) : 0);
 	}
 
+	std::string NotNumberPH::print() const
+	{
+		return "NotNum";
+	}
+
 	bool NotNumberPH::execute(std::string_view substr, int& i) const
 	{
 		if (substr[i] < '0' || substr[i] > '9')
@@ -31,6 +36,11 @@ namespace parser {
 		return false;
 	}
 
+	std::string NumberPH::print() const
+	{
+		return "Num";
+	}
+
 	bool NumberPH::execute(std::string_view substr, int& i) const
 	{
 		if (substr[i] >= '0' && substr[i] <= '9')
@@ -39,6 +49,11 @@ namespace parser {
 			return true;
 		}
 		return false;
+	}
+
+	std::string WordPH::print() const
+	{
+		return "Word";
 	}
 
 	bool WordPH::execute(std::string_view substr, int& i) const
@@ -54,6 +69,11 @@ namespace parser {
 		return false;
 	}
 
+	std::string NotWordPH::print() const
+	{
+		return "NotNum";
+	}
+
 	bool NotWordPH::execute(std::string_view substr, int& i) const
 	{
 		if (!((substr[i] >= 'A' && substr[i] <= 'Z') ||
@@ -67,6 +87,11 @@ namespace parser {
 		return false;
 	}
 
+	std::string WhitespacePH::print() const
+	{
+		return "WhiteSpace";
+	}
+
 	bool WhitespacePH::execute(std::string_view substr, int& i) const
 	{
 		if (substr[i] == ' ' || substr[i] == '\t' || substr[i] == '\n' || substr[i] == '\r' || substr[i] == '\v' || substr[i] == '\f')
@@ -77,6 +102,11 @@ namespace parser {
 		return false;
 	}
 
+	std::string NotWhitespacePH::print() const
+	{
+		return "NotWhiteSpace";
+	}
+
 	bool NotWhitespacePH::execute(std::string_view substr, int& i) const
 	{
 		if (!(substr[i] == ' ' || substr[i] == '\t' || substr[i] == '\n' || substr[i] == '\r' || substr[i] == '\v' || substr[i] == '\f'))
@@ -85,6 +115,11 @@ namespace parser {
 			return true;
 		}
 		return false;
+	}
+
+	std::string DotPH::print() const
+	{
+		return "AnyCharater";
 	}
 
 	bool DotPH::execute(std::string_view substr, int& i) const
@@ -102,12 +137,40 @@ namespace parser {
 		_parts.push_back(std::move(part));
 	}
 
-	std::unique_ptr<BasePart>& ParenContainer::get_back_part_ref()
+	size_t ParenContainer::size() const
+	{
+		return _parts.size();
+	}
+
+	std::unique_ptr<BasePart> ParenContainer::pop_back_and_transfer()
+	{
+		auto ptr = std::move(_parts.back());
+		_parts.pop_back();
+		return ptr;
+	}
+
+	std::unique_ptr<BasePart>& ParenContainer::get_back()
 	{
 		return _parts.back();
 	}
 
-	void ParenContainer::delete_back()
+	std::string ParenContainer::print() const
+	{
+		if (_parts.size() == 1)
+			return std::format("Container{{ {} }}", _parts[0]->print());
+		std::string str = "Container{ ";
+		int i = 0;
+		for (const auto& part : _parts)
+		{
+			str += part->print();
+			i++;
+			if (i < _parts.size())
+				str += ", ";
+		}
+		return str + " }";
+	}
+
+	void ParenContainer::pop_back()
 	{
 		_parts.pop_back();
 	}
@@ -134,6 +197,23 @@ namespace parser {
 		for (const auto& part : _parts)
 			length += part->charater_length();
 		return length;
+	}
+
+	std::string BracketContainer::print() const
+	{
+		std::string str;
+		if (_not == POSITIVE)
+			str = "Class { ";
+		else
+			str = "NotClass { ";
+		int i = 0;
+		for (const auto& part : _parts)
+		{
+			str += part->print();
+			if (i < _parts.size())
+				str += ", ";
+		}
+		return str + " }";
 	}
 
 	bool BracketContainer::execute(std::string_view substr, int& i) const
@@ -200,6 +280,11 @@ namespace parser {
 		return false;
 	}
 
+	std::string CharacterPart::print() const
+	{
+		return "'a'";
+	}
+
 	size_t OrOp::charater_length() const
 	{
 		return _left->charater_length() + _right->charater_length() + 1;
@@ -222,9 +307,14 @@ namespace parser {
 		return false;
 	}
 
+	std::string OrOp::print() const
+	{
+		return std::format("OR{{ {}, {} }}", _left->print(), _right->print());
+	}
+
 	void OrOp::set_right(std::unique_ptr<BasePart> part)
 	{
-		_right = std::move(part);
+		_right = std::move(part); // There is an error that makes this give the absolute persensisis of a serise. Fix this immidiately
 	}
 
 	RepeatRangedTimes::RepeatRangedTimes(std::optional<uint16_t> min, std::optional<uint16_t> max)
@@ -260,8 +350,19 @@ namespace parser {
 		return true;
 	}
 
+	std::string RepeatRangedTimes::print() const
+	{
+		return std::format("RepeatRangedQual{{ {}, {} }}", _min.value_or(0), _max.value_or(std::numeric_limits<uint16_t>::max()));
+	}
+
 	RepeatNumberedTimes::RepeatNumberedTimes(uint16_t times)
 		: _times(times) {}
+
+	std::string RepeatNumberedTimes::print() const
+	{
+		return std::format("RepeatNumQual{{ {} }}", _times);
+
+	}
 
 	bool RepeatNumberedTimes::execute(std::string_view substr, int& i) const
 	{
@@ -292,7 +393,13 @@ namespace parser {
 			return true;
 		}
 		return false;
-	}	
+	}
+	
+	std::string DashOp::print() const
+	{
+		return std::format("Dash{{ {}, {} }}", _left->_char, _right->_char);
+	}
+
 
 	bool WordBoundary::execute(std::string_view substr, int& i) const
 	{
@@ -326,6 +433,11 @@ namespace parser {
 	size_t WordBoundary::charater_length() const
 	{
 		return 2;
+	}
+
+	std::string WordBoundary::print() const
+	{
+		return "WordBoundry";
 	}
 
 	bool NonWordBoundary::execute(std::string_view substr, int& i) const
@@ -362,7 +474,17 @@ namespace parser {
 		return 2;
 	}
 
+	std::string NonWordBoundary::print() const
+	{
+		return "NotWordBoundry";
+	}
 
+
+
+	std::string OneOrZeroOp::print() const
+	{
+		return std::format("OneOrZero{{ {} }}", _repetition->print());
+	}
 
 	bool OneOrZeroOp::execute(std::string_view substr, int& i) const
 	{
@@ -376,6 +498,11 @@ namespace parser {
 	}
 
 
+
+	std::string StarOp::print() const
+	{
+		return std::format("ZeroOrMore{{ {} }}", _repetition->print());
+	}
 
 	bool StarOp::execute(std::string_view substr, int& i) const
 	{
@@ -405,6 +532,11 @@ namespace parser {
 		return matchCount > 0;
 	}
 
+	std::string PlusOp::print() const
+	{
+		return std::format("OneOrMore{{ {} }}", _repetition->print());
+	}
+
 	void RepeatPartsBase::add(std::unique_ptr<BasePart> part)
 	{
 		_repetition = std::move(part);
@@ -415,14 +547,30 @@ namespace parser {
 		return _repetition->charater_length() + 1;
 	}
 
+	std::string EndOfString::print() const
+	{
+		return "EndOfString";
+	}
+
 	size_t EndOfString::charater_length() const
 	{
 		return 1;
+	}
+
+	std::string StartOfString::print() const
+	{
+		return "StartOfString";
 	}
 
 	size_t StartOfString::charater_length() const
 	{
 		return 1;
 	}
+
+	std::string BasePart::print() const
+	{
+		return "";
+	}
+
 
 } // namespace parser
