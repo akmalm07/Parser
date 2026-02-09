@@ -157,8 +157,8 @@ namespace parser {
 	std::string ParenContainer::print() const
 	{
 		if (_parts.size() == 1)
-			return std::format("Container{{ {} }}", _parts[0]->print());
-		std::string str = "Container{ ";
+			return std::format("Cont{{ {} }}", _parts[0]->print());
+		std::string str = "Cont{ ";
 		int i = 0;
 		for (const auto& part : _parts)
 		{
@@ -210,6 +210,7 @@ namespace parser {
 		for (const auto& part : _parts)
 		{
 			str += part->print();
+			i++;
 			if (i < _parts.size())
 				str += ", ";
 		}
@@ -282,7 +283,7 @@ namespace parser {
 
 	std::string CharacterPart::print() const
 	{
-		return "'a'";
+		return std::format("'{}'", _char);
 	}
 
 	size_t OrOp::charater_length() const

@@ -49,55 +49,47 @@ namespace parser
 
 		std::vector<std::unique_ptr<ParenContainer>> perens;
 		std::unique_ptr<BracketContainer> brak;
-		bool wasLastOrOp = false;
 		std::unique_ptr<OrOp> orOp;
 		// int charactersSinceLastPush = 0;
 
 
-		auto emit_item = [&](std::unique_ptr<BasePart> item, int& i, int incVal) {
+		auto emit_item = [&](std::unique_ptr<BasePart> item, int& i, int incVal = 0) {
 
 			if (perens.size() != 0)
 			{
-				if (wasLastOrOp && (perens.size() == 1 || perens[perens.size() - 2]->get_back()->type() != RegType::PerenToAddHere))
+				if (orOp && (perens.size() == 1 || perens[perens.size() - 2]->get_back()->type() != RegType::PerenToAddHere))
 				{
 					//assert(basePtr->type() == RegType::Or);
 					//perens.back()->pop_back(); // this is deleted pointer!
 					orOp->set_right(std::move(item));
 					perens.back()->add_part(std::move(orOp));
-					
-					wasLastOrOp = false;
 					i += incVal;
 					return;
 				}
-				//charactersSinceLastPush+=item->charater_length();
 				perens.back()->add_part(std::move(item));
 			}
-			else
+			else if (orOp)
 			{
-				if (wasLastOrOp)
-				{
-					orOp->set_right(std::move(item));
-					_parts.push_back(std::move(orOp));
-
-					wasLastOrOp = false;
-				}
-				_parts.push_back(std::move(item));
+				orOp->set_right(std::move(item));
+				_parts.push_back(std::move(orOp));
+				orOp.reset();				
 			}
+			else
+				_parts.push_back(std::move(item));
 			i += incVal;
 		};
 
-		auto emit_qual_item = [&](std::unique_ptr<RepeatPartsBase> item, int& i, int incVal) {
+		auto emit_qual_item = [&](std::unique_ptr<RepeatPartsBase> item, int& i) {
 
 			if (perens.size() != 0)
 			{
 				//charactersSinceLastPush += item->charater_length();
 				item->add(std::move(perens.back()->pop_back_and_transfer()));
-				if (wasLastOrOp)
+				if (orOp)
 				{
 					orOp->set_right(std::move(item));
 					perens.back()->add_part(std::move(orOp));
-					wasLastOrOp = false;
-					i += incVal;
+					orOp.reset();
 					return;
 				}
 				perens.back()->add_part(std::move(item));
@@ -109,35 +101,36 @@ namespace parser
 				
 				item->add(std::move(_parts.back()));// Dangerous, steals ownership
 				_parts.pop_back(); 
-				if (wasLastOrOp)
+				if (orOp)
 				{
 					orOp->set_right(std::move(item));
 					_parts.push_back(std::move(orOp));
-					wasLastOrOp = false;
-					i += incVal;
+					orOp.reset();
 					return;
 				}
 				_parts.push_back(std::move(item));
 			}
-			
-			i += incVal;
 			};
 
 		for (int i = 0; i < pattern.size(); i++)
 		{
+			if (i == 11)
+			{
+				int j = 0;
+			}
 			switch (pattern[i])
 			{
 			case '.':
-				emit_item(std::make_unique<DotPH>(), i, 1);
+				emit_item(std::make_unique<DotPH>(), i);
 				continue;
 			case '*':
-				emit_qual_item(std::make_unique<StarOp>(), i, 1);
+				emit_qual_item(std::make_unique<StarOp>(), i);
 				continue;
 			case '+':
-				emit_qual_item(std::make_unique<PlusOp>(), i, 1);
+				emit_qual_item(std::make_unique<PlusOp>(), i);
 				continue;
 			case '?':
-				emit_qual_item(std::make_unique<OneOrZeroOp>(), i, 1);
+				emit_qual_item(std::make_unique<OneOrZeroOp>(), i);
 				continue;
 			case '|':
 			{
@@ -146,19 +139,17 @@ namespace parser
 					// If inside parentheses, attach to the last part inside the parens
 					if (perens.back()->size() == 0)
 					{
-						emit_item(std::make_unique<CharacterPart>(pattern[i]), i, 0);
+						emit_item(std::make_unique<CharacterPart>(pattern[i]), i);
 						continue;
 					}
 					auto ptr = perens.back()->pop_back_and_transfer();
 					orOp = std::make_unique<OrOp>(std::move(ptr));
-					wasLastOrOp = true;
 				}
 				else
 				{
 					// Otherwise attach to the last item in _parts
 					orOp = std::make_unique<OrOp>(std::move(_parts.back()));
 					_parts.pop_back();
-					wasLastOrOp = true;
 				}
 
 				continue;
@@ -176,18 +167,18 @@ namespace parser
 
 				if (prevI == i && pattern[i] != ',')
 				{
-					emit_item(std::make_unique<CharacterPart>(pattern[i]), i, 0);
+					emit_item(std::make_unique<CharacterPart>(pattern[i]), i);
 					continue;
 				}
 				else if (prevI != i && pattern[i] == '}')
 				{
 					if (auto num = to_uint16(number1))
 					{
-						emit_qual_item(std::make_unique<RepeatNumberedTimes>(num.value()), i, 1);
+						emit_qual_item(std::make_unique<RepeatNumberedTimes>(num.value()), i);
 						continue;
 					}
 					for (int j = i - prevI; j <= i; j++)
-						emit_item(std::make_unique<CharacterPart>(pattern[prevI + j]), i, 0);
+						emit_item(std::make_unique<CharacterPart>(pattern[prevI + j]), i);
 					continue;
 				}
 				else if (pattern[i] == ',')
@@ -204,11 +195,11 @@ namespace parser
 						std::optional<uint16_t> max = to_uint16(number2);
 						if (min || max)
 						{
-							emit_qual_item(std::make_unique<RepeatRangedTimes>(min, max), i, 1);
+							emit_qual_item(std::make_unique<RepeatRangedTimes>(min, max), i);
 							continue;
 						}
 						for (int j = prevI; j <= i; j++)
-							emit_item(std::make_unique<CharacterPart>(pattern[j]), i, 0);
+							emit_item(std::make_unique<CharacterPart>(pattern[j]), i);
 						continue;
 					}
 				}
@@ -229,22 +220,25 @@ namespace parser
 
 				for (i = i + 1; i < pattern.size(); i++)
 				{
-
 					if (pattern[i] == ']')
 					{
-						emit_item(std::move(brak), i, 1);
+						emit_item(std::move(brak), i);
 						brak.reset();
 						break;
 					}
 
-					if (pattern[i] == '\\' && i + 1 < pattern.size())
+					if (i + 1 == pattern.size())
+						break;
+
+					if (pattern[i] == '\\')
 					{
 						brak->add_char(pattern[i + 1], true);
 						i++;
 						continue;
 					}
 
-					if (pattern[i] != '-' && i + 1 < pattern.size() && pattern[i + 1] == '-') {
+					if (pattern[i] != '-' && pattern[i + 1] == '-')
+					{
 						if (i + 2 < pattern.size())
 						{
 							brak->add_dash(pattern[i], pattern[i + 2]);
@@ -312,6 +306,7 @@ namespace parser
 			}
 			case '(':
 			{
+				i = i;
 				if (perens.size() == 0)
 					_parts.push_back(std::make_unique<PerenMarker>());
 				else
@@ -324,7 +319,7 @@ namespace parser
 			{
 				if (perens.size() == 0)
 				{
-					emit_item(std::make_unique<CharacterPart>(pattern[i]), i, 0);
+					emit_item(std::make_unique<CharacterPart>(pattern[i]), i);
 					continue;
 				}	// Make so that it identified the sequace and jsut makes each one into a charater
 				if (perens.size() == 1)
@@ -333,7 +328,7 @@ namespace parser
 
 					auto ptr = std::move(perens.back());
 					perens.pop_back();
-					emit_item(std::move(ptr), i, 0);
+					emit_item(std::move(ptr), i);
 					continue;
 				}
 				auto ptr = std::move(perens.back());
@@ -344,7 +339,7 @@ namespace parser
 				continue;
 			}
 			default:
-				emit_item(std::make_unique<CharacterPart>(pattern[i]), i, 0);
+				emit_item(std::make_unique<CharacterPart>(pattern[i]), i);
 			}
 		}
 
@@ -401,7 +396,7 @@ namespace parser
 
 	std::string Regex::print_regex_compilation() const
 	{
-		std::string output;
+		std::string output;		
 		for (const auto& part : _parts)
 		{
 			output += part->print() + " ";
