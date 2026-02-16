@@ -50,13 +50,17 @@ namespace parser
 		std::vector<std::unique_ptr<ParenContainer>> perens;
 		std::unique_ptr<BracketContainer> brak;
 		std::unique_ptr<OrOp> orOp;
-		// int charactersSinceLastPush = 0;
-
+		struct {
+			std::vector<ParenContainer*> list;
+			std::vector<ParenContainer*> tempList; // This is to first process the inner nodes of the perens before the outer ones, so that the inner nodes can be added to the outer nodes when they are processed
+		} captureGroups;
 
 		auto emit_item = [&](std::unique_ptr<BasePart> item, int& i, int incVal = 0) {
 
+
 			if (perens.size() != 0)
 			{
+				
 				if (orOp && (perens.size() == 1 || perens[perens.size() - 2]->get_back()->type() != RegType::PerenToAddHere))
 				{
 					//assert(basePtr->type() == RegType::Or);
@@ -84,7 +88,13 @@ namespace parser
 			if (perens.size() != 0)
 			{
 				//charactersSinceLastPush += item->charater_length();
-				item->add(std::move(perens.back()->pop_back_and_transfer()));
+				if (perens.back()->size() != 0)
+					item->add(std::move(perens.back()->pop_back_and_transfer()));
+				else
+				{
+					perens.back()->add_part(std::make_unique<CharacterPart>('*'));
+					return;
+				}
 				if (orOp)
 				{
 					orOp->set_right(std::move(item));
@@ -99,7 +109,7 @@ namespace parser
 				if (_parts.size() == 0)
 					_parts.push_back(std::make_unique<CharacterPart>('*')); // Defaulting value for quantifier
 				
-				item->add(std::move(_parts.back()));// Dangerous, steals ownership
+				item->add(std::move(_parts.back()));
 				_parts.pop_back(); 
 				if (orOp)
 				{
@@ -112,12 +122,28 @@ namespace parser
 			}
 			};
 
+		auto emit_backreference_item = [&](uint16_t num, bool explicitCall, int & i) {
+			if (num > captureGroups.list.size())
+			{
+				if (explicitCall)
+				{
+					emit_item(std::make_unique<CharacterPart>('<', true), i);
+					std::string s = std::to_string(num);
+					for (char c : s)
+						emit_item(std::make_unique<CharacterPart>(c), i);
+					emit_item(std::make_unique<CharacterPart>('>'), i);
+				}
+				else
+					emit_item(std::make_unique<CharacterPart>(num, true), i);
+				return;
+			}
+			ParenContainer& ref = *captureGroups.list[num - 1];
+
+			_parts.push_back(std::make_unique<Backreference>(ref, num));
+		};
+
 		for (int i = 0; i < pattern.size(); i++)
 		{
-			if (i == 11)
-			{
-				int j = 0;
-			}
 			switch (pattern[i])
 			{
 			case '.':
@@ -157,7 +183,7 @@ namespace parser
 			case '{':
 			{
 				std::string number1, number2;
-				const int prevI = i;
+				const size_t prevI = i;
 				i++;
 				while (i < pattern.size() && pattern[i] >= '0' && pattern[i] <= '9')
 				{
@@ -209,9 +235,10 @@ namespace parser
 			case '[':
 			{
 				NegetiveFlag flag = POSITIVE;
-				const int prevI = i;
+				const size_t prevI = i;
 
-				if (i + 1 < pattern.size() && pattern[i + 1] == '^') {
+				if (i + 1 < pattern.size() && pattern[i + 1] == '^') 
+				{
 					flag = NEGETIVE;
 					i++;
 				}
@@ -273,6 +300,40 @@ namespace parser
 			case '\\':
 			{
 				if (i + 1 >= pattern.size()) break;
+				else if (pattern[i + 1] > '0' && pattern[i + 1] <= '9')
+				{ 
+					// Backreferences
+					i += 2;
+					emit_backreference_item(to_uint16(std::string_view(&pattern[i + 1], 1)).value(), false, i);
+					continue;
+				}
+				else if (pattern[i + 1] == '<')
+				{
+					std::string numStr = "";
+					bool successFlag = true;
+					
+					int j = i + 2;
+					for (; pattern[j] != '>'; j++)
+					{
+						if (j < pattern.size()) 
+						{
+							successFlag = false;
+							break;
+						}
+						else if (pattern[j] > '0' && pattern[j] <= '9')
+							numStr += pattern[j];
+						else
+						{
+							successFlag = false;
+							break;
+						}
+					}
+					if (successFlag && !numStr.empty())
+					{
+						i = j;
+						emit_backreference_item(to_uint16(numStr).value(), true, i);
+					}
+				}
 				switch (pattern[i + 1])
 				{
 				case 'w':
@@ -306,11 +367,10 @@ namespace parser
 			}
 			case '(':
 			{
-				i = i;
 				if (perens.size() == 0)
-					_parts.push_back(std::make_unique<PerenMarker>());
+					_parts.push_back(std::make_unique<PerenMarker>(i));
 				else
-					perens.back()->add_part(std::make_unique<PerenMarker>());
+					perens.back()->add_part(std::make_unique<PerenMarker>(i));
 				perens.push_back(std::make_unique<ParenContainer>());
 
 				break;
@@ -328,10 +388,22 @@ namespace parser
 
 					auto ptr = std::move(perens.back());
 					perens.pop_back();
+
+					captureGroups.list.push_back(ptr.get());
+					if (captureGroups.tempList.size() != 0)
+					{
+						for (auto& item : std::views::reverse(captureGroups.tempList))
+							captureGroups.list.push_back(item);
+						captureGroups.tempList.clear();
+					}
+					
 					emit_item(std::move(ptr), i);
 					continue;
 				}
 				auto ptr = std::move(perens.back());
+
+				captureGroups.tempList.push_back(ptr.get());
+
 				perens.pop_back();
 				perens[perens.size() - 1]->pop_back(); // Remove the PerenMarker
 				perens[perens.size() - 1]->add_part(std::move(ptr));
@@ -351,30 +423,12 @@ namespace parser
 		}
 
 		// Replace the parentheses sequnace as literals because the closing parenthesis was not provided
+		const size_t prevI = static_cast<PerenMarker*>(_parts.back().get())->get_prev_index();
 		_parts.pop_back(); // Remove the PerenMarker
-		
-		size_t perenIdx = 0;
 
-		for (size_t i = 0; i < _parts.size(); i++)
-			perenIdx += _parts[perenIdx]->charater_length();
+		for (size_t i = prevI + 1; i < pattern.size(); i++)
+			_parts.push_back(std::make_unique<CharacterPart>(pattern[i]));
 
-		size_t perenLen = _parts[perenIdx]->charater_length();
-		// Not forgiving for unclosed parentheses
-		_parts.erase(_parts.begin() + perenIdx, _parts.begin() + perenIdx + perenLen);
-
-		std::vector<std::unique_ptr<CharacterPart>> charPartsVec;
-		charPartsVec.reserve(perenLen);
-
-		for (size_t i = 0; i < perenLen; i++)
-			charPartsVec.push_back(std::make_unique<CharacterPart>(pattern[perenIdx + i]));
-			
-		_parts.insert(_parts.begin() + perenIdx, 
-			std::make_move_iterator(charPartsVec.begin()), 
-			std::make_move_iterator(charPartsVec.end())
-		);
-		
-		if (pushEndOfString)
-			_parts.push_back(std::make_unique<EndOfString>());
 		return print_regex_compilation();
 	}
 

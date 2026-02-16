@@ -26,10 +26,11 @@ namespace parser {
 		return "NotNum";
 	}
 
-	bool NotNumberPH::execute(std::string_view substr, int& i) const
+	bool NotNumberPH::execute(std::string_view substr, int& i) 
 	{
 		if (substr[i] < '0' || substr[i] > '9')
 		{
+			_matchedString = substr[i];
 			i += 1;
 			return true;
 		}
@@ -41,10 +42,11 @@ namespace parser {
 		return "Num";
 	}
 
-	bool NumberPH::execute(std::string_view substr, int& i) const
+	bool NumberPH::execute(std::string_view substr, int& i) 
 	{
 		if (substr[i] >= '0' && substr[i] <= '9')
 		{
+			_matchedString = substr[i];
 			i += 1;
 			return true;
 		}
@@ -56,13 +58,14 @@ namespace parser {
 		return "Word";
 	}
 
-	bool WordPH::execute(std::string_view substr, int& i) const
+	bool WordPH::execute(std::string_view substr, int& i) 
 	{
 		if ((substr[i] >= 'A' && substr[i] <= 'Z') ||
 			(substr[i] >= 'a' && substr[i] <= 'z') ||
 			(substr[i] >= '0' && substr[i] <= '9') ||
 			(substr[i] == '_'))
 		{
+			_matchedString = substr[i];
 			i += 1;
 			return true;
 		}
@@ -74,13 +77,14 @@ namespace parser {
 		return "NotNum";
 	}
 
-	bool NotWordPH::execute(std::string_view substr, int& i) const
+	bool NotWordPH::execute(std::string_view substr, int& i) 
 	{
 		if (!((substr[i] >= 'A' && substr[i] <= 'Z') ||
 			(substr[i] >= 'a' && substr[i] <= 'z') ||
 			(substr[i] >= '0' && substr[i] <= '9') ||
 			(substr[i] == '_')))
 		{
+			_matchedString = substr[i];
 			i += 1;
 			return true;
 		}
@@ -92,10 +96,11 @@ namespace parser {
 		return "WhiteSpace";
 	}
 
-	bool WhitespacePH::execute(std::string_view substr, int& i) const
+	bool WhitespacePH::execute(std::string_view substr, int& i) 
 	{
 		if (substr[i] == ' ' || substr[i] == '\t' || substr[i] == '\n' || substr[i] == '\r' || substr[i] == '\v' || substr[i] == '\f')
 		{
+			_matchedString = substr[i];
 			i += 1;
 			return true;
 		}
@@ -107,10 +112,11 @@ namespace parser {
 		return "NotWhiteSpace";
 	}
 
-	bool NotWhitespacePH::execute(std::string_view substr, int& i) const
+	bool NotWhitespacePH::execute(std::string_view substr, int& i) 
 	{
 		if (!(substr[i] == ' ' || substr[i] == '\t' || substr[i] == '\n' || substr[i] == '\r' || substr[i] == '\v' || substr[i] == '\f'))
 		{
+			_matchedString = substr[i];
 			i += 1;
 			return true;
 		}
@@ -122,10 +128,11 @@ namespace parser {
 		return "AnyCharater";
 	}
 
-	bool DotPH::execute(std::string_view substr, int& i) const
+	bool DotPH::execute(std::string_view substr, int& i) 
 	{
 		if (substr.size() > 0)
 		{
+			_matchedString = substr[i];
 			i += 1;
 			return true;
 		}
@@ -180,15 +187,21 @@ namespace parser {
 		_parts.back() = std::move(part);
 	}
 
-	bool ParenContainer::execute(std::string_view substr, int& i) const
+	// Homework, add the get matched case function, which is used for backreferences, and it should return the string that was matched by the parentheses container, so that it can be used for backreferences
+
+	bool ParenContainer::execute(std::string_view substr, int& i) 
 	{
 		int localIndex = 0;
 		for (const auto& part : _parts)
 		{
 			if (!part->execute(substr.substr(localIndex), localIndex))
+			{
+				_matchedString = "";
 				return false;
+			}
+			_matchedString += part->get_matched_string();
 		}
-		return false;
+		return true;
 	}
 
 	size_t ParenContainer::charater_length() const
@@ -217,7 +230,7 @@ namespace parser {
 		return str + " }";
 	}
 
-	bool BracketContainer::execute(std::string_view substr, int& i) const
+	bool BracketContainer::execute(std::string_view substr, int& i) 
 	{
 		int localIndex = i;
 		bool matched = false;
@@ -237,6 +250,7 @@ namespace parser {
 				return false;
 			else
 			{
+				_matchedString = std::string(1, substr[i]);
 				i += 1;
 				return true;
 			}
@@ -244,6 +258,7 @@ namespace parser {
 
 		if (matched)
 		{
+			_matchedString = substr.substr(i, localIndex - i);
 			i = localIndex;
 			return true;
 		}
@@ -271,11 +286,16 @@ namespace parser {
 		_parts.push_back(std::make_unique<DashOp>(left, right));
 	}
 
-	bool CharacterPart::execute(std::string_view substr, int& i) const
+	CharacterPart::CharacterPart(char c, bool createdWithBackslash)
+		: _char(c), _backslash(createdWithBackslash) 
+	{}
+
+	bool CharacterPart::execute(std::string_view substr, int& i)
 	{
 		if (substr.size() > 0 && substr[i] == _char)
 		{
 			i += 1;
+			_matchedString = std::string(1, _char);
 			return true;
 		}
 		return false;
@@ -291,18 +311,20 @@ namespace parser {
 		return _left->charater_length() + _right->charater_length() + 1;
 	}
 
-	bool OrOp::execute(std::string_view substr, int& i) const
+	bool OrOp::execute(std::string_view substr, int& i) 
 	{
 		int tempIndex = i;
 		if (_left->execute(substr, tempIndex))
 		{
 			i = tempIndex;
+			_matchedString = _left->get_matched_string();
 			return true;
 		}
 		tempIndex = i;
 		if (_right->execute(substr, tempIndex))
 		{
 			i = tempIndex;
+			_matchedString = _left->get_matched_string();
 			return true;
 		}
 		return false;
@@ -321,7 +343,7 @@ namespace parser {
 	RepeatRangedTimes::RepeatRangedTimes(std::optional<uint16_t> min, std::optional<uint16_t> max)
 		: _min(min), _max(max) {}
 
-	bool RepeatRangedTimes::execute(std::string_view substr, int& i) const
+	bool RepeatRangedTimes::execute(std::string_view substr, int& i) 
 	{
 		const int start = i;
 		uint16_t count = 0;
@@ -347,7 +369,7 @@ namespace parser {
 			i = start;
 			return false;
 		}
-		
+		_matchedString = substr.substr(start, i - start);
 		return true;
 	}
 
@@ -365,7 +387,7 @@ namespace parser {
 
 	}
 
-	bool RepeatNumberedTimes::execute(std::string_view substr, int& i) const
+	bool RepeatNumberedTimes::execute(std::string_view substr, int& i) 
 	{
 		const int start = i;
 		uint16_t count = 0;
@@ -383,14 +405,21 @@ namespace parser {
 			i = start;
 			return false;
 		}
+		_matchedString = substr.substr(start, i - start);
 		return true;
 	}
 
-	bool DashOp::execute(std::string_view substr, int& i) const
+	std::string DashOp::get_matched_string() const
+	{
+		return _matchedString;
+	}
+
+	bool DashOp::execute(std::string_view substr, int& i)
 	{
 		if (substr.size() > 0 && substr[i] >= _left->_char && substr[i] <= _right->_char)
 		{
 			i += 1;
+			_matchedString = std::string(1, substr[i - 1]);
 			return true;
 		}
 		return false;
@@ -402,7 +431,7 @@ namespace parser {
 	}
 
 
-	bool WordBoundary::execute(std::string_view substr, int& i) const
+	bool WordBoundary::execute(std::string_view substr, int& i) 
 	{
 		bool isAtStart = (i == 0);
 		bool isAtEnd = (i == substr.size());
@@ -426,8 +455,10 @@ namespace parser {
 		}
 		if (beforeIsWordChar != afterIsWordChar)
 		{
+			_matchedString = substr.substr(i, 0);
 			return true;
 		}
+
 		return false;
 	}
 
@@ -441,7 +472,7 @@ namespace parser {
 		return "WordBoundry";
 	}
 
-	bool NonWordBoundary::execute(std::string_view substr, int& i) const
+	bool NonWordBoundary::execute(std::string_view substr, int& i) 
 	{
 		bool isAtStart = (i == 0);
 		bool isAtEnd = (i == substr.size());
@@ -465,6 +496,7 @@ namespace parser {
 		}
 		if (beforeIsWordChar == afterIsWordChar)
 		{
+			_matchedString = substr.substr(i, 0);
 			return true;
 		}
 		return false;
@@ -487,26 +519,26 @@ namespace parser {
 		return std::format("OneOrZero{{ {} }}", _repetition->print());
 	}
 
-	bool OneOrZeroOp::execute(std::string_view substr, int& i) const
+	bool OneOrZeroOp::execute(std::string_view substr, int& i) 
 	{
 		int before = i;
 		if (_repetition->execute(substr, i))
 		{
+			_matchedString += _repetition->get_matched_string();
 			return true;
 		}
 		i = before;
 		return true;
 	}
 
-
-
 	std::string StarOp::print() const
 	{
 		return std::format("ZeroOrMore{{ {} }}", _repetition->print());
 	}
 
-	bool StarOp::execute(std::string_view substr, int& i) const
+	bool StarOp::execute(std::string_view substr, int& i) 
 	{
+		const int start = i;
 		while (i < substr.size())
 		{
 			int before = i;
@@ -515,11 +547,13 @@ namespace parser {
 			if (i == before)
 				break;
 		}
+		_matchedString = substr.substr(start, i - start);
 		return true;
 	}
 
-	bool PlusOp::execute(std::string_view substr, int& i) const
+	bool PlusOp::execute(std::string_view substr, int& i) 
 	{
+		const int start = i;
 		int matchCount = 0;
 		while (i < substr.size())
 		{
@@ -530,6 +564,7 @@ namespace parser {
 				break;
 			matchCount++;
 		}
+		_matchedString = substr.substr(start, i - start);
 		return matchCount > 0;
 	}
 
@@ -573,5 +608,43 @@ namespace parser {
 		return "";
 	}
 
+
+	PerenMarker::PerenMarker(size_t prevI) : _prevI(prevI)
+	{}
+
+	const size_t PerenMarker::get_prev_index() const
+	{
+		return _prevI;
+	}
+
+	std::string ParenContainer::get_matched_case() const
+	{
+		return _matchedString;
+	}
+
+
+	Backreference::Backreference(ParenContainer& referencedCont, uint16_t num)
+		: _referencedContainer(referencedCont), _num(num)
+	{}
+
+	bool Backreference::execute(std::string_view substr, int& i) 
+	{
+		if (substr.substr(i).starts_with(_referencedContainer.get_matched_case()))
+		{
+			i += _referencedContainer.get_matched_case().size();
+			return true;
+		}
+		return false;
+	}
+
+	size_t Backreference::charater_length() const
+	{
+		return _referencedContainer.get_matched_case().size();
+	}
+
+	std::string Backreference::print() const
+	{
+		return "Backref{ " + std::to_string(_num) + " }";
+	}
 
 } // namespace parser
