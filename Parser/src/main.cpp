@@ -5,10 +5,14 @@
 int main()
 {
 	parser::Regex regex;
-	auto output = regex.compile("(*|4)\\<\\1>");
+	auto output = regex.compile("([A-Za])bc\\1");
 
-	std::print("Regex: {}", output);
-	//regex.execute("abcf");
+	std::println("Regex: {}", output);
+
+	if (regex.execute("ZbcZ"))
+		std::println("Matched!");
+	else
+		std::println("Not Matched!");
 
     return 0;
 }

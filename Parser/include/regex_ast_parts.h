@@ -87,7 +87,7 @@ namespace parser
 
 		virtual constexpr RegType type() const = 0;
 
-		virtual bool execute(std::string_view substr, int& i)  = 0;
+		virtual bool execute(std::string_view substr, size_t& i) = 0;
 
 		virtual size_t charater_length() const = 0;
 
@@ -110,7 +110,7 @@ namespace parser
 		virtual size_t charater_length() const = 0;
 		virtual constexpr RegType type() const = 0;
 		virtual std::string print() const = 0;
-		virtual bool execute(std::string_view substr, int& i)  = 0;
+		virtual bool execute(std::string_view substr, size_t& i)  = 0;
 		virtual ~BracketAcceptedPart() = default;
 
 	};
@@ -122,7 +122,7 @@ namespace parser
 	public:
 		CharacterPart(char c, bool createdWithBackslash = false);
 
-		bool execute(std::string_view substr, int& i)  override;
+		bool execute(std::string_view substr, size_t& i)  override;
 
 		size_t charater_length() const override { return 1 + (_backslash ? 1 : 0); }
 
@@ -149,7 +149,7 @@ namespace parser
 
 		std::string get_matched_string() const;
 
-		bool execute(std::string_view substr, int& i)  override;
+		bool execute(std::string_view substr, size_t& i)  override;
 
 		std::string print() const override;
 
@@ -181,7 +181,7 @@ namespace parser
 		NotNumberPH() = default;
 		constexpr RegType type() const override { return RegType::NotNumberPH; }
 		std::string print() const override;
-		bool execute(std::string_view substr, int& i)  override;
+		bool execute(std::string_view substr, size_t& i)  override;
 		~NotNumberPH() = default;
 	};
 
@@ -191,7 +191,7 @@ namespace parser
 		NumberPH() = default;
 		constexpr RegType type() const override { return RegType::NumberPH; }
 		std::string print() const override;
-		bool execute(std::string_view substr, int& i)  override;
+		bool execute(std::string_view substr, size_t& i)  override;
 		~NumberPH() = default;
 	};
 
@@ -201,7 +201,7 @@ namespace parser
 		WordPH() = default;
 		constexpr RegType type() const override { return RegType::WordPH; }
 		std::string print() const override;
-		bool execute(std::string_view substr, int& i)  override;
+		bool execute(std::string_view substr, size_t& i)  override;
 		~WordPH() = default;
 	};
 
@@ -211,7 +211,7 @@ namespace parser
 		NotWordPH() = default;
 		constexpr RegType type() const override { return RegType::NotWordPH; }
 		std::string print() const override;
-		bool execute(std::string_view substr, int& i)  override;
+		bool execute(std::string_view substr, size_t& i)  override;
 		~NotWordPH() = default;
 	};
 
@@ -221,7 +221,7 @@ namespace parser
 		WhitespacePH() = default;
 		constexpr RegType type() const override { return RegType::WhitespacePH; }
 		std::string print() const override;
-		bool execute(std::string_view substr, int& i)  override;
+		bool execute(std::string_view substr, size_t& i)  override;
 		~WhitespacePH() = default;
 	};
 
@@ -231,7 +231,7 @@ namespace parser
 		NotWhitespacePH() = default;
 		constexpr RegType type() const override { return RegType::NotWhitespacePH; }
 		std::string print() const override;
-		bool execute(std::string_view substr, int& i)  override;
+		bool execute(std::string_view substr, size_t& i)  override;
 		~NotWhitespacePH() = default;
 	};
 
@@ -241,7 +241,7 @@ namespace parser
 		DotPH() = default;
 		constexpr RegType type() const override { return RegType::DotPH; }
 		std::string print() const override;
-		bool execute(std::string_view substr, int& i)  override;
+		bool execute(std::string_view substr, size_t& i)  override;
 		~DotPH() = default;
 	};
 
@@ -272,12 +272,10 @@ namespace parser
 
 		constexpr RegType type() const override { return RegType::Parentheses; }
 		
-		bool execute(std::string_view substr, int& i)  override;
+		bool execute(std::string_view substr, size_t& i) override;
 
 		size_t charater_length() const override;
-		
-		std::string get_matched_case() const;
-		
+				
 		~ParenContainer() = default;
 	protected:
 		std::vector<std::unique_ptr<BasePart>> _parts;
@@ -300,7 +298,7 @@ namespace parser
 
 		std::string print() const override;
 
-		bool execute(std::string_view substr, int& i)  override;
+		bool execute(std::string_view substr, size_t& i)  override;
 
 		size_t charater_length() const override;
 
@@ -337,7 +335,7 @@ namespace parser
 
 		constexpr RegType type() const override { return RegType::RepeatRangedTimes; }
 
-		bool execute(std::string_view substr, int& i)  override;
+		bool execute(std::string_view substr, size_t& i)  override;
 
 		std::string print() const override;
 
@@ -359,7 +357,7 @@ namespace parser
 
 		std::string print() const override;
 
-		bool execute(std::string_view substr, int& i)  override;
+		bool execute(std::string_view substr, size_t& i)  override;
 
 		~RepeatNumberedTimes() override = default;
 	private:
@@ -377,7 +375,7 @@ namespace parser
 
 		size_t charater_length() const override;
 		
-		bool execute(std::string_view substr, int& i)  override;
+		bool execute(std::string_view substr, size_t& i)  override;
 
 		std::string print() const override;
 
@@ -403,7 +401,7 @@ namespace parser
 		StarOp() = default;
 		constexpr RegType type() const override { return RegType::Star; }
 		std::string print() const override;
-		bool execute(std::string_view substr, int& i)  override;
+		bool execute(std::string_view substr, size_t& i)  override;
 		~StarOp() = default;
 	};
 
@@ -412,7 +410,7 @@ namespace parser
 	{
 	public:
 		PlusOp() = default;
-		bool execute(std::string_view substr, int& i)  override;
+		bool execute(std::string_view substr, size_t& i)  override;
 		std::string print() const override;
 		constexpr RegType type() const override { return RegType::Plus; }
 		~PlusOp() override = default;
@@ -426,7 +424,7 @@ namespace parser
 		OneOrZeroOp() = default;
 		constexpr RegType type() const override { return RegType::OneOrZero; }
 		std::string print() const override;
-		bool execute(std::string_view substr, int& i)  override;
+		bool execute(std::string_view substr, size_t& i)  override;
 		~OneOrZeroOp() override = default;
 	};
 
@@ -435,7 +433,6 @@ namespace parser
 	{
 	public:
 		StringPlacementPartsBase() = default;
-		bool execute(std::string_view substr, int& i)  override { return true; };
 		virtual ~StringPlacementPartsBase() = default;
 	protected:
 	};
@@ -446,6 +443,7 @@ namespace parser
 		StartOfString() = default;
 		constexpr RegType type() const override { return RegType::StartOfString; }
 		std::string print() const override;
+		bool execute(std::string_view substr, size_t& i)  override;
 		size_t charater_length() const override;
 		~StartOfString() override = default;
 	private:
@@ -457,6 +455,7 @@ namespace parser
 		EndOfString() = default;
 		constexpr RegType type() const override { return RegType::EndOfString; }
 		std::string print() const override;
+		bool execute(std::string_view substr, size_t& i)  override;
 		size_t charater_length() const override;
 		~EndOfString() override = default;
 	private:
@@ -466,7 +465,7 @@ namespace parser
 	{
 	public:
 		WordBoundary() = default;
-		bool execute(std::string_view substr, int& i)  override;
+		bool execute(std::string_view substr, size_t& i)  override;
 		size_t charater_length() const override;
 		constexpr RegType type() const override { return RegType::WordBoundary; }
 		std::string print() const override;
@@ -478,7 +477,7 @@ namespace parser
 	{
 	public:
 		NonWordBoundary() = default;
-		bool execute(std::string_view substr, int& i)  override;
+		bool execute(std::string_view substr, size_t& i)  override;
 		size_t charater_length() const override;
 		constexpr RegType type() const override { return RegType::NonWordBoundary; }
 		std::string print() const override;
@@ -491,7 +490,7 @@ namespace parser
 	{
 	public:
 		Backreference(ParenContainer& referencedCont, uint16_t num);
-		bool execute(std::string_view substr, int& i)  override;
+		bool execute(std::string_view substr, size_t& i)  override;
 		size_t charater_length() const override;
 		constexpr RegType type() const override { return RegType::Backreference; }
 		std::string print() const override;
@@ -506,7 +505,7 @@ namespace parser
 	{
 	public:
 		PerenMarker(size_t prevI);
-		bool execute(std::string_view substr, int& i)  override { return true; }
+		bool execute(std::string_view substr, size_t& i)  override { return true; }
 		const size_t get_prev_index() const;
 		constexpr RegType type() const override { return RegType::PerenToAddHere; }
 		size_t charater_length() const override { return 0; }

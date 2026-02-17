@@ -20,7 +20,10 @@ namespace parser
 		_parts.clear();
 
 		std::string_view pattern;
-		bool pushEndOfString = false;
+
+		
+		bool addEndOfString = false;
+		
 
 		if (givenPattern.size() < 1)
 			return "";
@@ -31,14 +34,11 @@ namespace parser
 			size_t end = givenPattern.size();
 
 			if (givenPattern.front() == '^') 
-			{
-				_parts.push_back(std::make_unique<StartOfString>());
 				start++;
-			}
 
 			if (end > start && givenPattern.back() == '$')
 			{
-				_parts.push_back(std::make_unique<EndOfString>());
+				addEndOfString = true;
 				end--;
 			}
 
@@ -419,19 +419,19 @@ namespace parser
 			}
 		}
 
-		if (_parts.back()->type() != RegType::PerenToAddHere)
+		if (_parts.back()->type() == RegType::PerenToAddHere)
 		{
-			if (pushEndOfString)
-				_parts.push_back(std::make_unique<EndOfString>());
-			return print_regex_compilation();
+
+			// Replace the parentheses sequnace as literals because the closing parenthesis was not provided
+			const size_t prevI = static_cast<PerenMarker*>(_parts.back().get())->get_prev_index();
+			_parts.pop_back(); // Remove the PerenMarker
+
+			for (size_t i = prevI + 1; i < pattern.size(); i++)
+				_parts.push_back(std::make_unique<CharacterPart>(pattern[i]));
 		}
 
-		// Replace the parentheses sequnace as literals because the closing parenthesis was not provided
-		const size_t prevI = static_cast<PerenMarker*>(_parts.back().get())->get_prev_index();
-		_parts.pop_back(); // Remove the PerenMarker
-
-		for (size_t i = prevI + 1; i < pattern.size(); i++)
-			_parts.push_back(std::make_unique<CharacterPart>(pattern[i]));
+		if (addEndOfString)
+			_parts.push_back(std::make_unique<EndOfString>());
 
 		return print_regex_compilation();
 	}
@@ -439,17 +439,15 @@ namespace parser
 
 	bool Regex::execute(std::string_view test)
 	{
-		if (_parts.size() == 0)
-			return false;
-		if (_parts[0]->type() == RegType::StartOfString)
+		size_t i = 0;
+
+		for (auto& part : _parts)
 		{
-			int idx = 0;
-			for (const auto& part : _parts)
-			{
-				if (!part->execute(test, idx))
-					return false;
-			}
+			if (!part->execute(test, i))
+				return false;
 		}
+
+		return true;
 	}
 
 	std::string Regex::print_regex_compilation() const

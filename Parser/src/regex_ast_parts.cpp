@@ -26,7 +26,7 @@ namespace parser {
 		return "NotNum";
 	}
 
-	bool NotNumberPH::execute(std::string_view substr, int& i) 
+	bool NotNumberPH::execute(std::string_view substr, size_t& i) 
 	{
 		if (substr[i] < '0' || substr[i] > '9')
 		{
@@ -42,7 +42,7 @@ namespace parser {
 		return "Num";
 	}
 
-	bool NumberPH::execute(std::string_view substr, int& i) 
+	bool NumberPH::execute(std::string_view substr, size_t& i) 
 	{
 		if (substr[i] >= '0' && substr[i] <= '9')
 		{
@@ -58,7 +58,7 @@ namespace parser {
 		return "Word";
 	}
 
-	bool WordPH::execute(std::string_view substr, int& i) 
+	bool WordPH::execute(std::string_view substr, size_t& i) 
 	{
 		if ((substr[i] >= 'A' && substr[i] <= 'Z') ||
 			(substr[i] >= 'a' && substr[i] <= 'z') ||
@@ -77,7 +77,7 @@ namespace parser {
 		return "NotNum";
 	}
 
-	bool NotWordPH::execute(std::string_view substr, int& i) 
+	bool NotWordPH::execute(std::string_view substr, size_t& i) 
 	{
 		if (!((substr[i] >= 'A' && substr[i] <= 'Z') ||
 			(substr[i] >= 'a' && substr[i] <= 'z') ||
@@ -96,7 +96,7 @@ namespace parser {
 		return "WhiteSpace";
 	}
 
-	bool WhitespacePH::execute(std::string_view substr, int& i) 
+	bool WhitespacePH::execute(std::string_view substr, size_t& i) 
 	{
 		if (substr[i] == ' ' || substr[i] == '\t' || substr[i] == '\n' || substr[i] == '\r' || substr[i] == '\v' || substr[i] == '\f')
 		{
@@ -112,7 +112,7 @@ namespace parser {
 		return "NotWhiteSpace";
 	}
 
-	bool NotWhitespacePH::execute(std::string_view substr, int& i) 
+	bool NotWhitespacePH::execute(std::string_view substr, size_t& i) 
 	{
 		if (!(substr[i] == ' ' || substr[i] == '\t' || substr[i] == '\n' || substr[i] == '\r' || substr[i] == '\v' || substr[i] == '\f'))
 		{
@@ -128,7 +128,7 @@ namespace parser {
 		return "AnyCharater";
 	}
 
-	bool DotPH::execute(std::string_view substr, int& i) 
+	bool DotPH::execute(std::string_view substr, size_t& i) 
 	{
 		if (substr.size() > 0)
 		{
@@ -189,9 +189,9 @@ namespace parser {
 
 	// Homework, add the get matched case function, which is used for backreferences, and it should return the string that was matched by the parentheses container, so that it can be used for backreferences
 
-	bool ParenContainer::execute(std::string_view substr, int& i) 
+	bool ParenContainer::execute(std::string_view substr, size_t& i) 
 	{
-		int localIndex = 0;
+		size_t localIndex = 0;
 		for (const auto& part : _parts)
 		{
 			if (!part->execute(substr.substr(localIndex), localIndex))
@@ -201,6 +201,7 @@ namespace parser {
 			}
 			_matchedString += part->get_matched_string();
 		}
+		i += localIndex;
 		return true;
 	}
 
@@ -230,9 +231,9 @@ namespace parser {
 		return str + " }";
 	}
 
-	bool BracketContainer::execute(std::string_view substr, int& i) 
+	bool BracketContainer::execute(std::string_view substr, size_t& i) 
 	{
-		int localIndex = i;
+		size_t localIndex = i;
 		bool matched = false;
 		for (const auto& part : _parts)
 		{
@@ -290,7 +291,7 @@ namespace parser {
 		: _char(c), _backslash(createdWithBackslash) 
 	{}
 
-	bool CharacterPart::execute(std::string_view substr, int& i)
+	bool CharacterPart::execute(std::string_view substr, size_t& i)
 	{
 		if (substr.size() > 0 && substr[i] == _char)
 		{
@@ -311,19 +312,19 @@ namespace parser {
 		return _left->charater_length() + _right->charater_length() + 1;
 	}
 
-	bool OrOp::execute(std::string_view substr, int& i) 
+	bool OrOp::execute(std::string_view substr, size_t& i) 
 	{
-		int tempIndex = i;
-		if (_left->execute(substr, tempIndex))
+		size_t localIndex = i;
+		if (_left->execute(substr, localIndex))
 		{
-			i = tempIndex;
+			i = localIndex;
 			_matchedString = _left->get_matched_string();
 			return true;
 		}
-		tempIndex = i;
-		if (_right->execute(substr, tempIndex))
+		localIndex = i;
+		if (_right->execute(substr, localIndex))
 		{
-			i = tempIndex;
+			i = localIndex;
 			_matchedString = _left->get_matched_string();
 			return true;
 		}
@@ -343,7 +344,7 @@ namespace parser {
 	RepeatRangedTimes::RepeatRangedTimes(std::optional<uint16_t> min, std::optional<uint16_t> max)
 		: _min(min), _max(max) {}
 
-	bool RepeatRangedTimes::execute(std::string_view substr, int& i) 
+	bool RepeatRangedTimes::execute(std::string_view substr, size_t& i) 
 	{
 		const int start = i;
 		uint16_t count = 0;
@@ -370,6 +371,7 @@ namespace parser {
 			return false;
 		}
 		_matchedString = substr.substr(start, i - start);
+		i = start + _matchedString.size();
 		return true;
 	}
 
@@ -387,7 +389,7 @@ namespace parser {
 
 	}
 
-	bool RepeatNumberedTimes::execute(std::string_view substr, int& i) 
+	bool RepeatNumberedTimes::execute(std::string_view substr, size_t& i) 
 	{
 		const int start = i;
 		uint16_t count = 0;
@@ -406,6 +408,7 @@ namespace parser {
 			return false;
 		}
 		_matchedString = substr.substr(start, i - start);
+		i = start + _matchedString.size();
 		return true;
 	}
 
@@ -414,7 +417,7 @@ namespace parser {
 		return _matchedString;
 	}
 
-	bool DashOp::execute(std::string_view substr, int& i)
+	bool DashOp::execute(std::string_view substr, size_t& i)
 	{
 		if (substr.size() > 0 && substr[i] >= _left->_char && substr[i] <= _right->_char)
 		{
@@ -431,7 +434,7 @@ namespace parser {
 	}
 
 
-	bool WordBoundary::execute(std::string_view substr, int& i) 
+	bool WordBoundary::execute(std::string_view substr, size_t& i) 
 	{
 		bool isAtStart = (i == 0);
 		bool isAtEnd = (i == substr.size());
@@ -472,7 +475,7 @@ namespace parser {
 		return "WordBoundry";
 	}
 
-	bool NonWordBoundary::execute(std::string_view substr, int& i) 
+	bool NonWordBoundary::execute(std::string_view substr, size_t& i) 
 	{
 		bool isAtStart = (i == 0);
 		bool isAtEnd = (i == substr.size());
@@ -519,7 +522,7 @@ namespace parser {
 		return std::format("OneOrZero{{ {} }}", _repetition->print());
 	}
 
-	bool OneOrZeroOp::execute(std::string_view substr, int& i) 
+	bool OneOrZeroOp::execute(std::string_view substr, size_t& i) 
 	{
 		int before = i;
 		if (_repetition->execute(substr, i))
@@ -536,7 +539,7 @@ namespace parser {
 		return std::format("ZeroOrMore{{ {} }}", _repetition->print());
 	}
 
-	bool StarOp::execute(std::string_view substr, int& i) 
+	bool StarOp::execute(std::string_view substr, size_t& i) 
 	{
 		const int start = i;
 		while (i < substr.size())
@@ -551,7 +554,7 @@ namespace parser {
 		return true;
 	}
 
-	bool PlusOp::execute(std::string_view substr, int& i) 
+	bool PlusOp::execute(std::string_view substr, size_t& i) 
 	{
 		const int start = i;
 		int matchCount = 0;
@@ -598,6 +601,16 @@ namespace parser {
 		return "StartOfString";
 	}
 
+	bool StartOfString::execute(std::string_view, size_t& i)
+	{
+		return i == 0;
+	}
+
+	bool EndOfString::execute(std::string_view substr, size_t& i)
+	{
+		return i == substr.size();
+	}
+
 	size_t StartOfString::charater_length() const
 	{
 		return 1;
@@ -617,21 +630,16 @@ namespace parser {
 		return _prevI;
 	}
 
-	std::string ParenContainer::get_matched_case() const
-	{
-		return _matchedString;
-	}
-
 
 	Backreference::Backreference(ParenContainer& referencedCont, uint16_t num)
 		: _referencedContainer(referencedCont), _num(num)
 	{}
 
-	bool Backreference::execute(std::string_view substr, int& i) 
+	bool Backreference::execute(std::string_view substr, size_t& i) 
 	{
-		if (substr.substr(i).starts_with(_referencedContainer.get_matched_case()))
+		if (substr.substr(i).starts_with(_referencedContainer.get_matched_string()))
 		{
-			i += _referencedContainer.get_matched_case().size();
+			i += _referencedContainer.get_matched_string().size();
 			return true;
 		}
 		return false;
@@ -639,7 +647,7 @@ namespace parser {
 
 	size_t Backreference::charater_length() const
 	{
-		return _referencedContainer.get_matched_case().size();
+		return _referencedContainer.get_matched_string().size();
 	}
 
 	std::string Backreference::print() const
