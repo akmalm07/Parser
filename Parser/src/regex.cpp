@@ -122,7 +122,7 @@ namespace parser
 			}
 			};
 
-		auto emit_backreference_item = [&](uint16_t num, bool explicitCall, int & i) {
+		auto emit_backreference_item = [&](uint16_t num, bool explicitCall, int & i, int incVal = 0) -> bool {
 			if (num > captureGroups.list.size())
 			{
 				if (explicitCall)
@@ -134,12 +134,16 @@ namespace parser
 					emit_item(std::make_unique<CharacterPart>('>'), i);
 				}
 				else
-					emit_item(std::make_unique<CharacterPart>(num, true), i);
-				return;
+					emit_item(std::make_unique<CharacterPart>(std::to_string(num)[0], true), i);
+				i += incVal;
+				return false;
 			}
 			ParenContainer& ref = *captureGroups.list[num - 1];
 
 			_parts.push_back(std::make_unique<Backreference>(ref, num));
+			
+			i += incVal;
+			return true;
 		};
 
 		for (int i = 0; i < pattern.size(); i++)
@@ -301,10 +305,9 @@ namespace parser
 			{
 				if (i + 1 >= pattern.size()) break;
 				else if (pattern[i + 1] > '0' && pattern[i + 1] <= '9')
-				{ 
+				{
 					// Backreferences
-					i += 2;
-					emit_backreference_item(to_uint16(std::string_view(&pattern[i + 1], 1)).value(), false, i);
+					emit_backreference_item(to_uint16(std::string_view(&pattern[i + 1], 1)).value(), false, i, 1);
 					continue;
 				}
 				else if (pattern[i + 1] == '<')
@@ -315,12 +318,12 @@ namespace parser
 					int j = i + 2;
 					for (; pattern[j] != '>'; j++)
 					{
-						if (j < pattern.size()) 
+						if (j >= pattern.size()) 
 						{
 							successFlag = false;
 							break;
 						}
-						else if (pattern[j] > '0' && pattern[j] <= '9')
+						else if (pattern[j] >= '0' && pattern[j] <= '9')
 							numStr += pattern[j];
 						else
 						{
@@ -332,6 +335,7 @@ namespace parser
 					{
 						i = j;
 						emit_backreference_item(to_uint16(numStr).value(), true, i);
+						continue;
 					}
 				}
 				switch (pattern[i + 1])
